@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pahadi Jumperr 3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, red, gold);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: #bbdefb;
+        }
+        
+        /* Game Container */
+        .game-container {
+            background: #0d47a1;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        /* Character Selection */
+        .character-selection {
+            background: rgba(25, 118, 210, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .selection-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .character-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .character-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            width: 200px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .character-card.selected {
+            border-color: #ff9800;
+            box-shadow: 0 5px 15px rgba(255,152,0,0.4);
+        }
+        
+        .character-name {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .character-portrait {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            margin: 10px auto;
+            background-color: #333;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid white;
+        }
+        
+        .sachin-portrait {
+            background-color: #ff5722;
+            background-image: url('Sachin.jpg'); /* Your character portrait */
+        }
+        
+        .rahul-portrait {
+            background-color: #2196f3;
+            background-image: url('Rahul.jpg'); /* Your character portrait */
+        }
+        
+        .character-stats {
+            font-size: 0.9rem;
+            color: #bbdefb;
+            margin-top: 10px;
+        }
+        
+        /* Start Button */
+        .start-btn {
+            background: linear-gradient(135deg, #ff5722, #ff9800);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,87,34,0.4);
+        }
+        
+        /* Game Canvas */
+        #gameScreen {
+            display: none;
+        }
+        
+        canvas {
+            background: #87CEEB;
+            border-radius: 5px;
+            display: block;
+            margin: 0 auto;
+            touch-action: manipulation;
+        }
+        
+        /* Game UI */
+        .game-ui {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        
+        .player-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .current-character-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid white;
+        }
+        
+        .stats-display {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .attack-display {
+            font-size: 1rem;
+            color: #ffeb3b;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Game Over Screen */
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            border-radius: 10px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .game-over h2 {
+            font-size: 3rem;
+            color: #ff9800;
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Instructions */
+        .instructions {
+            background: rgba(25, 118, 210, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .instructions p {
+            margin-bottom: 8px;
+            color: #bbdefb;
+            line-height: 1.5;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 3px;
+        }
+        
+        /* Mobile Controls */
+        .mobile-controls {
+            display: none;
+            margin-top: 20px;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .mobile-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .jump-btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        }
+        
+        .attack-btn {
+            background: linear-gradient(135deg, #f44336, #c62828);
+        }
+        
+        /* Audio Controls */
+        .audio-controls {
+            margin-top: 15px;
+        }
+        
+        .mute-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        /* File Requirements */
+        .file-requirements {
+            background: rgba(25, 118, 210, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .file-requirements h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .file-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: left;
+        }
+        
+        .file-item {
+            padding: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .character-card {
+                width: 170px;
+            }
+            
+            .character-portrait {
+                width: 100px;
+                height: 100px;
+            }
+            
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+            
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .file-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .character-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .character-card {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .mobile-btn {
+                padding: 12px 20px;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pahadi Jumper 3</h1>
+        <div class="subtitle">Choose your hero and kill foe!</div>
+        
+        <div class="game-container">
+            <!-- Character Selection -->
+            <div class="character-selection" id="characterSelection">
+                <h2 class="selection-title">Select Your Hero</h2>
+                <div class="character-options">
+                    <div class="character-card selected" data-character="sachin">
+                        <div class="character-name">Sachin The Fire</div>
+                        <div class="character-portrait sachin-portrait"></div>
+                        <div class="character-stats">• Fast movement<br>• Fireball attack<br>• Hott theme</div>
+                    </div>
+                    
+                    <div class="character-card" data-character="rahul">
+                        <div class="character-name">Rahul The Tsunami</div>
+                        <div class="character-portrait rahul-portrait"></div>
+                        <div class="character-stats">• Slower movement<br>• Iceball attack<br>•Coool theme</div>
+                    </div>
+                </div>
+                <button class="start-btn" id="startGame">Start Game</button>
+            </div>
+            
+            <!-- Game Screen -->
+            <div id="gameScreen">
+                <div class="game-ui">
+                    <div class="player-display">
+                        <div class="current-character-icon" id="currentPlayerIcon"></div>
+                        <div class="player-name" id="currentPlayerName">Sachin The Fire</div>
+                    </div>
+                    <div class="stats-display">
+                        <div class="score-display">Score: <span id="score">0</span></div>
+                        <div class="attack-display">Fireballs: <span id="attackCount">0</span></div>
+                    </div>
+                </div>
+                
+                <canvas id="gameCanvas" width="800" height="300"></canvas>
+                
+                <div class="controls">
+                    <button class="control-btn" id="pauseBtn">Pause</button>
+                    <button class="control-btn" id="restartBtn">Restart</button>
+                    <button class="control-btn" id="menuBtn">Menu</button>
+                    <button class="control-btn mute-btn" id="muteBtn">Mute</button>
+                </div>
+                
+                <!-- Mobile Controls -->
+                <div class="mobile-controls">
+                    <button class="mobile-btn jump-btn" id="jumpBtn">JUMP</button>
+                    <button class="mobile-btn attack-btn" id="attackBtn">ATTACK</button>
+                    <button class="mobile-btn" id="mobilePause">PAUSE</button>
+                </div>
+                
+                <!-- Game Over Screen -->
+                <div class="game-over" id="gameOver">
+                    <h2>GAME OVER</h2>
+                    <div class="final-score">Score: <span id="finalScore">0</span></div>
+                    <button class="start-btn" id="playAgain">Play Again</button>
+                    <button class="control-btn" style="margin-top: 10px;" id="backToMenu">Back to Menu</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <p>• Select your character at the start</p>
+            <p>• <span class="key">SPACE</span> or <span class="key">UP</span> or <span class="key">TAP</span> to jump</p>
+            <p>• <span class="key">X</span> or <span class="key">DOUBLE TAP</span> to shoot fireball/iceball</p>
+            <p>• Collect coins for +5 attacks</p>
+            
+            <p>• Enemy shoot fireballs - kill them!</p>
+        </div>
+        
+        <!-- File Requirements -->
+        <div class="file-requirements">
+            <h3>Created By Sachin
+            <br>
+            वीडियो गेम निर्माता सचिन तोमर</h3>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden image elements for preloading -->
+    <div style="display: none;">
+        <img id="sachinSpriteImg" src="Sachin-sprite.png" alt="Sachin Sprite">
+        <img id="rahulSpriteImg" src="Rahul-sprite.png" alt="Rahul Sprite">
+        <img id="enemySpriteImg" src="Enemy-sprite.png" alt="Enemy Sprite">
+        <img id="sachinPortraitImg" src="Sachin.jpg" alt="Sachin Portrait">
+        <img id="rahulPortraitImg" src="Rahul.jpg" alt="Rahul Portrait">
+    </div>
+
+    <!-- Audio elements for character themes -->
+    <audio id="sachinTheme" loop>
+        <source src="Sachin.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="rahulTheme" loop>
+        <source src="Rahul.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Sound effects -->
+    <audio id="fireballSound" preload="auto">
+        <source src="fireball.wav" type="audio/wav">
+    </audio>
+    
+    <audio id="iceballSound" preload="auto">
+        <source src="iceball.wav" type="audio/wav">
+    </audio>
+    
+    <audio id="coinSound" preload="auto">
+        <source src="coin.wav" type="audio/wav">
+    </audio>
+    
+    <audio id="obstacleDestroySound" preload="auto">
+        <source src="destroy.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        // Game Variables
+        let canvas, ctx;
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let selectedCharacter = 'sachin';
+        let muted = false;
+        let attackCount = 0;
+        
+        // Sprite Management
+        let sachinSprite = null;
+        let rahulSprite = null;
+        let enemySprite = null;
+        let currentSprite = null;
+        
+        // Player Properties
+        let player = {
+            x: 50,
+            y: 0,
+            width: 40,
+            height: 60,
+            velocityY: 0,
+            jumping: false,
+            jumpPower: -13,
+            groundY: 0,
+            currentFrame: 0,
+            frameCount: 0,
+            frameDelay: 8,
+            totalFrames: 4,
+            spriteWidth: 160, // 4 frames × 40px
+            spriteHeight: 60,
+            frameWidth: 40
+        };
+        
+        // Projectiles array (player)
+        let playerProjectiles = [];
+        
+        // Enemy projectiles array
+        let enemyProjectiles = [];
+        
+        // Enemies array (replaced obstacles)
+        let enemies = [];
+        let enemyTimer = 0;
+        let enemyInterval = 100;
+        
+        // Coins array
+        let coins = [];
+        let coinCounter = 0;
+        
+        // Game Elements
+        let clouds = [];
+        let frames = 0;
+        let animationId;
+        
+        // Touch tracking
+        let lastTapTime = 0;
+        let touchCount = 0;
+        
+        // Audio Elements
+        let sachinTheme, rahulTheme, gameMusic;
+        let fireballSound, iceballSound, coinSound, obstacleDestroySound;
+        
+        // DOM Elements
+        const characterSelection = document.getElementById('characterSelection');
+        const gameScreen = document.getElementById('gameScreen');
+        const gameOverScreen = document.getElementById('gameOver');
+        const startBtn = document.getElementById('startGame');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const playAgainBtn = document.getElementById('playAgain');
+        const backToMenuBtn = document.getElementById('backToMenu');
+        const scoreDisplay = document.getElementById('score');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const attackCountDisplay = document.getElementById('attackCount');
+        const currentPlayerIcon = document.getElementById('currentPlayerIcon');
+        const currentPlayerName = document.getElementById('currentPlayerName');
+        const characterCards = document.querySelectorAll('.character-card');
+        const jumpBtn = document.getElementById('jumpBtn');
+        const attackBtn = document.getElementById('attackBtn');
+        const mobilePauseBtn = document.getElementById('mobilePause');
+        const muteBtn = document.getElementById('muteBtn');
+        
+        // Initialize Game
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Get audio elements
+            sachinTheme = document.getElementById('sachinTheme');
+            rahulTheme = document.getElementById('rahulTheme');
+            fireballSound = document.getElementById('fireballSound');
+            iceballSound = document.getElementById('iceballSound');
+            coinSound = document.getElementById('coinSound');
+            obstacleDestroySound = document.getElementById('obstacleDestroySound');
+            
+            // Set player ground position
+            player.groundY = canvas.height - player.height - 10;
+            player.y = player.groundY;
+            
+            // Initialize clouds
+            initClouds();
+            
+            // Load sprites
+            loadSprites();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Draw initial screen
+            drawStartScreen();
+        }
+        
+        // Load character sprites
+        function loadSprites() {
+            sachinSprite = document.getElementById('sachinSpriteImg');
+            rahulSprite = document.getElementById('rahulSpriteImg');
+            enemySprite = document.getElementById('enemySpriteImg');
+            
+            // Set fallback if sprites fail to load
+            sachinSprite.onerror = function() {
+                console.log("Sachin sprite not found, using fallback");
+            };
+            
+            rahulSprite.onerror = function() {
+                console.log("Rahul sprite not found, using fallback");
+            };
+            
+            enemySprite.onerror = function() {
+                console.log("Enemy sprite not found, using fallback");
+            };
+            
+            // Load portraits
+            const sachinPortrait = document.getElementById('sachinPortraitImg');
+            const rahulPortrait = document.getElementById('rahulPortraitImg');
+            
+            sachinPortrait.onerror = function() {
+                console.log("Sachin portrait not found, using fallback");
+                document.querySelector('.sachin-portrait').style.backgroundColor = '#ff5722';
+            };
+            
+            rahulPortrait.onerror = function() {
+                console.log("Rahul portrait not found, using fallback");
+                document.querySelector('.rahul-portrait').style.backgroundColor = '#2196f3';
+            };
+        }
+        
+        // Initialize clouds for sky
+        function initClouds() {
+            clouds = [];
+            for (let i = 0; i < 8; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * 100 + 20,
+                    width: Math.random() * 50 + 30,
+                    height: Math.random() * 25 + 15,
+                    speed: Math.random() * 0.3 + 0.1
+                });
+            }
+        }
+        
+        // Draw fluffy clouds
+        function drawClouds() {
+            clouds.forEach(cloud => {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                
+                // Draw cloud as overlapping circles
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.width/3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width/4, cloud.y - cloud.height/4, cloud.width/4, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width/3, cloud.y, cloud.width/4, 0, Math.PI * 2);
+                ctx.arc(cloud.x - cloud.width/4, cloud.y + cloud.height/4, cloud.width/4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Move cloud
+                cloud.x -= cloud.speed;
+                if (cloud.x < -cloud.width) {
+                    cloud.x = canvas.width + cloud.width;
+                    cloud.y = Math.random() * 100 + 20;
+                }
+            });
+        }
+        
+        // Draw ground
+        function drawGround() {
+            // Green grass
+            ctx.fillStyle = '#7CFC00';
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+            
+            // Brown dirt
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, canvas.height - 5, canvas.width, 5);
+        }
+        
+        // Draw player character using sprite
+        function drawPlayer() {
+            // Get current sprite based on character
+            let sprite = selectedCharacter === 'sachin' ? sachinSprite : rahulSprite;
+            
+            // Determine which frame to use
+            let frameToDraw = player.jumping ? 3 : player.currentFrame;
+            
+            // Draw sprite if available
+            if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+                ctx.drawImage(
+                    sprite,
+                    frameToDraw * player.frameWidth,
+                    0,
+                    player.frameWidth,
+                    player.spriteHeight,
+                    player.x,
+                    player.y,
+                    player.width,
+                    player.height
+                );
+            } else {
+                // Fallback drawing
+                if (selectedCharacter === 'sachin') {
+                    ctx.fillStyle = '#ff5722';
+                } else {
+                    ctx.fillStyle = '#2196f3';
+                }
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                
+                // Draw simple face
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(player.x + 10, player.y + 5, 20, 20);
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(player.x + 15, player.y + 10, 4, 4);
+                ctx.fillRect(player.x + 25, player.y + 10, 4, 4);
+            }
+            
+            // Update animation frame
+            if (!player.jumping) {
+                player.frameCount++;
+                if (player.frameCount >= player.frameDelay) {
+                    player.currentFrame = (player.currentFrame + 1) % 3;
+                    player.frameCount = 0;
+                }
+            }
+        }
+        
+        // Draw enemies using sprite
+        function drawEnemies() {
+            enemies.forEach((enemy, index) => {
+                // Draw enemy sprite if available
+                if (enemySprite && enemySprite.complete && enemySprite.naturalWidth > 0) {
+                    ctx.drawImage(
+                        enemySprite,
+                        enemy.currentFrame * player.frameWidth,
+                        0,
+                        player.frameWidth,
+                        player.spriteHeight,
+                        enemy.x,
+                        enemy.y,
+                        enemy.width,
+                        enemy.height
+                    );
+                } else {
+                    // Fallback drawing
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // Draw enemy face
+                    ctx.fillStyle = '#DC143C';
+                    ctx.fillRect(enemy.x + 10, enemy.y + 5, 20, 20);
+                }
+                
+                // Update enemy animation
+                enemy.frameCount++;
+                if (enemy.frameCount >= enemy.frameDelay) {
+                    enemy.currentFrame = (enemy.currentFrame + 1) % 4;
+                    enemy.frameCount = 0;
+                }
+                
+                // Move enemy
+                enemy.x -= enemy.speed;
+                
+                // Enemy shoot fireball randomly
+                if (Math.random() < 0.01 && frames % 30 === 0) { // 1% chance every 30 frames
+                    createEnemyProjectile(enemy);
+                }
+                
+                // Remove if off screen
+                if (enemy.x + enemy.width < 0) {
+                    enemies.splice(index, 1);
+                }
+            });
+        }
+        
+        // Draw player projectiles
+        function drawPlayerProjectiles() {
+            playerProjectiles.forEach((projectile, index) => {
+                if (selectedCharacter === 'sachin') {
+                    // Fireball
+                    ctx.fillStyle = '#FF5722';
+                    ctx.beginPath();
+                    ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#FF9800';
+                    ctx.beginPath();
+                    ctx.arc(projectile.x, projectile.y, projectile.radius * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Iceball
+                    ctx.fillStyle = '#2196F3';
+                    ctx.beginPath();
+                    ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#B3E5FC';
+                    ctx.beginPath();
+                    ctx.arc(projectile.x, projectile.y, projectile.radius * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Move projectile
+                projectile.x += projectile.speed;
+                
+                // Remove if off screen
+                if (projectile.x > canvas.width + 20) {
+                    playerProjectiles.splice(index, 1);
+                }
+            });
+        }
+        
+        // Draw enemy projectiles
+        function drawEnemyProjectiles() {
+            enemyProjectiles.forEach((projectile, index) => {
+                // Enemy fireballs are red
+                ctx.fillStyle = '#DC143C';
+                ctx.beginPath();
+                ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#FF6347';
+                ctx.beginPath();
+                ctx.arc(projectile.x, projectile.y, projectile.radius * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Move projectile
+                projectile.x -= projectile.speed;
+                
+                // Remove if off screen
+                if (projectile.x + projectile.radius < 0) {
+                    enemyProjectiles.splice(index, 1);
+                }
+            });
+        }
+        
+        // Create a player projectile
+        function createPlayerProjectile() {
+            if (attackCount <= 0) return false;
+            
+            attackCount--;
+            attackCountDisplay.textContent = attackCount;
+            
+            playerProjectiles.push({
+                x: player.x + player.width,
+                y: player.y + player.height / 2,
+                radius: 8,
+                speed: 15,
+                damage: 1
+            });
+            
+            // Play sound effect
+            if (!muted) {
+                if (selectedCharacter === 'sachin' && fireballSound) {
+                    fireballSound.currentTime = 0;
+                    fireballSound.play().catch(e => console.log("Fireball sound failed"));
+                } else if (iceballSound) {
+                    iceballSound.currentTime = 0;
+                    iceballSound.play().catch(e => console.log("Iceball sound failed"));
+                }
+            }
+            
+            return true;
+        }
+        
+        // Create an enemy projectile
+        function createEnemyProjectile(enemy) {
+            enemyProjectiles.push({
+                x: enemy.x,
+                y: enemy.y + enemy.height / 2,
+                radius: 6,
+                speed: 8,
+                damage: 1
+            });
+        }
+        
+        // Check player projectile collisions with enemies
+        function checkPlayerProjectileCollisions() {
+            for (let i = playerProjectiles.length - 1; i >= 0; i--) {
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    let p = playerProjectiles[i];
+                    let e = enemies[j];
+                    
+                    // Simple circle-rectangle collision
+                    let closestX = Math.max(e.x, Math.min(p.x, e.x + e.width));
+                    let closestY = Math.max(e.y, Math.min(p.y, e.y + e.height));
+                    
+                    let distanceX = p.x - closestX;
+                    let distanceY = p.y - closestY;
+                    let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                    
+                    if (distance <= p.radius) {
+                        // Collision detected
+                        playerProjectiles.splice(i, 1);
+                        enemies.splice(j, 1);
+                        score += 100; // Bonus for destroying enemy
+                        
+                        // Play destroy sound
+                        if (!muted && obstacleDestroySound) {
+                            obstacleDestroySound.currentTime = 0;
+                            obstacleDestroySound.play().catch(e => console.log("Destroy sound failed"));
+                        }
+                        
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Check enemy projectile collisions with player
+        function checkEnemyProjectileCollisions() {
+            for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+                let p = enemyProjectiles[i];
+                
+                // Check collision with player
+                if (player.x < p.x + p.radius &&
+                    player.x + player.width > p.x - p.radius &&
+                    player.y < p.y + p.radius &&
+                    player.y + player.height > p.y - p.radius) {
+                    
+                    enemyProjectiles.splice(i, 1);
+                    gameOver();
+                    return;
+                }
+                
+                // Check collision with player projectiles (cancel each other)
+                for (let j = playerProjectiles.length - 1; j >= 0; j--) {
+                    let pp = playerProjectiles[j];
+                    let distance = Math.sqrt(Math.pow(pp.x - p.x, 2) + Math.pow(pp.y - p.y, 2));
+                    
+                    if (distance <= pp.radius + p.radius) {
+                        // Cancel each other
+                        enemyProjectiles.splice(i, 1);
+                        playerProjectiles.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Draw coins
+        function drawCoins() {
+            coins.forEach((coin, index) => {
+                // Draw coin
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw coin shine
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(coin.x - 3, coin.y - 3, coin.radius / 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw coin center
+                ctx.fillStyle = '#FFA000';
+                ctx.beginPath();
+                ctx.arc(coin.x, coin.y, coin.radius / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Move coin
+                coin.x -= coin.speed;
+                
+                // Remove if off screen
+                if (coin.x + coin.radius < 0) {
+                    coins.splice(index, 1);
+                }
+            });
+        }
+        
+        // Check coin collection
+        function checkCoinCollection() {
+            for (let i = coins.length - 1; i >= 0; i--) {
+                let coin = coins[i];
+                
+                // Simple circle-rectangle collision
+                let closestX = Math.max(player.x, Math.min(coin.x, player.x + player.width));
+                let closestY = Math.max(player.y, Math.min(coin.y, player.y + player.height));
+                
+                let distanceX = coin.x - closestX;
+                let distanceY = coin.y - closestY;
+                let distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                if (distance <= coin.radius) {
+                    // Coin collected
+                    coins.splice(i, 1);
+                    attackCount += 5;
+                    attackCountDisplay.textContent = attackCount;
+                    score += 25;
+                    
+                    // Play coin sound
+                    if (!muted && coinSound) {
+                        coinSound.currentTime = 0;
+                        coinSound.play().catch(e => console.log("Coin sound failed"));
+                    }
+                }
+            }
+        }
+        
+        // Create new enemy
+        function createEnemy() {
+            const enemyTypes = ['walker', 'shooter', 'jumper'];
+            const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+            
+            let height = 60;
+            let width = 40;
+            let speed = selectedCharacter === 'sachin' ? 6 : 5;
+            
+            if (type === 'jumper') {
+                height = 50;
+                speed = speed * 0.8;
+            } else if (type === 'shooter') {
+                speed = speed * 0.7;
+            }
+            
+            enemies.push({
+                x: canvas.width,
+                y: canvas.height - height - 10,
+                width: width,
+                height: height,
+                type: type,
+                color: '#8B4513',
+                speed: speed,
+                currentFrame: 0,
+                frameCount: 0,
+                frameDelay: 10,
+                health: type === 'shooter' ? 2 : 1
+            });
+            
+            // Place a coin after every 3-4 enemies
+            coinCounter++;
+            if (coinCounter >= 3 + Math.floor(Math.random() * 2)) {
+                createCoin();
+                coinCounter = 0;
+            }
+        }
+        
+        // Create a coin
+        function createCoin() {
+            coins.push({
+                x: canvas.width,
+                y: canvas.height - 80,
+                radius: 10,
+                speed: selectedCharacter === 'sachin' ? 7 : 6,
+                value: 5
+            });
+        }
+        
+        // Check collisions with enemies
+        function checkEnemyCollision() {
+            for (let enemy of enemies) {
+                // Simple rectangle collision
+                if (player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height &&
+                    player.y + player.height > enemy.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Jump function
+        function jump() {
+            if (!player.jumping) {
+                player.jumping = true;
+                player.velocityY = player.jumpPower;
+                player.currentFrame = 3;
+            }
+        }
+        
+        // Attack function (shoot projectile)
+        function attack() {
+            return createPlayerProjectile();
+        }
+        
+        // Handle double tap for attack on mobile
+        function handleDoubleTap(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+            
+            if (tapLength < 500 && tapLength > 0) {
+                attack();
+                e.preventDefault();
+            }
+            lastTapTime = currentTime;
+        }
+        
+        // Handle multi-touch for attack
+        function handleMultiTouch(e) {
+            if (e.touches.length >= 2) {
+                attack();
+                e.preventDefault();
+            }
+        }
+        
+        // Update game state
+        function update() {
+            if (!gameRunning || gamePaused) return;
+            
+            frames++;
+            
+            // Update player position
+            if (player.jumping) {
+                player.y += player.velocityY;
+                player.velocityY += 0.5;
+                
+                if (player.y > player.groundY) {
+                    player.y = player.groundY;
+                    player.jumping = false;
+                    player.velocityY = 0;
+                    player.currentFrame = 0;
+                }
+            }
+            
+            // Create new enemies
+            enemyTimer++;
+            if (enemyTimer > enemyInterval) {
+                createEnemy();
+                enemyTimer = 0;
+                
+                // Gradually increase difficulty
+                if (frames % 500 === 0 && enemyInterval > 60) {
+                    enemyInterval -= 5;
+                }
+            }
+            
+            // Check collisions
+            if (checkEnemyCollision()) {
+                gameOver();
+                return;
+            }
+            
+            // Check projectile collisions
+            checkPlayerProjectileCollisions();
+            checkEnemyProjectileCollisions();
+            
+            // Check coin collection
+            checkCoinCollection();
+            
+            // Update score
+            score += selectedCharacter === 'sachin' ? 2 : 1;
+            scoreDisplay.textContent = score;
+            
+            // Draw everything
+            draw();
+            
+            // Continue animation
+            animationId = requestAnimationFrame(update);
+        }
+        
+        // Draw game elements
+        function draw() {
+            // Clear canvas with sky blue
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw clouds
+            drawClouds();
+            
+            // Draw ground
+            drawGround();
+            
+            // Draw coins
+            drawCoins();
+            
+            // Draw enemies
+            drawEnemies();
+            
+            // Draw projectiles
+            drawPlayerProjectiles();
+            drawEnemyProjectiles();
+            
+            // Draw player
+            drawPlayer();
+        }
+        
+        // Draw start screen
+        function drawStartScreen() {
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawClouds();
+            drawGround();
+            
+            // Draw title
+            ctx.fillStyle = '#0d47a1';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('FIRE & BLIZZARD RUNNER', canvas.width/2, 80);
+            
+            // Draw instruction
+            ctx.fillStyle = '#0d47a1';
+            ctx.font = '20px Arial';
+            ctx.fillText('Select your character and click START', canvas.width/2, 280);
+        }
+        
+        // Start game
+        function startGame() {
+            // Reset game state
+            score = 0;
+            attackCount = 10;
+            enemies = [];
+            playerProjectiles = [];
+            enemyProjectiles = [];
+            coins = [];
+            coinCounter = 0;
+            enemyTimer = 0;
+            frames = 0;
+            enemyInterval = 100;
+            gameRunning = true;
+            gamePaused = false;
+            
+            // Reset player
+            player.y = player.groundY;
+            player.jumping = false;
+            player.velocityY = 0;
+            player.currentFrame = 0;
+            player.frameCount = 0;
+            
+            // Update UI
+            scoreDisplay.textContent = score;
+            attackCountDisplay.textContent = attackCount;
+            
+            // Set player properties based on selection
+            if (selectedCharacter === 'sachin') {
+                player.jumpPower = -12;
+                currentPlayerName.textContent = 'Sachin The Fire';
+                currentPlayerIcon.style.backgroundImage = "url('Sachin.jpg')";
+                currentPlayerIcon.style.backgroundColor = '#ff5722';
+                
+                // Play Sachin theme
+                if (sachinTheme) {
+                    if (gameMusic) gameMusic.pause();
+                    gameMusic = sachinTheme;
+                    gameMusic.currentTime = 0;
+                    if (!muted) {
+                        gameMusic.play().catch(e => console.log("Audio play failed:", e));
+                    }
+                }
+                
+            } else {
+                player.jumpPower = -15;
+                currentPlayerName.textContent = 'Rahul The Blizzard';
+                currentPlayerIcon.style.backgroundImage = "url('Rahul.jpg')";
+                currentPlayerIcon.style.backgroundColor = '#2196f3';
+                
+                // Play Rahul theme
+                if (rahulTheme) {
+                    if (gameMusic) gameMusic.pause();
+                    gameMusic = rahulTheme;
+                    gameMusic.currentTime = 0;
+                    if (!muted) {
+                        gameMusic.play().catch(e => console.log("Audio play failed:", e));
+                    }
+                }
+            }
+            
+            // Hide selection, show game
+            characterSelection.style.display = 'none';
+            gameScreen.style.display = 'block';
+            
+            // Start game loop
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            update();
+        }
+        
+        // Toggle mute
+        function toggleMute() {
+            muted = !muted;
+            muteBtn.textContent = muted ? 'Unmute' : 'Mute';
+            
+            if (gameMusic) {
+                gameMusic.muted = muted;
+                if (!muted && gameRunning && !gamePaused) {
+                    gameMusic.play().catch(e => console.log("Audio play failed:", e));
+                }
+            }
+        }
+        
+        // Pause game
+        function togglePause() {
+            if (!gameRunning) return;
+            
+            gamePaused = !gamePaused;
+            pauseBtn.textContent = gamePaused ? 'Resume' : 'Pause';
+            mobilePauseBtn.textContent = gamePaused ? 'RESUME' : 'PAUSE';
+            
+            if (!gamePaused) {
+                update();
+                if (gameMusic && !muted) {
+                    gameMusic.play().catch(e => console.log("Audio play failed:", e));
+                }
+            } else {
+                if (gameMusic) {
+                    gameMusic.pause();
+                }
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            finalScoreDisplay.textContent = score;
+            gameOverScreen.style.display = 'flex';
+            
+            // Stop music
+            if (gameMusic) {
+                gameMusic.pause();
+            }
+        }
+        
+        // Restart game
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            startGame();
+        }
+        
+        // Return to menu
+        function returnToMenu() {
+            gameOverScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            characterSelection.style.display = 'block';
+            
+            // Stop any playing music
+            if (gameMusic) {
+                gameMusic.pause();
+            }
+            
+            // Draw start screen
+            drawStartScreen();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Character selection
+            characterCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    characterCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedCharacter = card.dataset.character;
+                });
+            });
+            
+            // Start game button
+            startBtn.addEventListener('click', startGame);
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (!gameRunning) return;
+                
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    jump();
+                    e.preventDefault();
+                }
+                
+                if (e.code === 'KeyX' || e.code === 'KeyC') {
+                    attack();
+                    e.preventDefault();
+                }
+                
+                if (e.code === 'KeyP') {
+                    togglePause();
+                }
+                
+                if (e.code === 'KeyM') {
+                    toggleMute();
+                }
+            });
+            
+            // Canvas click/tap for jump
+            canvas.addEventListener('click', handleDoubleTap);
+            
+            // Touch support for mobile
+            canvas.addEventListener('touchstart', (e) => {
+                if (gameRunning && !gamePaused) {
+                    if (e.touches.length === 1) {
+                        jump();
+                    }
+                    handleMultiTouch(e);
+                    e.preventDefault();
+                }
+            });
+            
+            // Control buttons
+            pauseBtn.addEventListener('click', togglePause);
+            mobilePauseBtn.addEventListener('click', togglePause);
+            restartBtn.addEventListener('click', restartGame);
+            menuBtn.addEventListener('click', returnToMenu);
+            playAgainBtn.addEventListener('click', restartGame);
+            backToMenuBtn.addEventListener('click', returnToMenu);
+            muteBtn.addEventListener('click', toggleMute);
+            
+            // Mobile buttons
+            jumpBtn.addEventListener('click', jump);
+            attackBtn.addEventListener('click', attack);
+            
+            // Mobile touch controls
+            jumpBtn.addEventListener('touchstart', (e) => {
+                if (gameRunning && !gamePaused) {
+                    jump();
+                    e.preventDefault();
+                }
+            });
+            
+            attackBtn.addEventListener('touchstart', (e) => {
+                if (gameRunning && !gamePaused) {
+                    attack();
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
