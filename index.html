@@ -240,8 +240,6 @@
   </div>
 </section>
 
-
-
 <img src="qrcode.png" style="display:block;margin:0 auto;width:200px;">
 <p style="text-align:center;">
     <strong>Scan to reach the site</strong><br>
@@ -249,12 +247,6 @@
 </p>
 
 
-
-
-
-
-
-  
 <!-- ===== GAMES ===== -->
 <section class="games">
   <h2>Games</h2>
@@ -266,68 +258,29 @@
 
 
 
-<div style="text-align:center; margin-top:30px;">
-  <a href="https://youtube.com/shorts/YTWu33WShE4?si=l3yCTppWapqxfwBZ"
-     target="_blank"
-     style="text-decoration:none;">
 
-    <span class="neon-btn">GK Resin</span>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+
+<div style="text-align:center;">
+  <a href="https://youtube.com/shorts/YTWu33WShE4?si=EJf25HupicllasWM" target="_blank">
+    <img src="swipe.gif" width="200" style="cursor:pointer;">
   </a>
+  <div style="font-family:'Poppins', sans-serif; font-size:18px; margin-top:8px; letter-spacing:1px;">
+    Swipe Right and Left
+  </div>
 </div>
 
-<style>
-.neon-btn {
-  display: inline-block;
-  padding: 14px 34px;
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  color: #fff;
-  border-radius: 40px;
-
-  background: linear-gradient(
-    120deg,
-    #7f00ff,
-    #b300ff,
-    #ff00ff,
-    #8a2be2
-  );
-  background-size: 300% 300%;
-
-  animation: gradientMove 6s ease infinite;
-
-  box-shadow:
-    0 0 10px rgba(180, 0, 255, 0.6),
-    0 0 20px rgba(180, 0, 255, 0.6),
-    0 0 40px rgba(180, 0, 255, 0.6);
-
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.neon-btn:hover {
-  transform: scale(1.08);
-  box-shadow:
-    0 0 15px rgba(255, 0, 255, 0.9),
-    0 0 30px rgba(255, 0, 255, 0.9),
-    0 0 60px rgba(255, 0, 255, 0.9);
-}
-
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-</style>
 
 
 
-  <div style="text-align:center; margin-top:25px;">
+
+ <div style="text-align:center; margin-top:25px;">
   <a href="https://youtu.be/eRsfDA6BwQk?si=yFuztCo9JwblWAXu"
      target="_blank"
      style="text-decoration:none;">
 
-    <span class="neon-red-btn">GK Tutorial</span>
+    <span class="neon-red-btn">GK Art</span>
 
   </a>
 </div>
@@ -376,6 +329,280 @@
   100% { background-position: 0% 50%; }
 }
 </style>
+
+
+
+
+
+<style>
+.panel{
+  position:fixed;top:0;width:340px;height:100%;
+  padding:12px;overflow-y:auto;
+  transition:.3s ease;z-index:1000;
+}
+.panel h2{text-align:center;color:#fff;margin:10px 0}
+.videoBtn{padding:10px;margin:6px 0;color:#fff;background:#0006;text-align:center;cursor:pointer}
+.videoBox{display:none;margin-bottom:20px}
+iframe{width:100%;height:180px;border:0}
+.yt{color:#ff7777;text-align:center;display:block;font-size:13px}
+
+/* LEFT – AUDIOBOOKS */
+#audio{left:-360px;background:#3b235c}
+#audio.active{left:0}
+
+/* RIGHT – SONGS */
+#song{right:-360px;background:#123c2b}
+#song.active{right:0}
+
+/* OVERLAY */
+#overlay{
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:999;
+}
+
+/* RATINGS */
+.permanentStars{color:#00e5ff;text-align:center;font-size:18px}
+.userStars{text-align:center}
+.userStars span{
+  font-size:22px;cursor:pointer;color:#555
+}
+.userStars span.active{color:gold}
+.submitBtn{display:block;margin:6px auto;padding:4px 10px}
+.msg{display:none;color:#7CFC00;font-size:12px;text-align:center}
+</style>
+
+<div id="overlay" onclick="closePanels()"></div>
+
+<!-- AUDIOBOOK PANEL -->
+<div id="audio" class="panel">
+<h2>Audiobooks</h2>
+
+<!-- 10 AUDIOBOOKS -->
+<div class="videoBtn" onclick="play('a1')">Origin of Species</div>
+<div class="videoBox" id="a1">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/K6JX649vEXo?si=VOYLyDxiVDBUZSfb" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a2')">The Prince</div>
+<div class="videoBox" id="a2">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/Yb0T40VZUWc?si=b7L0BkSKNEKz9uop" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a3')">The Almanack of Ravikant</div>
+<div class="videoBox" id="a3">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/QJJeHtJC52g?si=SIW6XW3LgKSpVDOt" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a4')">Meditations</div>
+<div class="videoBox" id="a4">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/_8Ph6tJ3uwA?si=i423joBwf7K78yhO" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a5')">Brothers Karamazov</div>
+<div class="videoBox" id="a5">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/uPvcNp6Q4-8?si=trBuV8Qq02ArZ0i7" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a6')">Brothers Karamazov</div>
+<div class="videoBox" id="a6">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a7')">The Cthulhu Mythos</div>
+<div class="videoBox" id="a7">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/UJDIvebdG8U?si=3anBr9N9lUu6B2Pg" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a8')">Dhammapada</div>
+<div class="videoBox" id="a8">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/I5UcyuiKYFI?si=xEXFhN4qYjaHCGA6" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a9')">Das Kapital</div>
+<div class="videoBox" id="a9">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/WUW6cjZgi7Y?si=8W7EyT_N-b8KJzvq" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="videoBtn" onclick="play('a10')">The Gay Science</div>
+<div class="videoBox" id="a10">
+  <iframe></iframe>
+  <a class="yt" href="https://youtu.be/Bb70lU1fSbA?si=q2VAWPaQKj3WL0xe" target="_blank">Open on YouTube</a>
+</div>
+</div>
+
+<!-- SONG PANEL -->
+<div id="song" class="panel">
+<h2>Songs</h2>
+
+<!-- SONG 1 -->
+<div class="videoBtn" onclick="play('s1')">India Unravel</div>
+<div class="videoBox" id="s1">
+  <iframe></iframe>
+  <div class="permanentStars">★★★★☆</div>
+  <div class="userStars" onclick="rate(event,this)">
+    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+  <button class="submitBtn" onclick="submit(this)">Submit</button>
+  <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
+  <a class="yt" href="https://youtu.be/8iCxEzYcRRM?si=7FBPsi8kgkkSeI4O" target="_blank">Open on YouTube</a>
+</div>
+
+<!-- SONG 2 -->
+<div class="videoBtn" onclick="play('s2')">Lo Lo</div>
+<div class="videoBox" id="s2">
+  <iframe></iframe>
+  <div class="permanentStars">★★★★★</div>
+  <div class="userStars" onclick="rate(event,this)">
+    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+  <button class="submitBtn" onclick="submit(this)">Submit</button>
+  <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
+  <a class="yt" href="https://youtu.be/8AmQ99-ZN2Y?si=E4uk9AG14KXS9MPY" target="_blank">Open on YouTube</a>
+</div>
+
+<!-- SONG 3 -->
+<div class="videoBtn" onclick="play('s3')">Blue Hawaii</div>
+<div class="videoBox" id="s3">
+  <iframe></iframe>
+  <div class="permanentStars">★★★★☆</div>
+  <div class="userStars" onclick="rate(event,this)">
+    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+  <button class="submitBtn" onclick="submit(this)">Submit</button>
+  <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
+  <a class="yt" href="https://youtu.be/pGe2KQ30mYM?si=hrAmnXbmsxjlqcxm" target="_blank">Open on YouTube</a>
+</div>
+
+<!-- SONG 4 -->
+<div class="videoBtn" onclick="play('s4')">Bink's Sake Hindi</div>
+<div class="videoBox" id="s4">
+  <iframe></iframe>
+  <div class="permanentStars">★★★★★</div>
+  <div class="userStars" onclick="rate(event,this)">
+    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+  <button class="submitBtn" onclick="submit(this)">Submit</button>
+  <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
+  <a class="yt" href="https://youtu.be/xqQCOKOpbBw?si=2XGeqcTughXDe4wl" target="_blank">Open on YouTube</a>
+</div>
+
+<!-- SONG 5 -->
+<div class="videoBtn" onclick="play('s5')">Wasteland</div>
+<div class="videoBox" id="s5">
+  <iframe></iframe>
+  <div class="permanentStars">★★★★☆</div>
+  <div class="userStars" onclick="rate(event,this)">
+    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+  </div>
+  <button class="submitBtn" onclick="submit(this)">Submit</button>
+  <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
+  <a class="yt" href="https://youtu.be/WPDpgSBEWaI?si=s7Cm5ebdDivD2yZE" target="_blank">Open on YouTube</a>
+</div>
+</div>
+
+<script>
+let sx = 0, ex = 0, state = "none";
+const overlay = document.getElementById('overlay');
+const audio = document.getElementById('audio');
+const song = document.getElementById('song');
+
+document.addEventListener("touchstart", e => sx = e.changedTouches[0].screenX);
+document.addEventListener("touchend", e => {
+  ex = e.changedTouches[0].screenX;
+  if (state === "none") {
+    if (ex - sx > 60) open("audio");
+    else if (sx - ex > 60) open("song");
+  } else {
+    if (Math.abs(ex - sx) > 60) closePanels();
+  }
+});
+
+function open(p) {
+  closePanels();
+  document.getElementById(p).classList.add("active");
+  overlay.style.display = "block";
+  state = p;
+}
+
+function closePanels() {
+  stopAll();
+  audio.classList.remove("active");
+  song.classList.remove("active");
+  overlay.style.display = "none";
+  state = "none";
+}
+
+function stopAll() {
+  document.querySelectorAll("iframe").forEach(i => i.src = "");
+  document.querySelectorAll(".videoBox").forEach(b => b.style.display = "none");
+}
+
+function extractYouTubeId(url) {
+  try {
+    // Handle youtu.be format
+    if (url.includes('youtu.be/')) {
+      return url.split('youtu.be/')[1].split('?')[0];
+    }
+    // Handle youtube.com format
+    if (url.includes('youtube.com/watch?v=')) {
+      return url.split('v=')[1].split('&')[0];
+    }
+  } catch (e) {
+    console.error("Error extracting YouTube ID:", e);
+    return "";
+  }
+  return "";
+}
+
+function play(id) {
+  stopAll();
+  let box = document.getElementById(id);
+  box.style.display = "block";
+  
+  // Find the YouTube link in this video box
+  let youtubeLink = box.querySelector(".yt");
+  
+  if (youtubeLink && youtubeLink.href) {
+    // Extract the YouTube ID from the link
+    let youtubeId = extractYouTubeId(youtubeLink.href);
+    
+    if (youtubeId) {
+      // Set the iframe source with the correct video
+      box.querySelector("iframe").src = "https://www.youtube.com/embed/" + youtubeId + "?autoplay=1";
+      return;
+    }
+  }
+  
+  // Fallback - clear the iframe if no valid link
+  box.querySelector("iframe").src = "";
+}
+
+function rate(e, box) {
+  let stars = [...box.children];
+  let idx = stars.indexOf(e.target);
+  stars.forEach((s, i) => s.classList.toggle("active", i <= idx));
+}
+
+function submit(btn) {
+  btn.nextElementSibling.style.display = "block";
+}
+</script>
+
+
+
+
+
+
+
 
 <br><br>
 
