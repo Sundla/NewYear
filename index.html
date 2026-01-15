@@ -551,7 +551,20 @@ function submit(btn) {
 <div style="text-align:center;margin:40px 0;">
 
   <div id="movieBox" style="display:none;margin-bottom:25px;">
-    <div id="movieFrame"></div>
+
+  <div id="enjoyText"
+       style="display:none;
+              font-size:20px;
+              font-weight:bold;
+              margin-bottom:12px;
+              color:#e60000;">
+    ⬇️ Enjoy ⬇️
+  </div>
+
+  <div id="movieFrame"></div>
+    
+    
+    
 
     <div style="margin-top:12px;">
       <a href="https://vimeo.com/98811524" target="_blank"
@@ -580,6 +593,7 @@ function toggleMovie(){
   const box = document.getElementById("movieBox");
   const frame = document.getElementById("movieFrame");
   const btn = document.getElementById("movieBtn");
+  const text = document.getElementById("enjoyText");
 
   if (!movieOpen) {
     frame.innerHTML = `
@@ -591,19 +605,24 @@ function toggleMovie(){
           allowfullscreen>
         </iframe>
       </div>`;
+      
     box.style.display = "block";
+    text.style.display = "block";   // ✅ show text
     btn.innerText = "Close";
     btn.style.background = "green";
     movieOpen = true;
+
   } else {
     frame.innerHTML = "";
     box.style.display = "none";
+    text.style.display = "none";    // ✅ hide text
     btn.innerText = "Movie";
     btn.style.background = "red";
     movieOpen = false;
   }
 }
 </script>
+  
   
   
   
