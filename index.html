@@ -5,7 +5,6 @@
   <title>Happy Birthday Mom</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-
   <!-- GOOGLE FONT -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
@@ -14,14 +13,6 @@
       box-sizing: border-box;
       font-family: 'Poppins', sans-serif;
     }
-
-
-
-
-
-
-
-
 
     body {
       margin: 0;
@@ -83,10 +74,6 @@
     .hero h1 {
       font-size: 38px;
     }
-    
-    
-    
-    
 
     /* ===== CARDS ===== */
     .cards {
@@ -162,13 +149,7 @@
 <!-- ===== HERO ===== -->
 <section class="hero">
   <h1>Happy Birthday Mom</h1>
-  
-  
   <img src="mother.jpg" alt="Mother" style="width:300px; display:block; margin:0 auto;">
-  
-  
-  
-  
   <p>
     Today we celebrate the most loving, caring, and strongest woman in our life.
   </p>
@@ -232,10 +213,9 @@
 <section>
   <h2>Special Quote</h2>
   <div class="quote">
-    “A strong woman stands up for herself. A stronger woman stands up for everybody else. .”
+    “A strong woman stands up for herself. A stronger woman stands up for everybody else.”
   </div>
   <div class="quote-hi">
- 
  हैवर गैवर सघन धन, छन्नपती की नारि। तास पटेतर ना तुलै, हरिजन की पनिहारि। (A queen with wealth and grandeur cannot match the water-carrier woman devoted to Truth.) 
   </div>
 </section>
@@ -246,19 +226,13 @@
     <strong>साइट पर जाने के लिए स्कैन करें</strong>
 </p>
 
-
 <!-- ===== GAMES ===== -->
 <section class="games">
   <h2>Games</h2>
-
   <a href="game1.html">PLAY 1</a>
   <a href="game2.html">PLAY 2</a>
   <a href="game3.html">PLAY 3</a>
 </section>
-
-
-
-
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
 
@@ -271,17 +245,11 @@
   </div>
 </div>
 
-
-
-
-
- <div style="text-align:center; margin-top:25px;">
+<div style="text-align:center; margin-top:25px;">
   <a href="https://youtu.be/eRsfDA6BwQk?si=yFuztCo9JwblWAXu"
      target="_blank"
      style="text-decoration:none;">
-
     <span class="neon-red-btn">GK Art</span>
-
   </a>
 </div>
 
@@ -293,9 +261,7 @@
   font-weight: bold;
   letter-spacing: 1px;
   color: #fff;
-
-  border-radius: 6px; /* rectangular */
-
+  border-radius: 6px;
   background: linear-gradient(
     120deg,
     #ff1a1a,
@@ -304,14 +270,11 @@
     #ff0000
   );
   background-size: 300% 300%;
-
   animation: redGlow 7s ease infinite;
-
   box-shadow:
     0 0 8px rgba(255, 0, 0, 0.6),
     0 0 18px rgba(255, 0, 0, 0.6),
     0 0 35px rgba(255, 0, 0, 0.6);
-
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -328,13 +291,7 @@
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-</style>
 
-
-
-
-
-<style>
 .panel{
   position:fixed;top:0;width:340px;height:100%;
   padding:12px;overflow-y:auto;
@@ -377,7 +334,6 @@ iframe{width:100%;height:180px;border:0}
 <div id="audio" class="panel">
 <h2>Audiobooks</h2>
 
-<!-- 10 AUDIOBOOKS -->
 <div class="videoBtn" onclick="play('a1')">Origin of Species</div>
 <div class="videoBox" id="a1">
   <iframe></iframe>
@@ -546,44 +502,39 @@ function stopAll() {
   document.querySelectorAll(".videoBox").forEach(b => b.style.display = "none");
 }
 
-function extractYouTubeId(url) {
-  try {
-    // Handle youtu.be format
-    if (url.includes('youtu.be/')) {
-      return url.split('youtu.be/')[1].split('?')[0];
-    }
-    // Handle youtube.com format
-    if (url.includes('youtube.com/watch?v=')) {
-      return url.split('v=')[1].split('&')[0];
-    }
-  } catch (e) {
-    console.error("Error extracting YouTube ID:", e);
-    return "";
-  }
-  return "";
-}
-
 function play(id) {
   stopAll();
   let box = document.getElementById(id);
   box.style.display = "block";
   
-  // Find the YouTube link in this video box
-  let youtubeLink = box.querySelector(".yt");
-  
-  if (youtubeLink && youtubeLink.href) {
-    // Extract the YouTube ID from the link
-    let youtubeId = extractYouTubeId(youtubeLink.href);
+  // Video ID mapping (clean embed URLs only)
+  const videoMap = {
+    // SONGS
+    's1': '8iCxEzYcRRM',  // India Unravel
+    's2': '8AmQ99-ZN2Y',  // Lo Lo
+    's3': 'pGe2KQ30mYM',  // Blue Hawaii
+    's4': 'xqQCOKOpbBw',  // Bink's Sake Hindi
+    's5': 'WPDpgSBEWaI',  // Wasteland
     
-    if (youtubeId) {
-      // Set the iframe source with the correct video
-      box.querySelector("iframe").src = "https://www.youtube.com/embed/" + youtubeId + "?autoplay=1";
-      return;
-    }
-  }
+    // AUDIOBOOKS
+    'a1': 'K6JX649vEXo',  // Origin of Species
+    'a2': 'Yb0T40VZUWc',  // The Prince
+    'a3': 'QJJeHtJC52g',  // The Almanack of Ravikant
+    'a4': '_8Ph6tJ3uwA',  // Meditations
+    'a5': 'uPvcNp6Q4-8',  // Brothers Karamazov
+    'a6': 'JZDKv8y4PKo',  // Brothers Karamazov 2
+    'a7': 'UJDIvebdG8U',  // The Cthulhu Mythos
+    'a8': 'I5UcyuiKYFI',  // Dhammapada
+    'a9': 'WUW6cjZgi7Y',  // Das Kapital
+    'a10': 'Bb70lU1fSbA'  // The Gay Science
+  };
   
-  // Fallback - clear the iframe if no valid link
-  box.querySelector("iframe").src = "";
+  if (videoMap[id]) {
+    // Clean embed URL - no account info
+    box.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoMap[id] + "?autoplay=1";
+  } else {
+    box.querySelector("iframe").src = "";
+  }
 }
 
 function rate(e, box) {
@@ -596,13 +547,6 @@ function submit(btn) {
   btn.nextElementSibling.style.display = "block";
 }
 </script>
-
-
-
-
-
-
-
 
 <br><br>
 
