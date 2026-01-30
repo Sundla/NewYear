@@ -623,10 +623,78 @@ function toggleMovie(){
 }
 </script>
   
-  
+  <div style="text-align:center;margin:40px 0;">
+
+  <div id="movieBox2" style="display:none;margin-bottom:25px;">
+
+    <div style="font-size:20px;font-weight:bold;margin-bottom:12px;color:#e60000;">
+      ⬇️ Enjoy Movie 2 ⬇️
+    </div>
+
+    <div id="movieFrame2"></div>
+
+    <div style="margin-top:12px;">
+      <a href="https://ok.ru/video/1244085094959" target="_blank"
+         style="color:#e60000;font-weight:bold;text-decoration:none;">
+        Watch on OK.ru
+      </a>
+    </div>
+  </div>
+
+  <div id="movieBtn2"
+       onclick="toggleMovie2()"
+       style="display:inline-block;
+              background:#8b0000;
+              color:#fff;
+              padding:14px 34px;
+              border-radius:6px;
+              font-size:18px;
+              cursor:pointer;
+              margin-top:10px;">
+    Movie 2
+  </div>
+
+</div>
+ <script>
+let movie2Open = false;
+
+function toggleMovie2(){
+  const box = document.getElementById("movieBox2");
+  const frame = document.getElementById("movieFrame2");
+  const btn = document.getElementById("movieBtn2");
+
+  if (!movie2Open) {
+    frame.innerHTML = `
+      <div style="position:relative;padding-top:56.25%;">
+        <iframe
+          src="https://ok.ru/videoembed/1244085094959"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+          allow="autoplay; fullscreen"
+          allowfullscreen>
+        </iframe>
+      </div>`;
+      
+    box.style.display = "block";
+    btn.innerText = "Close Movie 2";
+    btn.style.background = "green";
+    movie2Open = true;
+
+  } else {
+    frame.innerHTML = "";
+    box.style.display = "none";
+    btn.innerText = "Movie 2";
+    btn.style.background = "#8b0000";
+    movie2Open = false;
+  }
+}
+</script>
   
   
 
+
+
+  
+  
 
 <br><br>
 
