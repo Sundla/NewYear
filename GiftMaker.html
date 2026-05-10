@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Card Maker - Professional Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --card-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --text-main: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            max-width: 1100px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* --- CONTROL PANEL --- */
+        .controls {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 20px;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .theme-btn {
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .theme-btn.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .upload-btn {
+            background: #334155;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            display: block;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover { background: #475569; }
+
+        .download-btn {
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .download-btn:active { transform: translateY(2px); }
+
+        /* --- PREVIEW CARD --- */
+        #giftCardArea {
+            padding: 20px;
+            background: transparent;
+        }
+
+        .card-canvas {
+            width: 450px;
+            height: 600px;
+            background: var(--card-bg);
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 8px solid rgba(255,255,255,0.1);
+        }
+
+        .card-canvas::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1;
+        }
+
+        .occasion-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .photo-frame {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            background: #eee;
+            margin: 20px 0;
+            border: 6px solid white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            background-size: cover;
+            background-position: center;
+            background-image: url('https://via.placeholder.com/250?text=Upload+Photo');
+        }
+
+        .to-label {
+            font-size: 1.2rem;
+            font-style: italic;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .name-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            margin-top: -10px;
+            color: #fff;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .footer-decoration {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 850px) {
+            .main-layout { flex-direction: column; align-items: center; }
+            .card-canvas { width: 90vw; height: 120vw; }
+            .controls { width: 90vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>GIFT CARD MAKER</h1>
+        <p>Create & Download Personalized Greetings</p>
+    </div>
+
+    <div class="main-layout">
+        <div class="controls">
+            <div class="input-group">
+                <label>Recipient Name</label>
+                <input type="text" id="inputName" placeholder="e.g. Rahul Tomar" maxlength="20">
+            </div>
+
+            <div class="input-group">
+                <label>The Occasion</label>
+                <input type="text" id="inputOccasion" placeholder="e.g. Happy Birthday" maxlength="25">
+            </div>
+
+            <label>Choose Card Theme</label>
+            <div class="theme-selector">
+                <div class="theme-btn active" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-theme="neon"></div>
+                <div class="theme-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" data-theme="gold"></div>
+                <div class="theme-btn" style="background: linear-gradient(135deg, #ec4899, #be185d);" data-theme="rose"></div>
+                <div class="theme-btn" style="background: linear-gradient(135deg, #10b981, #059669);" data-theme="emerald"></div>
+                <div class="theme-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b);" data-theme="crimson"></div>
+                <div class="theme-btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2);" data-theme="ocean"></div>
+            </div>
+
+            <label for="fileUpload" class="upload-btn">📸 UPLOAD PHOTO</label>
+            <input type="file" id="fileUpload" accept="image/*" style="display:none">
+
+            <button class="download-btn" id="downloadBtn">✨ DOWNLOAD GIFT CARD</button>
+        </div>
+
+        <div id="giftCardArea">
+            <div class="card-canvas" id="captureTarget">
+                <div class="occasion-text" id="displayOccasion">HAPPY BIRTHDAY</div>
+                
+                <div class="photo-frame" id="displayPhoto"></div>
+
+                <div class="to-label">Specialy for</div>
+                <div class="name-text" id="displayName">Rahul</div>
+
+                <div class="footer-decoration">✨ EXCLUSIVE GIFT CARD ✨</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        const inputName = document.getElementById('inputName');
+        const inputOccasion = document.getElementById('inputOccasion');
+        const displayName = document.getElementById('displayName');
+        const displayOccasion = document.getElementById('displayOccasion');
+        const fileUpload = document.getElementById('fileUpload');
+        const displayPhoto = document.getElementById('displayPhoto');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const themeBtns = document.querySelectorAll('.theme-btn');
+        const captureTarget = document.getElementById('captureTarget');
+
+        // Live Preview Typing
+        inputName.addEventListener('input', () => {
+            displayName.innerText = inputName.value || "Recipient";
+        });
+
+        inputOccasion.addEventListener('input', () => {
+            displayOccasion.innerText = inputOccasion.value || "THE OCCASION";
+        });
+
+        // Theme Selection
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                themeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Apply the background from the button to the card
+                captureTarget.style.background = btn.style.background;
+            });
+        });
+
+        // Photo Upload Handling
+        fileUpload.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Download Logic
+        downloadBtn.addEventListener('click', () => {
+            // Provide feedback
+            downloadBtn.innerText = "Generating...";
+            
+            html2canvas(captureTarget, {
+                scale: 2, // High quality
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `GiftCard_${displayName.innerText}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
+            }).catch(err => {
+                console.error(err);
+                alert("Error generating card.");
+                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
+            });
+        });
+    </script>
+</body>
+</html>

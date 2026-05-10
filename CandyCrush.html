@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Striped Candy Pop</title>
+    <style>
+        :root {
+            --bg-vanilla: #fdf5e6;
+            --candy-size: 60px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-vanilla);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #score-board {
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #d35400;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;
+        }
+
+        #grid {
+            position: relative;
+            flex-grow: 1;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            border: 5px solid #f3e5ab;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .candy {
+            position: absolute;
+            width: var(--candy-size);
+            height: var(--candy-size);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .candy svg {
+            width: 90%;
+            height: 90%;
+            filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.2));
+        }
+
+        /* Popping and Special Effects */
+        @keyframes extremePop {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.4) rotate(10deg); opacity: 1; }
+            100% { transform: scale(0) rotate(-10deg); opacity: 0; }
+        }
+
+        .popping {
+            animation: extremePop 0.3s ease-out forwards;
+            z-index: 10 !important;
+            pointer-events: none;
+        }
+
+        /* Striped Overlay Glow */
+        .striped-h, .striped-v {
+            filter: drop-shadow(0 0 5px white) !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="score-board">SCORE: <span id="score-val">0</span></div>
+    <div id="grid">
+        <svg width="0" height="0" style="position:absolute">
+            <defs>
+                <radialGradient id="gradRed" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#ffcccc;"/><stop offset="100%" style="stop-color:#cc0000;"/></radialGradient>
+                <radialGradient id="gradYellow" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#ffffcc;"/><stop offset="100%" style="stop-color:#ccaa00;"/></radialGradient>
+                <radialGradient id="gradGreen" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#ccffcc;"/><stop offset="100%" style="stop-color:#008800;"/></radialGradient>
+                <radialGradient id="gradBlue" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#cceeff;"/><stop offset="100%" style="stop-color:#0055cc;"/></radialGradient>
+                <radialGradient id="gradPurple" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#eeddff;"/><stop offset="100%" style="stop-color:#550099;"/></radialGradient>
+                <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:white;stop-opacity:0.8"/><stop offset="50%" style="stop-color:white;stop-opacity:0"/></linearGradient>
+                
+                <!-- Striped Patterns -->
+                <pattern id="patternH" x="0" y="0" width="1" height="0.3" patternUnits="objectBoundingBox">
+                    <rect x="0" y="0" width="100%" height="2px" fill="white" fill-opacity="0.6"/>
+                </pattern>
+                <pattern id="patternV" x="0" y="0" width="0.3" height="1" patternUnits="objectBoundingBox">
+                    <rect x="0" y="0" width="2px" height="100%" fill="white" fill-opacity="0.6"/>
+                </pattern>
+            </defs>
+        </svg>
+    </div>
+</div>
+
+<script>
+const grid = document.getElementById('grid');
+const scoreVal = document.getElementById('score-val');
+const rows = 8;
+const cols = 6;
+let candySize;
+let board = [];
+let score = 0;
+let isProcessing = false;
+
+const candyTypes = [
+    { grad: 'url(#gradRed)', svg: (g) => `<rect x="15" y="15" width="70" height="70" rx="20" fill="${g}"/>` },
+    { grad: 'url(#gradYellow)', svg: (g) => `<circle cx="50" cy="50" r="42" fill="${g}"/>` },
+    { grad: 'url(#gradGreen)', svg: (g) => `<path d="M50 10 L90 50 L50 90 L10 50 Z" fill="${g}"/>` },
+    { grad: 'url(#gradBlue)', svg: (g) => `<ellipse cx="50" cy="50" rx="45" ry="30" fill="${g}"/>` },
+    { grad: 'url(#gradPurple)', svg: (g) => `<path d="M25 25 Q50 5 75 25 T75 75 Q50 95 25 75 T25 25" fill="${g}"/>` }
+];
+
+function initGame() {
+    candySize = grid.offsetWidth / cols;
+    document.documentElement.style.setProperty('--candy-size', `${candySize}px`);
+    createBoard();
+}
+
+function createBoard() {
+    grid.querySelectorAll('.candy').forEach(n => n.remove());
+    board = [];
+    for (let r = 0; r < rows; r++) {
+        board[r] = [];
+        for (let c = 0; c < cols; c++) {
+            board[r][c] = spawnCandy(r, c);
+        }
+    }
+    setTimeout(() => { checkAndRefill(true); }, 500);
+}
+
+function spawnCandy(r, c, typeIdx = null, special = null) {
+    if (typeIdx === null) typeIdx = Math.floor(Math.random() * candyTypes.length);
+    const candy = document.createElement('div');
+    candy.className = 'candy';
+    candy.dataset.type = typeIdx;
+    candy.dataset.special = special || "none"; // "h" or "v"
+    
+    let stripeOverlay = "";
+    if (special === "h") stripeOverlay = `<rect x="0" y="0" width="100" height="100" fill="url(#patternH)" />`;
+    if (special === "v") stripeOverlay = `<rect x="0" y="0" width="100" height="100" fill="url(#patternV)" />`;
+
+    candy.innerHTML = `
+        <svg viewBox="0 0 100 100" class="${special ? 'striped-' + special : ''}">
+            ${candyTypes[typeIdx].svg(candyTypes[typeIdx].grad)}
+            ${stripeOverlay}
+            <ellipse cx="40" cy="35" rx="10" ry="15" fill="url(#shine)" transform="rotate(-20 40 35)"/>
+        </svg>`;
+    
+    updatePosition(candy, r, c);
+    grid.appendChild(candy);
+    
+    candy.addEventListener('touchstart', handleTouchStart, {passive: false});
+    candy.addEventListener('touchend', handleTouchEnd, {passive: false});
+    candy.addEventListener('mousedown', handleMouseDown);
+    
+    return candy;
+}
+
+function updatePosition(el, r, c) {
+    el.style.top = `${r * candySize}px`;
+    el.style.left = `${c * candySize}px`;
+    el.dataset.r = r;
+    el.dataset.c = c;
+}
+
+// Input Logic
+let startX, startY, activeCandy;
+function handleTouchStart(e) { if(isProcessing) return; startX = e.touches[0].clientX; startY = e.touches[0].clientY; activeCandy = e.currentTarget; }
+function handleMouseDown(e) { if(isProcessing) return; startX = e.clientX; startY = e.clientY; activeCandy = e.currentTarget; document.onmouseup = handleMouseUp; }
+function handleMouseUp(e) { handleEnd(e.clientX, e.clientY); document.onmouseup = null; }
+function handleTouchEnd(e) { handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); }
+
+function handleEnd(endX, endY) {
+    if (!activeCandy) return;
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+    if (Math.abs(diffX) < 15 && Math.abs(diffY) < 15) return;
+
+    const r = parseInt(activeCandy.dataset.r);
+    const c = parseInt(activeCandy.dataset.c);
+    let targetR = r, targetC = c;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) targetC = diffX > 0 ? c + 1 : c - 1;
+    else targetR = diffY > 0 ? r + 1 : r - 1;
+
+    if (targetR >= 0 && targetR < rows && targetC >= 0 && targetC < cols) swapCandies(r, c, targetR, targetC);
+    activeCandy = null;
+}
+
+async function swapCandies(r1, c1, r2, c2) {
+    isProcessing = true;
+    const candy1 = board[r1][c1];
+    const candy2 = board[r2][c2];
+
+    updatePosition(candy1, r2, c2);
+    updatePosition(candy2, r1, c1);
+    board[r1][c1] = candy2;
+    board[r2][c2] = candy1;
+
+    await new Promise(r => setTimeout(r, 250));
+
+    if (!checkAndRefill()) {
+        updatePosition(candy1, r1, c1);
+        updatePosition(candy2, r2, c2);
+        board[r1][c1] = candy1;
+        board[r2][c2] = candy2;
+        await new Promise(r => setTimeout(r, 250));
+        isProcessing = false;
+    }
+}
+
+function checkAndRefill(silent = false) {
+    let matches = [];
+    let toRemove = new Set();
+    let specialToCreate = []; // {r, c, type, special}
+
+    // Horizontal check
+    for (let r = 0; r < rows; r++) {
+        let count = 1;
+        for (let c = 0; c < cols; c++) {
+            if (c < cols - 1 && board[r][c]?.dataset.type === board[r][c+1]?.dataset.type) {
+                count++;
+            } else {
+                if (count >= 3) {
+                    let matchGroup = [];
+                    for (let i = 0; i < count; i++) matchGroup.push(board[r][c - i]);
+                    matches.push({group: matchGroup, dir: 'h'});
+                }
+                count = 1;
+            }
+        }
+    }
+
+    // Vertical check
+    for (let c = 0; c < cols; c++) {
+        let count = 1;
+        for (let r = 0; r < rows; r++) {
+            if (r < rows - 1 && board[r][c]?.dataset.type === board[r+1][c]?.dataset.type) {
+                count++;
+            } else {
+                if (count >= 3) {
+                    let matchGroup = [];
+                    for (let i = 0; i < count; i++) matchGroup.push(board[r - i][c]);
+                    matches.push({group: matchGroup, dir: 'v'});
+                }
+                count = 1;
+            }
+        }
+    }
+
+    if (matches.length === 0) {
+        if(isProcessing) isProcessing = false;
+        return false;
+    }
+
+    matches.forEach(m => {
+        // Striped logic: if 4 matched
+        if (m.group.length === 4) {
+            // Pick a position (the one the user likely moved to)
+            let lead = m.group[0];
+            specialToCreate.push({
+                r: parseInt(lead.dataset.r), 
+                c: parseInt(lead.dataset.c), 
+                type: parseInt(lead.dataset.type), 
+                special: m.dir === 'h' ? 'v' : 'h' // 4 horizontal makes vertical stripes (tall), etc
+            });
+        }
+
+        m.group.forEach(candy => {
+            if (candy.dataset.special === 'h') triggerRow(parseInt(candy.dataset.r), toRemove);
+            if (candy.dataset.special === 'v') triggerCol(parseInt(candy.dataset.c), toRemove);
+            toRemove.add(candy);
+        });
+    });
+
+    if (!silent) { score += toRemove.size * 10; scoreVal.innerText = score; }
+
+    toRemove.forEach(candy => {
+        candy.classList.add('popping');
+        board[candy.dataset.r][candy.dataset.c] = null;
+        setTimeout(() => candy.remove(), 300);
+    });
+
+    setTimeout(() => {
+        // Create the striped candies after the pop
+        specialToCreate.forEach(s => {
+            board[s.r][s.c] = spawnCandy(s.r, s.c, s.type, s.special);
+        });
+        dropCandies();
+    }, 300);
+
+    return true;
+}
+
+function triggerRow(r, set) {
+    for(let c=0; c<cols; c++) if(board[r][c]) set.add(board[r][c]);
+}
+function triggerCol(c, set) {
+    for(let r=0; r<rows; r++) if(board[r][c]) set.add(board[r][c]);
+}
+
+function dropCandies() {
+    for (let c = 0; c < cols; c++) {
+        let emptySpaces = 0;
+        for (let r = rows - 1; r >= 0; r--) {
+            if (board[r][c] === null) emptySpaces++;
+            else if (emptySpaces > 0) {
+                let candy = board[r][c];
+                board[r + emptySpaces][c] = candy;
+                board[r][c] = null;
+                updatePosition(candy, r + emptySpaces, c);
+            }
+        }
+        for (let i = 0; i < emptySpaces; i++) {
+            board[i][c] = spawnCandy(i - emptySpaces, c);
+            setTimeout(() => updatePosition(board[i][c], i, c), 50);
+        }
+    }
+    setTimeout(() => { checkAndRefill(); }, 400);
+}
+
+window.onload = initGame;
+window.onresize = initGame;
+</script>
+</body>
+</html>

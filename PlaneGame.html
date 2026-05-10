@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AAA Arabic Allied Arms</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            background: #87CEEB;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; touch-action: none;
+            font-family: 'Arial Black', sans-serif;
+        }
+        .game-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; }
+        svg { width: 100%; height: 100%; display: block; background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%); }
+        
+        #ui-layer {
+            position: fixed; top: 20px; right: 20px; color: #fff;
+            font-size: 28px; font-weight: bold; text-shadow: 2px 2px 0px #000;
+            pointer-events: none; z-index: 10; text-align: right;
+        }
+
+        /* Fight Banner Style */
+        #start-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10002;
+            text-shadow: 2px 2px 0px #000;
+            pointer-events: none;
+            width: 100%;
+            animation: fadeOut 0.5s forwards 2.5s;
+        }
+        .red-text { color: #ff0000; }
+        .green-text { color: #00ff00; }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            color: white; z-index: 10001; flex-direction: column; 
+            align-items: center; justify-content: center; text-align: center;
+            background: rgba(0,0,0,0.7);
+        }
+        button.action-btn {
+            padding: 15px 35px; font-size: 20px; background: #ffcc00; color: #000;
+            border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold;
+            box-shadow: 0 4px 0 #b89500;
+        }
+        #boss-hp-bar {
+            display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 20px; background: #444; border: 2px solid #fff;
+        }
+        #boss-hp-fill { width: 100%; height: 100%; background: #22c55e; transition: width 0.2s; }
+    </style>
+</head>
+<body>
+
+<div id="start-banner">
+    <span class="red-text">Fight!</span> 
+    <span class="green-text">Pakistan Air Petrol</span>
+</div>
+
+<div id="ui-layer">KILLS: <span id="kill-count">0</span></div>
+<div id="boss-hp-bar"><div id="boss-hp-fill"></div></div>
+
+<div id="game-over-screen" class="screen">
+    <h1 style="font-size: 40px; color: #fff;">WRECKED!</h1>
+    <p id="final-kills" style="font-size: 24px; margin-top: 10px;"></p>
+    <button class="action-btn" onclick="location.reload()">TRY AGAIN</button>
+</div>
+
+<div id="victory-screen" class="screen">
+    <h1 style="font-size: 50px; color: #ffcc00;">MISSION CLEAR!</h1>
+    <p style="font-size: 20px;">PAP (पाप) BOSS Destroyed</p>
+    <button class="action-btn" onclick="window.location.href='BoatGame.html'">Play Next Stage</button>
+</div>
+
+<div class="game-container">
+    <svg id="game" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <g id="player-plane">
+                <path d="M-45,5 L45,5 L0,-15 Z" fill="#444" />
+                <path d="M-8,30 L8,30 L10,-40 Q0,-55 -10,-40 Z" fill="#2f4f4f" stroke="#111" stroke-width="1"/>
+                <ellipse cx="0" cy="-15" rx="5" ry="12" fill="#87CEEB" opacity="0.6"/>
+                <rect x="-12" y="25" width="6" height="12" fill="#ff4500" id="flame-l" />
+                <rect x="6" y="25" width="6" height="12" fill="#ff4500" id="flame-r" />
+            </g>
+
+            <g id="enemy-1-design">
+                <path d="M-35,-10 L35,-10 L0,15 Z" fill="#1a1a1a" /> 
+                <path d="M-10,-25 L10,-25 L12,20 L0,35 L-12,20 Z" fill="#c0392b" /> 
+                <rect x="-15" y="-15" width="30" height="4" fill="#555" /> 
+                <circle cx="0" cy="5" r="5" fill="#333" /> 
+            </g>
+
+            <g id="enemy-2-design">
+                <path d="M-40,0 L-10,-10 L0,-30 L10,-10 L40,0 L10,5 L0,20 L-10,5 Z" fill="#2d3436" stroke="#00d2ff" stroke-width="2"/>
+                <circle cx="0" cy="-5" r="4" fill="#55efc4" />
+            </g>
+
+            <g id="boss-design">
+                <path d="M-120,20 L120,20 L0,-60 Z" fill="#2d5a27" stroke="#fff" stroke-width="2"/>
+                <path d="M-15,60 L15,60 L20,-80 L0,-100 L-20,-80 Z" fill="#fff" />
+                <path d="M-15,10 L15,10 L18,-50 L-18,-50 Z" fill="#2d5a27" />
+                <path d="M-40,50 L-10,50 L-5,25 Z" fill="#1b4332" />
+                <path d="M40,50 L10,50 L5,25 Z" fill="#1b4332" />
+                <ellipse cx="0" cy="-60" rx="8" ry="15" fill="#333" />
+            </g>
+
+            <g id="cloud1"><circle r="20" fill="white" opacity="0.8" cx="0" cy="0"/><circle r="15" fill="white" opacity="0.8" cx="20" cy="5"/></g>
+            <g id="cloud2"><ellipse rx="30" ry="15" fill="white" opacity="0.7"/><ellipse rx="20" ry="10" fill="white" opacity="0.7" cx="20" cy="-5"/></g>
+
+            <rect id="red-dash" x="-2" y="-12" width="4" height="24" fill="#ff0000" rx="2" />
+            <g id="fireball"><circle r="10" fill="#ff4500" stroke="#fff" stroke-width="1"/><circle r="5" fill="#ffcc00"/></g>
+            <path id="thunder" d="M0,0 L-8,15 L8,15 L0,35" stroke="#ffff00" stroke-width="4" fill="none" />
+        </defs>
+
+        <g id="sky-layer"></g>
+        <g id="enemies-layer"></g>
+        <g id="enemy-bullets-layer"></g>
+        <g id="bullets-layer"></g>
+        <g id="fx-layer"></g> 
+
+        <g id="player-anchor" transform="translate(200, 650)">
+            <g id="player-tilt"><use href="#player-plane" /></g>
+        </g>
+    </svg>
+</div>
+
+<script>
+    // Remove banner after 3 seconds
+    setTimeout(() => {
+        const banner = document.getElementById('start-banner');
+        if(banner) banner.remove();
+    }, 3000);
+
+    const tankSound = new Audio('Tank.wav');
+    const blastSound = new Audio('destroy.wav');
+
+    const svg = document.querySelector("#game");
+    const playerAnchor = document.querySelector("#player-anchor");
+    const skyLayer = document.querySelector("#sky-layer");
+    const bulletsLayer = document.querySelector("#bullets-layer");
+    const eBulletsLayer = document.querySelector("#enemy-bullets-layer");
+    const enemiesLayer = document.querySelector("#enemies-layer");
+    const fxLayer = document.querySelector("#fx-layer");
+    
+    let plane = { x: 200, y: 650, targetX: 200, targetY: 650 };
+    let kills = 0;
+    let activeEnemies = [];
+    let enemyBullets = [];
+    let isGameOver = false;
+    let isDragging = false;
+    let bossActive = false;
+    let bossHP = 5;
+
+    function triggerBlast(x, y) {
+        blastSound.currentTime = 0;
+        blastSound.play().catch(e => {});
+        for (let i = 0; i < 10; i++) {
+            createParticle(x, y, {
+                color: Math.random() > 0.4 ? '#ff4500' : '#ffcc00',
+                size: 8 + Math.random() * 10,
+                driftX: (Math.random() - 0.5) * 12, driftY: (Math.random() - 0.5) * 12,
+                fadeSpeed: 0.05, growSpeed: 1.05
+            });
+        }
+        for (let i = 0; i < 4; i++) {
+            createParticle(x, y, {
+                color: '#333', size: 12, driftX: (Math.random()-0.5)*3, driftY: -4, fadeSpeed: 0.02, growSpeed: 1.1, opacity: 0.5
+            });
+        }
+    }
+
+    function createParticle(x, y, config) {
+        const p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        p.setAttribute("cx", x); p.setAttribute("cy", y);
+        p.setAttribute("r", config.size); p.setAttribute("fill", config.color);
+        p.setAttribute("opacity", config.opacity || 1);
+        fxLayer.appendChild(p);
+        let curOp = config.opacity || 1, curS = config.size, cx = x, cy = y;
+        function anim() {
+            curOp -= config.fadeSpeed; curS *= config.growSpeed; cx += config.driftX; cy += config.driftY;
+            if (curOp > 0) {
+                p.setAttribute("opacity", curOp); p.setAttribute("r", curS); p.setAttribute("cx", cx); p.setAttribute("cy", cy);
+                requestAnimationFrame(anim);
+            } else p.remove();
+        }
+        anim();
+    }
+
+    const getCoords = (e) => {
+        const rect = svg.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return { x: (touch.clientX - rect.left) * (400 / rect.width), y: (touch.clientY - rect.top) * (800 / rect.height) };
+    };
+
+    window.addEventListener('touchstart', (e) => { isDragging = true; fire(); });
+    window.addEventListener('mousedown', () => isDragging = true);
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('touchend', () => isDragging = false);
+    window.addEventListener('mousemove', (e) => { if(isDragging && !isGameOver) { let c = getCoords(e); plane.targetX = c.x; plane.targetY = c.y; } });
+    window.addEventListener('touchmove', (e) => { if(!isGameOver) { let c = getCoords(e); plane.targetX = c.x; plane.targetY = c.y; } });
+    window.addEventListener('click', (e) => { if(!e.touches) fire(); });
+
+    function fire() {
+        if(isGameOver) return;
+        tankSound.currentTime = 0; tankSound.play().catch(e=>{});
+        [-15, 15].forEach(off => {
+            const b = document.createElementNS("http://www.w3.org/2000/svg", "use");
+            b.setAttribute("href", "#red-dash");
+            bulletsLayer.appendChild(b);
+            let bx = plane.x + off, by = plane.y - 30;
+            function moveB() {
+                if(isGameOver) { b.remove(); return; }
+                by -= 25; b.setAttribute("transform", `translate(${bx}, ${by})`);
+                
+                activeEnemies.forEach(en => {
+                    if(!en.dead && Math.abs(bx - en.x) < 60 && Math.abs(by - en.y) < 60) {
+                        if(en.isBoss) {
+                            bossHP--;
+                            document.getElementById('boss-hp-fill').style.width = (bossHP/5)*100 + "%";
+                            triggerBlast(bx, by);
+                            if(bossHP <= 0) winGame(en);
+                        } else {
+                            en.dead = true; triggerBlast(en.x, en.y); kills++;
+                            document.getElementById('kill-count').innerText = kills;
+                            en.el.remove();
+                        }
+                        b.remove();
+                    }
+                });
+
+                enemyBullets.forEach(eb => {
+                    if(!eb.dead && eb.isFireball && Math.abs(bx - eb.x) < 25 && Math.abs(by - eb.y) < 25) {
+                        eb.dead = true; eb.el.remove(); b.remove(); triggerBlast(eb.x, eb.y);
+                    }
+                });
+
+                if(by > -50) requestAnimationFrame(moveB); else b.remove();
+            }
+            moveB();
+        });
+    }
+
+    function spawnBullet(ex, ey, type, angle = 0) {
+        const b = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        const isFire = (type === 1 || type === 'boss');
+        b.setAttribute("href", isFire ? "#fireball" : "#thunder");
+        eBulletsLayer.appendChild(b);
+        let bx = ex, by = ey;
+        let eb = { el: b, x: bx, y: by, dead: false, isFireball: isFire };
+        enemyBullets.push(eb);
+
+        function move() {
+            if(isGameOver || eb.dead) return;
+            by += (isFire ? 7 : 12);
+            bx += Math.sin(angle) * 5;
+            eb.x = bx; eb.y = by;
+            b.setAttribute("transform", `translate(${bx}, ${by})`);
+            if(Math.abs(bx - plane.x) < 30 && Math.abs(by - plane.y) < 30) gameOver();
+            if(by < 850) requestAnimationFrame(move); else { b.remove(); eb.dead = true; }
+        }
+        move();
+    }
+
+    function spawnEnemy() {
+        if(isGameOver || bossActive) return;
+        if(kills >= 15) { spawnBoss(); return; }
+        
+        const type = Math.random() > 0.7 ? 2 : 1;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", type === 2 ? "#enemy-2-design" : "#enemy-1-design");
+        g.appendChild(use);
+        enemiesLayer.appendChild(g);
+
+        let en = { el: g, x: Math.random()*340+30, y: -60, dead: false, lastShot: 0 };
+        activeEnemies.push(en);
+
+        function move() {
+            if(en.dead || isGameOver) return;
+            en.y += (type === 2 ? 4 : 2.5);
+            g.setAttribute("transform", `translate(${en.x}, ${en.y})`);
+            if(Date.now() - en.lastShot > (type === 2 ? 1200 : 2000)) {
+                spawnBullet(en.x, en.y + 20, type);
+                en.lastShot = Date.now();
+            }
+            if(Math.abs(en.x - plane.x) < 40 && Math.abs(en.y - plane.y) < 40) gameOver();
+            if(en.y < 900) requestAnimationFrame(move); else { g.remove(); en.dead = true; }
+        }
+        move();
+    }
+
+    function spawnBoss() {
+        bossActive = true;
+        document.getElementById('boss-hp-bar').style.display = 'block';
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", "#boss-design");
+        g.appendChild(use);
+        enemiesLayer.appendChild(g);
+        let en = { el: g, x: 200, y: -150, dead: false, lastShot: 0, isBoss: true };
+        activeEnemies.push(en);
+
+        function move() {
+            if(en.dead || isGameOver) return;
+            if(en.y < 120) en.y += 0.5;
+            en.x = 200 + Math.sin(Date.now()/1500) * 80;
+            g.setAttribute("transform", `translate(${en.x}, ${en.y})`);
+            if(Date.now() - en.lastShot > 1600) {
+                [-0.6, 0, 0.6].forEach(ang => spawnBullet(en.x, en.y + 50, 'boss', ang));
+                en.lastShot = Date.now();
+            }
+            requestAnimationFrame(move);
+        }
+        move();
+    }
+
+    function winGame(boss) {
+        boss.dead = true; triggerBlast(boss.x, boss.y);
+        boss.el.remove();
+        document.getElementById('victory-screen').style.display = 'flex';
+        document.getElementById('boss-hp-bar').style.display = 'none';
+    }
+
+    function gameOver() {
+        if(isGameOver) return;
+        isGameOver = true; triggerBlast(plane.x, plane.y);
+        playerAnchor.style.display = "none";
+        document.getElementById('game-over-screen').style.display = 'flex';
+        document.getElementById('final-kills').innerText = "TOTAL KILLS: " + kills;
+    }
+
+    setInterval(spawnEnemy, 1800);
+    setInterval(() => {
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        c.setAttribute("href", Math.random() > 0.5 ? "#cloud1" : "#cloud2");
+        let cx = Math.random() * 400, cy = -100;
+        skyLayer.appendChild(c);
+        function move() { cy += 1.2; c.setAttribute("transform", `translate(${cx}, ${cy})`); if(cy < 900) requestAnimationFrame(move); else c.remove(); }
+        move();
+    }, 2500);
+
+    function update() {
+        if(isGameOver) return;
+        plane.x += (plane.targetX - plane.x) * 0.15;
+        plane.y += (plane.targetY - plane.y) * 0.15;
+        playerAnchor.setAttribute("transform", `translate(${plane.x}, ${plane.y})`);
+        const s = 10 + Math.random() * 10;
+        document.getElementById('flame-l').setAttribute("height", s);
+        document.getElementById('flame-r').setAttribute("height", s);
+        requestAnimationFrame(update);
+    }
+    update();
+</script>
+</body>
+</html>

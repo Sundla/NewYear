@@ -149,9 +149,65 @@
 <!-- ===== HERO ===== -->
 <section class="hero">
   <h1>Happy Birthday Mom</h1>
+  
+  
+<!-- Mother's Day Marquee -->
+<style>
+.mothers-day-marquee {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  height: 40px;
+  margin: 10px 0 18px;
+  display: flex;
+  align-items: center;
+}
+
+.mothers-day-track {
+  display: flex;
+  width: max-content;
+  animation: motherScroll 6s linear infinite;
+}
+
+.mothers-day-track a {
+  text-decoration: none;
+  color: #c40000;
+  font-size: 25px;
+  font-weight: 600;
+  font-family: cursive;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  margin-right: 100vw; /* huge gap */
+  transition: 0.3s;
+}
+
+.mothers-day-track a:hover {
+  color: #ff0000;
+  text-shadow: 0 0 8px rgba(255,0,0,0.5);
+}
+
+@keyframes motherScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+</style>
+
+<div class="mothers-day-marquee">
+  <div class="mothers-day-track">
+    <a href="MothersDay.html">Mother's Day</a>
+    <a href="MothersDay.html">Mother's Day</a>
+  </div>
+</div>
+  
   <img src="mother.jpg" alt="Mother" style="width:300px; display:block; margin:0 auto;">
   <p>
-    Today we celebrate the most loving, caring, and strongest woman in our life.
+    Today we celebrate the most loving, caring, and the strongest woman in our life.
   </p>
   <p class="hi">
     आज हम अपनी ज़िंदगी की सबसे प्यारी, स्नेही और मजबूत महिला का जन्मदिन मना रहे हैं।
@@ -197,13 +253,13 @@
 
     <div class="card">
       <strong>Favorite Music</strong>
-      Mere Saajan Hai Us Paar / Jaunsari Harul
+      Meri Jaan Tiranga Hai / Jaunsari Harul
       <div class="hi">पसंदीदा गीत</div>
     </div>
 
     <div class="card">
       <strong>Favorite Food</strong>
-      Gajar Ka Halwa / Gold Temptation / Waffle
+      Gajar Ka Halwa / Gold Temptation / Brownie Waffle
       <div class="hi">पसंदीदा खाना</div>
     </div>
   </div>
@@ -244,10 +300,6 @@
     Swipe Right or Left
   </div>
 </div>
-
-
-
-
 
 <style>
 .neon-red-btn {
@@ -322,6 +374,30 @@ iframe{width:100%;height:180px;border:0}
 .userStars span.active{color:gold}
 .submitBtn{display:block;margin:6px auto;padding:4px 10px}
 .msg{display:none;color:#7CFC00;font-size:12px;text-align:center}
+
+/* FOLDER STYLES - Light Brown color, only edge glow on active */
+.folderBtn {
+  background: indianred;  /* light brown / sienna color */
+  margin: 6px 0;
+  transition: all 0.2s;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  border: none;
+}
+.folderBtn.activeFolder {
+  box-shadow: 0 0 0 2px whitesmoke, 0 0 0 2px whitesmoke;
+  background: indianred;
+}
+.sub-song-item {
+  background: #0006;
+  margin: 5px 0 5px 15px;
+  text-align: center;
+  cursor: pointer;
+  color: #fff;
+  padding: 10px;
+}
 </style>
 
 <div id="overlay" onclick="closePanels()"></div>
@@ -391,10 +467,11 @@ iframe{width:100%;height:180px;border:0}
 </div>
 </div>
 
-<!-- SONG PANEL -->
+<!-- SONG PANEL - Contains original 5 songs with star ratings AND folders -->
 <div id="song" class="panel">
 <h2>Songs</h2>
 
+<!-- ===== ORIGINAL TOP 5 SONGS WITH STAR SYSTEM (RESTORED) ===== -->
 <!-- SONG 1 -->
 <div class="videoBtn" onclick="play('s1')">India Unravel</div>
 <div class="videoBox" id="s1">
@@ -459,6 +536,23 @@ iframe{width:100%;height:180px;border:0}
   <div class="msg">Your ratings are submitted to owner, it will reach under three months.</div>
   <a class="yt" href="https://youtu.be/WPDpgSBEWaI?si=s7Cm5ebdDivD2yZE" target="_blank">Open on YouTube</a>
 </div>
+
+<!-- ===== FIVE FOLDERS: Live, Vibes, Nostalgia, AMV, imagine dragons (Light brown, edge glow active) ===== -->
+<div id="folderLive" class="videoBtn folderBtn">Live</div>
+<div id="subLive" style="display:none;"></div>
+
+<div id="folderVibes" class="videoBtn folderBtn">Vibes</div>
+<div id="subVibes" style="display:none;"></div>
+
+<div id="folderNostalgia" class="videoBtn folderBtn">Nostalgia</div>
+<div id="subNostalgia" style="display:none;"></div>
+
+<div id="folderAMV" class="videoBtn folderBtn">AMV</div>
+<div id="subAMV" style="display:none;"></div>
+
+<div id="folderDragons" class="videoBtn folderBtn">imagine dragons</div>
+<div id="subDragons" style="display:none;"></div>
+
 </div>
 
 <script>
@@ -501,34 +595,18 @@ function stopAll() {
 function play(id) {
   stopAll();
   let box = document.getElementById(id);
-  box.style.display = "block";
+  if(box) box.style.display = "block";
   
-  // Video ID mapping (clean embed URLs only)
   const videoMap = {
-    // SONGS
-    's1': '8iCxEzYcRRM',  // India Unravel
-    's2': '8AmQ99-ZN2Y',  // Lo Lo
-    's3': 'pGe2KQ30mYM',  // Blue Hawaii
-    's4': 'xqQCOKOpbBw',  // Bink's Sake Hindi
-    's5': 'WPDpgSBEWaI',  // Wasteland
-    
-    // AUDIOBOOKS
-    'a1': 'K6JX649vEXo',  // Origin of Species
-    'a2': 'Yb0T40VZUWc',  // The Prince
-    'a3': 'QJJeHtJC52g',  // The Almanack of Ravikant
-    'a4': '_8Ph6tJ3uwA',  // Meditations
-    'a5': 'uPvcNp6Q4-8',  // Brothers Karamazov
-    'a6': 'JZDKv8y4PKo',  // Brothers Karamazov 2
-    'a7': 'UJDIvebdG8U',  // The Cthulhu Mythos
-    'a8': 'I5UcyuiKYFI',  // Dhammapada
-    'a9': 'WUW6cjZgi7Y',  // Das Kapital
-    'a10': 'Bb70lU1fSbA'  // The Gay Science
+    's1': '8iCxEzYcRRM', 's2': '8AmQ99-ZN2Y', 's3': 'pGe2KQ30mYM',
+    's4': 'xqQCOKOpbBw', 's5': 'WPDpgSBEWaI',
+    'a1': 'K6JX649vEXo', 'a2': 'Yb0T40VZUWc', 'a3': 'QJJeHtJC52g',
+    'a4': '_8Ph6tJ3uwA', 'a5': 'uPvcNp6Q4-8', 'a6': 'JZDKv8y4PKo',
+    'a7': 'UJDIvebdG8U', 'a8': 'I5UcyuiKYFI', 'a9': 'WUW6cjZgi7Y', 'a10': 'Bb70lU1fSbA'
   };
-  
-  if (videoMap[id]) {
-    // Clean embed URL - no account info
+  if (videoMap[id] && box) {
     box.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoMap[id] + "?autoplay=1";
-  } else {
+  } else if(box) {
     box.querySelector("iframe").src = "";
   }
 }
@@ -542,161 +620,461 @@ function rate(e, box) {
 function submit(btn) {
   btn.nextElementSibling.style.display = "block";
 }
-</script>
 
+// Track currently open folder
+let currentOpenFolder = null;
+
+// Build sub-container for folder songs (NO star ratings, uniform style)
+function buildSubContainer(folderId, songsArray) {
+  const container = document.getElementById(`sub${folderId}`);
+  if(!container) return;
+  
+  // If already open, collapse it
+  if(container.style.display === 'block') {
+    container.style.display = 'none';
+    const parentBtn = document.getElementById(`folder${folderId}`);
+    if(parentBtn) parentBtn.classList.remove('activeFolder');
+    currentOpenFolder = null;
+    return;
+  }
+  
+  // Close any other open folder first
+  if(currentOpenFolder !== null && currentOpenFolder !== folderId) {
+    const prevContainer = document.getElementById(`sub${currentOpenFolder}`);
+    if(prevContainer) prevContainer.style.display = 'none';
+    const prevBtn = document.getElementById(`folder${currentOpenFolder}`);
+    if(prevBtn) prevBtn.classList.remove('activeFolder');
+  }
+  
+  // Populate and expand
+  container.innerHTML = '';
+  songsArray.forEach(songItem => {
+    const songDiv = document.createElement('div');
+    songDiv.className = 'videoBtn sub-song-item';
+    songDiv.innerText = songItem.name;
+    const subBoxId = `sub_${folderId}_${songItem.id}`;
+    const boxDiv = document.createElement('div');
+    boxDiv.className = 'videoBox';
+    boxDiv.id = subBoxId;
+    boxDiv.style.marginLeft = '0';
+    const iframeEl = document.createElement('iframe');
+    iframeEl.src = '';
+    const ytLink = document.createElement('a');
+    ytLink.className = 'yt';
+    ytLink.href = songItem.url;
+    ytLink.innerText = 'Open on YouTube';
+    ytLink.target = '_blank';
+    boxDiv.appendChild(iframeEl);
+    boxDiv.appendChild(ytLink);
+    
+    songDiv.onclick = (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('#song .videoBox').forEach(vb => vb.style.display = 'none');
+      document.querySelectorAll('#song iframe').forEach(ifr => ifr.src = '');
+      const targetBox = document.getElementById(subBoxId);
+      if(targetBox) {
+        targetBox.style.display = 'block';
+        const vidId = extractYouTubeId(songItem.url);
+        if(vidId) {
+          targetBox.querySelector('iframe').src = `https://www.youtube.com/embed/${vidId}?autoplay=1`;
+        }
+      }
+    };
+    container.appendChild(songDiv);
+    container.appendChild(boxDiv);
+  });
+  container.style.display = 'block';
+  currentOpenFolder = folderId;
+  
+  // Update active glow on folder buttons
+  document.querySelectorAll('.folderBtn').forEach(btn => btn.classList.remove('activeFolder'));
+  const folderBtn = document.getElementById(`folder${folderId}`);
+  if(folderBtn) folderBtn.classList.add('activeFolder');
+}
+
+function extractYouTubeId(url) {
+  const patterns = [
+    /youtu\.be\/([^?]+)/,
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtube\.com\/embed\/([^?]+)/
+  ];
+  for(let p of patterns) {
+    const match = url.match(p);
+    if(match) return match[1];
+  }
+  return null;
+}
+
+// Folder song data
+const liveSongs = [
+  { id: 'live1', name: 'Aishite', url: 'https://youtu.be/HmkbBdD8044?si=PkuhcJ5zui1y4jep' },
+  { id: 'live2', name: 'Fairytale', url: 'https://youtu.be/ogM3TRhdWUc?si=SX2YMjcHAAyb3H-m' },
+  { id: 'live3', name: 'che che rere', url: 'https://youtu.be/Z1ZKaR-9Kt4?si=dst1xoDIf-5lAtkM' }
+];
+const vibesSongs = [
+  { id: 'vibe1', name: 'Cromartie High', url: 'https://youtu.be/QHmE0C2kZlc?si=182dTQNTXZzeN4V_' },
+  { id: 'vibe2', name: "GTO Driver's High", url: 'https://youtu.be/2JGl6UzfPkE?si=ZkviGYT0fCEmkpuE' },
+  { id: 'vibe3', name: 'Kaiba op', url: 'https://youtu.be/y5Yr3-iOc98?si=wixIsGpLaJq3VO9x' }
+];
+const nostalgiaSongs = [
+  { id: 'nost1', name: 'memories', url: 'https://youtu.be/rJll18-dnz8?si=yopZs7UOarsLIwje' },
+  { id: 'nost2', name: 'Sonny boy', url: 'https://youtu.be/TBac0TtmSZE?si=8yvWoaUYuuxIIk3d' },
+  { id: 'nost3', name: 'Uru Freesia', url: 'https://youtu.be/loxujxwIb5U?si=-S2tm0R641U1H6V5' }
+];
+const amvSongs = [
+  { id: 'amv1', name: 'Saints', url: 'https://youtu.be/V-01Q8dTPKo?si=3oLieyuWzktcNpbO' },
+  { id: 'amv2', name: 'Cruel World', url: 'https://youtu.be/Q5jnvfGgjGM?si=UAQpEjjLJZO4_1_N' },
+  { id: 'amv3', name: 'Antidote', url: 'https://youtu.be/OYnKsasX5Wc?si=HWwS1Ll5Khiu6M-5' }
+];
+const dragonsSongs = [
+  { id: 'drag1', name: 'Megamix 1', url: 'https://youtu.be/vbh8wr5orkQ?si=NDWecDpqbuzAuok1' },
+  { id: 'drag2', name: 'Megamix 2', url: 'https://youtu.be/pMdsGUQ5A8M?si=QyEsCnYly8c7lVPI' },
+  { id: 'drag3', name: 'Radioactive Remix', url: 'https://youtu.be/s3KhD2-9AOE?si=6OWO0GoTqV6YVyFL' }
+];
+
+// Attach folder click handlers
+document.getElementById('folderLive').onclick = () => buildSubContainer('Live', liveSongs);
+document.getElementById('folderVibes').onclick = () => buildSubContainer('Vibes', vibesSongs);
+document.getElementById('folderNostalgia').onclick = () => buildSubContainer('Nostalgia', nostalgiaSongs);
+document.getElementById('folderAMV').onclick = () => buildSubContainer('AMV', amvSongs);
+document.getElementById('folderDragons').onclick = () => buildSubContainer('Dragons', dragonsSongs);
+
+// Extend stopAll to also close any open folder sub-containers
+const originalStopAll = stopAll;
+window.stopAll = function() {
+  originalStopAll();
+  ['Live','Vibes','Nostalgia','AMV','Dragons'].forEach(f => {
+    const sub = document.getElementById(`sub${f}`);
+    if(sub) sub.style.display = 'none';
+    const btn = document.getElementById(`folder${f}`);
+    if(btn) btn.classList.remove('activeFolder');
+  });
+  currentOpenFolder = null;
+};
+stopAll = window.stopAll;
+</script>
 
 <br>
 
+<!-- MOVIE PANEL START (unchanged) -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;800&display=swap');
 
-<div style="text-align:center;margin:40px 0;">
+.movie-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+  font-family: 'Mulish', sans-serif;
+}
 
-  <div id="movieBox" style="display:none;margin-bottom:25px;">
+/* NAV PANEL */
+.movie-wrapper nav {
+  background-color: red;
+  padding: 20px;
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: width 0.6s linear;
+}
 
-  <div id="enjoyText"
-       style="display:none;
-              font-size:20px;
-              font-weight:bold;
-              margin-bottom:12px;
-              color:#e60000;">
-    ⬇️ Enjoy ⬇️
+.movie-wrapper nav.active { width: 372px; }
+
+.movie-wrapper nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.6s linear;
+}
+
+.movie-wrapper nav.active ul { width: 100%; }
+
+.movie-wrapper nav ul li {
+  opacity: 0;
+  transition: 0.6s;
+}
+
+.movie-wrapper nav.active ul li { opacity: 1; }
+
+.movie-wrapper nav ul a {
+  text-decoration: none;
+  color: white;
+  margin: 0 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* HAMBURGER */
+.icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 30px;
+  width: 30px;
+  position: relative;
+}
+
+.icon .line {
+  background-color: white;
+  height: 2px;
+  width: 20px;
+  position: absolute;
+  left: 5px;
+  transition: transform 0.6s;
+}
+
+.line1 { top: 10px; }
+.line2 { bottom: 10px; }
+
+nav.active .line1 {
+  transform: rotate(-45deg) translateY(5.5px);
+}
+
+nav.active .line2 {
+  transform: rotate(45deg) translateY(-5.5px);
+}
+
+/* PLAYER */
+.player {
+  text-align: center;
+  display: none;
+  max-width: 720px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.enjoy-simple {
+  font-size: 26px;
+  font-weight: 800;
+  color: red;
+  margin-bottom: 15px;
+}
+
+.video-box {
+  position: relative;
+  padding-top: 56.25%;
+  width: 100%;
+}
+
+.video-box iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.watch {
+  display: block;
+  margin: 20px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: red;
+  text-decoration: none;
+}
+
+.close {
+  background: #0a8f08;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 14px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+</style>
+
+<div class="movie-wrapper">
+  <nav id="nav">
+    <ul>
+      <li><a onclick="openVimeo()">Movie1</a></li>
+      <li><a onclick="openOK('1244085094959')">Movie2</a></li>
+      <li><a onclick="openVideoLiberta()">Movie3</a></li>
+      <li><a onclick="openOK('7675742325479')">Movie4</a></li>
+    </ul>
+    <button class="icon" id="toggle">
+      <div class="line line1"></div>
+      <div class="line line2"></div>
+    </button>
+  </nav>
+  <div class="player" id="player">
+    <div class="enjoy-simple">⬇️ Enjoy ⬇️</div>
+    <div class="video-box" id="videoBox"></div>
+    <a class="watch" id="watchLink" target="_blank"></a>
+    <button class="close" onclick="closeMovie()">Close</button>
   </div>
-
-  <div id="movieFrame"></div>
-    
-    
-    
-
-    <div style="margin-top:12px;">
-      <a href="https://vimeo.com/98811524" target="_blank"
-         style="color:#e60000;font-weight:bold;text-decoration:none;">
-        Watch / Download on Vimeo
-      </a>
-    </div>
-  </div>
-
-  <div id="movieBtn"
-       onclick="toggleMovie()"
-       style="display:inline-block;
-              background:red;color:#fff;
-              padding:14px 34px;
-              border-radius:6px;
-              font-size:18px;
-              cursor:pointer;">
-    Movie
-  </div>
-
 </div>
+
+<script src="https://player.vimeo.com/api/player.js"></script>
 <script>
-let movieOpen = false;
+const nav = document.getElementById('nav');
+const toggle = document.getElementById('toggle');
+const player = document.getElementById('player');
+const videoBox = document.getElementById('videoBox');
+const watchLink = document.getElementById('watchLink');
 
-function toggleMovie(){
-  const box = document.getElementById("movieBox");
-  const frame = document.getElementById("movieFrame");
-  const btn = document.getElementById("movieBtn");
-  const text = document.getElementById("enjoyText");
+toggle.onclick = () => nav.classList.toggle('active');
 
-  if (!movieOpen) {
-    frame.innerHTML = `
-      <div style="position:relative;padding-top:56.25%;">
-        <iframe
-          src="https://player.vimeo.com/video/98811524?dnt=1&title=0&byline=0&portrait=0"
-          style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-          allow="fullscreen; picture-in-picture"
-          allowfullscreen>
-        </iframe>
-      </div>`;
-      
-    box.style.display = "block";
-    text.style.display = "block";   // ✅ show text
-    btn.innerText = "Close";
-    btn.style.background = "green";
-    movieOpen = true;
+function openVimeo() {
+  nav.style.display = 'none';
+  player.style.display = 'block';
+  videoBox.innerHTML = `<iframe src="https://player.vimeo.com/video/98811524?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  watchLink.textContent = "Watch / Download on Vimeo";
+  watchLink.href = "https://vimeo.com/98811524";
+}
 
-  } else {
-    frame.innerHTML = "";
-    box.style.display = "none";
-    text.style.display = "none";    // ✅ hide text
-    btn.innerText = "Movie";
-    btn.style.background = "red";
-    movieOpen = false;
-  }
+function openOK(id) {
+  nav.style.display = 'none';
+  player.style.display = 'block';
+  videoBox.innerHTML = `<iframe src="https://ok.ru/videoembed/${id}" allowfullscreen></iframe>`;
+  watchLink.textContent = "Watch on ok.ru";
+  watchLink.href = `https://ok.ru/video/${id}`;
+}
+
+function openVideoLiberta() {
+  nav.style.display = 'none';
+  player.style.display = 'block';
+  videoBox.innerHTML = `<iframe src="https://video.liberta.vip/videos/embed/oazhEfHTgJDpP4r4eAKLCN" allow="fullscreen" allowfullscreen></iframe>`;
+  watchLink.textContent = "Watch / Download on Liberta video";
+  watchLink.href = "https://video.liberta.vip/w/oazhEfHTgJDpP4r4eAKLCN";
+}
+
+function closeMovie() {
+  videoBox.innerHTML = "";
+  player.style.display = 'none';
+  nav.style.display = 'flex';
+  nav.classList.remove('active');
 }
 </script>
-  
-  <div style="text-align:center;margin:40px 0;">
-
-  <div id="movieBox2" style="display:none;margin-bottom:25px;">
-
-    <div style="font-size:20px;font-weight:bold;margin-bottom:12px;color:#e60000;">
-      ⬇️ Enjoy Movie 2 ⬇️
-    </div>
-
-    <div id="movieFrame2"></div>
-
-    <div style="margin-top:12px;">
-      <a href="https://ok.ru/video/1244085094959" target="_blank"
-         style="color:#e60000;font-weight:bold;text-decoration:none;">
-        Watch on OK.ru
-      </a>
-    </div>
-  </div>
-
-  <div id="movieBtn2"
-       onclick="toggleMovie2()"
-       style="display:inline-block;
-              background:#8b0000;
-              color:#fff;
-              padding:14px 34px;
-              border-radius:6px;
-              font-size:18px;
-              cursor:pointer;
-              margin-top:10px;">
-    Movie 2
-  </div>
-
-</div>
- <script>
-let movie2Open = false;
-
-function toggleMovie2(){
-  const box = document.getElementById("movieBox2");
-  const frame = document.getElementById("movieFrame2");
-  const btn = document.getElementById("movieBtn2");
-
-  if (!movie2Open) {
-    frame.innerHTML = `
-      <div style="position:relative;padding-top:56.25%;">
-        <iframe
-          src="https://ok.ru/videoembed/1244085094959"
-          style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-          allow="autoplay; fullscreen"
-          allowfullscreen>
-        </iframe>
-      </div>`;
-      
-    box.style.display = "block";
-    btn.innerText = "Close Movie 2";
-    btn.style.background = "green";
-    movie2Open = true;
-
-  } else {
-    frame.innerHTML = "";
-    box.style.display = "none";
-    btn.innerText = "Movie 2";
-    btn.style.background = "#8b0000";
-    movie2Open = false;
-  }
-}
-</script>
-  
-  
-
-
-
-  
-  
+<!-- MOVIE PANEL END -->
 
 <br><br>
 
+<!-- ANIME NAV BUTTON COMPONENT (unchanged) -->
+<style>
+.anime-nav-wrapper * { box-sizing: border-box; font-family: 'Mulish', sans-serif; }
+.anime-nav-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.anime-nav {
+  background: #B90E0A;
+  padding: 20px;
+  width: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  transition: width 0.6s linear;
+}
+.anime-nav.active { width: 372px; }
+.anime-nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.6s linear;
+}
+.anime-nav.active ul { width: 100%; }
+.anime-nav ul li {
+  opacity: 0;
+  transition: 0.6s linear;
+}
+.anime-nav.active ul li { opacity: 1; }
+.anime-nav ul a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.anime-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+.anime-icon .line {
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: white;
+  left: 5px;
+  transition: transform 0.6s linear;
+}
+.anime-icon .line1 { top: 10px; }
+.anime-icon .line2 { bottom: 10px; }
+.anime-nav.active .line1 { transform: rotate(-45deg) translateY(5px); }
+.anime-nav.active .line2 { transform: rotate(45deg) translateY(-5px); }
+.anime-player {
+  display: none;
+  width: 100%;
+  max-width: 720px;
+  text-align: center;
+}
+.anime-enjoy { font-size: 26px; font-weight: 800; color: red; margin-bottom: 15px; }
+.anime-video-box { position: relative; padding-top: 56.25%; }
+.anime-video-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 2px; }
+.anime-watch { display: block; margin: 20px 0; font-size: 22px; font-weight: 700; color: red; text-decoration: none; }
+.anime-season-btn { padding: 10px 20px; margin: 10px; border-radius: 20px; border: none; font-weight: 700; color: white; cursor: pointer; }
+.s1 { background: blue; }
+.s2 { background: red; }
+.anime-close { background: #0a8f08; color: white; font-size: 22px; font-weight: 700; padding: 14px 40px; border: none; border-radius: 10px; cursor: pointer; }
+</style>
+
+<div class="anime-nav-wrapper">
+  <nav class="anime-nav" id="animeNav">
+    <ul>
+      <li><a onclick="anime1()">Anime1</a></li>
+      <li><a onclick="anime2()">Anime2</a></li>
+      <li><a onclick="anime3()">Anime3</a></li>
+      <li><a onclick="anime4()">Anime4</a></li>
+    </ul>
+    <button class="anime-icon" id="animeToggle">
+      <div class="line line1"></div>
+      <div class="line line2"></div>
+    </button>
+  </nav>
+  <div class="anime-player" id="animePlayer">
+    <div class="anime-enjoy" id="animeEnjoy">⬇️ Enjoy ⬇️</div>
+    <div class="anime-video-box" id="animeVideo"></div>
+    <a class="anime-watch" id="animeWatch" target="_blank"></a>
+    <div id="animeExtra"></div>
+    <button class="anime-close" onclick="closeAnime()">Close</button>
+  </div>
+</div>
+
+<script>
+const animeNav = document.getElementById('animeNav');
+const animePlayer = document.getElementById('animePlayer');
+const animeVideo = document.getElementById('animeVideo');
+const animeWatch = document.getElementById('animeWatch');
+const animeEnjoy = document.getElementById('animeEnjoy');
+const animeExtra = document.getElementById('animeExtra');
+document.getElementById('animeToggle').onclick = () => animeNav.classList.toggle('active');
+function showAnime() { animeNav.style.display = 'none'; animePlayer.style.display = 'block'; animeVideo.innerHTML = ''; animeExtra.innerHTML = ''; }
+function anime1() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Enjoy all on Internet Archives"; animeWatch.href = "https://archive.org/details/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv"; }
+function anime2() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Enjoy all Ghibli Films here"; animeWatch.href = "https://archive.org/details/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4"; }
+function anime3() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/anime-yu-yu-hakusho/Yu+Yu+Hakusho+-+001+-+Surprised+To+Be+Dead+++%5BDarkDream%5D.mkv?start=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "All episodes Here"; animeWatch.href = "https://archive.org/details/anime-yu-yu-hakusho"; const note = document.createElement('div'); note.style.marginTop = "10px"; note.style.fontWeight = "700"; note.innerHTML = `Starting from Surprised to be dead<br>(Eizou Hakusho Fillers ❌)`; animeExtra.appendChild(note); }
+function anime4() { showAnime(); const b1 = document.createElement('button'); b1.className = 'anime-season-btn s1'; b1.innerText = 'Season 1'; b1.onclick = loadS1; const b2 = document.createElement('button'); b2.className = 'anime-season-btn s2'; b2.innerText = 'Season 2'; b2.onclick = loadS2; animeExtra.appendChild(b1); animeExtra.appendChild(b2); loadS1(); }
+function loadS1() { animeEnjoy.innerHTML = `<span style="color:blue">⬇️ Season 1 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/6_20210210_20210210_1925" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 1 here"; animeWatch.href = "https://archive.org/details/6_20210210_20210210_1925"; }
+function loadS2() { animeEnjoy.innerHTML = `<span style="color:red">⬇️ Season 2 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/11_20210430/2.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 2 here"; animeWatch.href = "https://archive.org/details/11_20210430/2.mp4"; }
+function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = 'none'; animeNav.style.display = 'flex'; animeNav.classList.remove('active'); }
+</script>
+
+<br><br>
 </body>
 </html>

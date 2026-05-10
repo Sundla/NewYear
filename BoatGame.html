@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>To America</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            background: #0077be;
+            background-image: radial-gradient(circle, #00aaff, #0077be);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; touch-action: none;
+            font-family: sans-serif;
+        }
+        .game-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        svg { width: auto; height: 100%; max-width: 100vw; display: block; cursor: grab; }
+        svg:active { cursor: grabbing; }
+        .wake-line { fill: none; stroke: rgba(255,255,255,0.4); stroke-width: 2; stroke-linecap: round; }
+        .ocean-wave { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 1.5; stroke-linecap: round; }
+        .exp-particle { pointer-events: none; }
+
+        #ui-layer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* NEW: Dark Blue Game Over Screen */
+        #game-over-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #002b4d; color: white; z-index: 10001;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        #game-over-screen button {
+            background: white; color: #002b4d;
+        }
+
+        #win-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); color: white; z-index: 10000;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+
+        /* NEW: Intro Text Styling */
+        #intro-text {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; font-size: 40px; font-weight: bold; text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            z-index: 100; pointer-events: none; opacity: 1; transition: opacity 1s;
+        }
+
+        button {
+            padding: 15px 35px; font-size: 22px; cursor: pointer; background: #FFD700; border: none; border-radius: 50px; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        #orientation-lock {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #004d7a; color: white; z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
+        }
+
+        @media screen and (orientation: landscape) and (max-width: 950px) {
+            #orientation-lock { display: flex; }
+            .game-container { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-layer">Arrows: <span id="arrow-count">10</span> | Kills: <span id="kill-count">0</span></div>
+
+<div id="game-over-screen">
+    <h1 style="font-size: 50px; margin-bottom: 10px;">Game Over</h1>
+    <p style="font-size: 26px;">The journey ended...</p>
+    <button onclick="location.reload()">Play Again</button>
+</div>
+
+<div id="win-screen">
+    <h1 style="font-size: 50px; margin-bottom: 10px;">Winner!</h1>
+    <p style="font-size: 26px;">You reached America</p>
+    <button onclick="location.reload()">Play Again</button>
+</div>
+
+<div id="intro-text">Atlantic Ocean</div>
+
+<div id="orientation-lock">
+    <h2>Please Rotate Your Device</h2>
+    <p>This game is designed to be played in Portrait Mode.</p>
+</div>
+
+<div class="game-container">
+    <svg id="game" viewBox="0 0 400 800" overflow="visible">
+        <defs>
+            <g id="arrow">
+                <line y1="0" y2="60" fill="none" stroke="#555" stroke-width="2" />
+                <polygon fill="#777" points="0 -2 4 8 0 5 -4 8" />
+                <polygon fill="#FFD700" points="-3 55 -3 65 0 60 3 65 3 55 0 52" />
+            </g>
+            <g id="fireball">
+                <circle cx="0" cy="0" r="12" fill="red" />
+                <circle cx="0" cy="0" r="8" fill="orange" />
+                <circle cx="0" cy="0" r="4" fill="yellow" />
+            </g>
+            <g id="missile" transform="rotate(180)">
+                <rect x="-4" y="-20" width="8" height="40" fill="black" />
+                <path d="M-4,-20 L0,-35 L4,-20 Z" fill="white" />
+                <path d="M-4,10 L-10,20 L-4,20 Z" fill="black" />
+                <path d="M4,10 L10,20 L4,20 Z" fill="black" />
+            </g>
+            
+            <g id="grass">
+                <path d="M0,0 Q-2,-10 -5,-15 M0,0 Q0,-12 0,-18 M0,0 Q2,-10 5,-15" fill="none" stroke="#2d5a27" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+            <g id="rock">
+                <path d="M-10,0 Q-12,-8 0,-10 Q12,-8 10,0 Z" fill="#777" stroke="#444" stroke-width="1"/>
+            </g>
+        </defs>
+
+        <g id="ocean-layer"></g>
+        
+        <g id="land-container" transform="translate(0, -600)">
+            <rect x="-200" y="-1500" width="800" height="1500" fill="#5D3A1A" />
+            <path d="M-50,0 L450,0 L450,120 Q380,150 320,100 T210,130 T110,90 T-50,110 Z" fill="#5D3A1A" stroke="#3E2712" stroke-width="5" />
+            
+            <use href="#grass" x="40" y="-50"/> <use href="#rock" x="70" y="-20"/>
+            <use href="#grass" x="120" y="-80"/> <use href="#rock" x="200" y="-40"/>
+            <use href="#grass" x="300" y="-60"/> <use href="#grass" x="360" y="-30"/>
+            <use href="#rock" x="250" y="20"/> <use href="#grass" x="100" y="40"/>
+        </g>
+        
+        <g id="wake-layer"></g>
+        <g id="enemies-layer"></g>
+        <g id="enemy-attacks-layer"></g>
+        <g id="fx-layer"></g> 
+
+        <g id="boat-anchor" transform="translate(200, 700)">
+            <g id="boat-motion">
+                <image href="boat.png" x="-35" y="-100" width="70" height="200" />
+                <g id="bow-group" transform="translate(0, -85)">
+                    <g id="bow-visuals">
+                        <polyline fill="none" stroke="#5D3A1A" stroke-width="6" stroke-linecap="round" points="-40,0 40,0"/>
+                        <path fill="none" stroke="#74C365" stroke-width="4.5" stroke-linecap="round" d="M-40,0 C-30,-10 -20,-10 0,-10 S30,-10 40,0"/>
+                        <polyline id="string" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.9" points="-40,0 0,0 40,0" />
+                        <circle cx="0" cy="0" r="3.5" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1" />
+                    </g>
+                    <g id="arrow-preview"><use y="-50" href="#arrow"/></g>
+                </g>
+            </g>
+        </g>
+        <g id="flying-arrows"></g>
+    </svg>
+</div>
+
+<script>
+    const arrowSound = new Audio('Arrow.wav');
+    const blastSound = new Audio('destroy.wav');
+
+    const svg = document.querySelector("#game");
+    const boatAnchor = document.querySelector("#boat-anchor");
+    const boatMotion = document.querySelector("#boat-motion");
+    const oceanLayer = document.querySelector("#ocean-layer");
+    const bowGroup = document.querySelector("#bow-group");
+    const bowString = document.querySelector("#string");
+    const arrowPreview = document.querySelector("#arrow-preview");
+    const flyingArrowsContainer = document.querySelector("#flying-arrows");
+    const wakeLayer = document.querySelector("#wake-layer");
+    const enemiesLayer = document.querySelector("#enemies-layer");
+    const enemyAttacksLayer = document.querySelector("#enemy-attacks-layer");
+    const fxLayer = document.querySelector("#fx-layer");
+    const arrowDisplay = document.querySelector("#arrow-count");
+    const killDisplay = document.querySelector("#kill-count");
+    const landContainer = document.querySelector("#land-container");
+    
+    let boatPos = { x: 200, y: 700 };
+    let velocity = 0;
+    let gameOver = false;
+    let winState = false;
+    let gameTime = 0; 
+    let arrowSupply = 10;
+    let kills = 0;
+    let speedMultiplier = 1;
+    let landY = -600;
+
+    const keys = { ArrowLeft: false, ArrowRight: false };
+    let activeEnemies = [];
+
+    function updateStats() {
+        arrowDisplay.innerText = arrowSupply;
+        arrowDisplay.style.color = arrowSupply <= 0 ? "#ff4d4d" : "white";
+        killDisplay.innerText = kills;
+        speedMultiplier = 1 + (Math.floor(kills / 5) * 0.2);
+    }
+
+    function triggerBlast(x, y) {
+        blastSound.currentTime = 0;
+        blastSound.play().catch(e => console.log("Audio play blocked"));
+
+        for (let i = 0; i < 8; i++) {
+            createParticle(x, y, {
+                color: Math.random() > 0.5 ? '#ff4500' : '#ffcc00',
+                size: 15 + Math.random() * 25,
+                driftX: (Math.random() - 0.5) * 8,
+                driftY: (Math.random() - 0.5) * 8,
+                fadeSpeed: 0.05,
+                growSpeed: 1.1
+            });
+        }
+    }
+
+    function createParticle(x, y, config) {
+        const p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        p.setAttribute("cx", x); p.setAttribute("cy", y);
+        p.setAttribute("r", config.size); p.setAttribute("fill", config.color);
+        p.setAttribute("class", "exp-particle");
+        fxLayer.appendChild(p);
+        let curOpacity = 1, curSize = config.size, curX = x, curY = y;
+        function animate() {
+            curOpacity -= config.fadeSpeed;
+            curSize *= config.growSpeed;
+            curX += config.driftX; curY += config.driftY;
+            if (curOpacity > 0) {
+                p.setAttribute("opacity", curOpacity);
+                p.setAttribute("r", curSize);
+                p.setAttribute("cx", curX); p.setAttribute("cy", curY);
+                requestAnimationFrame(animate);
+            } else { p.remove(); }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function createOceanWave() {
+        if (gameOver || winState) return;
+        const wave = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        wave.setAttribute("class", "ocean-wave");
+        const startX = Math.random() * 400;
+        const startY = -50;
+        oceanLayer.appendChild(wave);
+        let progress = 0;
+        function animate() {
+            progress += 0.005 * speedMultiplier;
+            const y = startY + (progress * 900);
+            wave.setAttribute("d", `M${startX + Math.sin(progress * 10) * 20},${y} q20,-10 40,0`);
+            wave.style.opacity = Math.sin(progress * Math.PI);
+            if (progress < 1 && !gameOver) requestAnimationFrame(animate);
+            else wave.remove();
+        }
+        animate();
+    }
+    setInterval(createOceanWave, 800);
+
+    function createWake(targetX, targetY, isEnemy = false) {
+        if (gameOver || winState) return;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        line.setAttribute("class", "wake-line");
+        const side = Math.random() > 0.5 ? 1 : -1;
+        const startX = targetX + (side * 2), startY = isEnemy ? targetY + 90 : targetY - 90; 
+        wakeLayer.appendChild(line);
+        let progress = 0;
+        function animate() {
+            progress += 0.025;
+            const x = startX + (side * progress * 100);
+            const y = isEnemy ? startY - (progress * 200) : startY + (progress * 200);
+            line.setAttribute("d", `M${startX},${startY} Q${startX + (side * progress * 20)},${isEnemy ? startY - 40 : startY + 40} ${x},${y}`);
+            line.style.opacity = 1 - progress;
+            if (progress < 1) requestAnimationFrame(animate);
+            else line.remove();
+        }
+        animate();
+    }
+    setInterval(() => createWake(boatPos.x, boatPos.y), 110);
+
+    function endGame() {
+        if (gameOver || winState) return;
+        gameOver = true;
+        triggerBlast(boatPos.x, boatPos.y);
+        boatAnchor.style.display = "none";
+        // MODIFIED: Show dark blue panel instead of alert
+        setTimeout(() => { 
+            document.getElementById("game-over-screen").style.display = "flex";
+        }, 1000);
+    }
+
+    function winGame() {
+        if (winState) return;
+        winState = true;
+        velocity = 0;
+        document.querySelector("#win-screen").style.display = "flex";
+    }
+
+    window.addEventListener("keydown", (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = true; });
+    window.addEventListener("keyup", (e) => { if (keys.hasOwnProperty(e.code)) keys[e.code] = false; });
+    window.addEventListener("deviceorientation", (e) => { if (e.gamma !== null && !winState) velocity = e.gamma * 0.15; });
+
+    function updateMovement() {
+        if (gameOver) return;
+        if (!winState) {
+            gameTime += 0.05;
+            if (keys.ArrowLeft) velocity -= 0.8 * speedMultiplier;
+            if (keys.ArrowRight) velocity += 0.8 * speedMultiplier;
+            velocity *= 0.92;
+            boatPos.x += velocity;
+            if (boatPos.x < 40) { boatPos.x = 40; velocity = 0; }
+            if (boatPos.x > 360) { boatPos.x = 360; velocity = 0; }
+
+            if (kills >= 25) {
+                landY += 2;
+                landContainer.setAttribute("transform", `translate(0, ${landY})`);
+                if (landY + 110 >= boatPos.y - 80) winGame();
+            }
+        }
+        const tilt = velocity * 0.5; 
+        const bob = winState ? 0 : Math.sin(gameTime) * 3;
+        boatAnchor.setAttribute("transform", `translate(${boatPos.x}, ${boatPos.y + bob})`);
+        boatMotion.setAttribute("transform", `rotate(${tilt})`);
+        requestAnimationFrame(updateMovement);
+    }
+    updateMovement();
+
+    function spawnEnemy() {
+        if (gameOver || winState || kills >= 25) return;
+        const src = ["UNboat.png", "Americaboat.png"][Math.floor(Math.random() * 2)];
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const motionG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        img.setAttribute("href", src); img.setAttribute("width", "70"); img.setAttribute("height", "200");
+        img.setAttribute("x", "-35"); img.setAttribute("y", "-100");
+        motionG.appendChild(img); g.appendChild(motionG);
+        enemiesLayer.appendChild(g);
+        let enemy = { element: g, x: 50 + Math.random() * 300, y: -150, hit: false, offset: Math.random() * 10, type: src };
+        activeEnemies.push(enemy);
+
+        const fireInterval = setInterval(() => {
+            if (enemy.hit || gameOver || winState || enemy.y < 0 || enemy.y > 600) return;
+            spawnEnemyAttack(enemy);
+        }, 2000 / speedMultiplier);
+
+        const enemyWakeInt = setInterval(() => {
+            if (!enemy.hit && !gameOver && !winState) createWake(enemy.x, enemy.y, true);
+            else { clearInterval(enemyWakeInt); clearInterval(fireInterval); }
+        }, 150);
+
+        function move() {
+            if (enemy.hit || gameOver || winState) { clearInterval(enemyWakeInt); clearInterval(fireInterval); return; }
+            enemy.y += 2 * speedMultiplier;
+            g.setAttribute("transform", `translate(${enemy.x}, ${enemy.y + Math.sin(gameTime + enemy.offset) * 4}) rotate(180)`);
+            if (Math.abs(enemy.x - boatPos.x) < 50 && Math.abs(enemy.y - boatPos.y) < 150) endGame();
+            if (enemy.y > 950) { g.remove(); activeEnemies = activeEnemies.filter(e => e !== enemy); }
+            else requestAnimationFrame(move);
+        }
+        move();
+    }
+
+    function spawnEnemyAttack(enemy) {
+        const attack = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        attack.setAttribute("href", enemy.type === "UNboat.png" ? "#fireball" : "#missile");
+        enemyAttacksLayer.appendChild(attack);
+        let ax = enemy.x, ay = enemy.y + 80;
+        function animate() {
+            if (gameOver || winState) { attack.remove(); return; }
+            ay += 5 * speedMultiplier;
+            attack.setAttribute("transform", `translate(${ax}, ${ay})`);
+            if (Math.abs(ax - boatPos.x) < 30 && Math.abs(ay - (boatPos.y - 30)) < 60) { attack.remove(); endGame(); return; }
+            if (ay > 900) attack.remove();
+            else requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+    }
+    setInterval(spawnEnemy, 3500);
+
+    function getSVGPoint(e) {
+        const pt = svg.createSVGPoint();
+        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        pt.x = clientX; pt.y = clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    let isDragging = false;
+    let dragData = { angle: -Math.PI/2, distance: 0 };
+
+    function fireArrow() {
+        if (dragData.distance < 15 || gameOver || winState || arrowSupply <= 0) return;
+        
+        arrowSound.currentTime = 0;
+        arrowSound.play().catch(e => console.log("Audio play blocked"));
+
+        arrowSupply--; updateStats();
+        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        arrow.setAttribute("href", "#arrow");
+        flyingArrowsContainer.appendChild(arrow);
+        const startPivot = { x: boatPos.x, y: boatPos.y - 85 };
+        let ax = startPivot.x, ay = startPivot.y;
+        const power = dragData.distance * 7.5;
+        const fireAngle = dragData.angle + Math.PI;
+        const vx = Math.cos(fireAngle) * (power / 8), vy = Math.sin(fireAngle) * (power / 8);
+
+        function animateFrame() {
+            ax += vx; ay += vy;
+            arrow.setAttribute("transform", `translate(${ax}, ${ay}) rotate(${Math.atan2(vy, vx)*180/Math.PI + 90})`);
+            for (let enemy of activeEnemies) {
+                if (!enemy.hit && Math.abs(ax - enemy.x) < 35 && Math.abs(ay - enemy.y) < 100) {
+                    enemy.hit = true; arrow.remove();
+                    triggerBlast(enemy.x, enemy.y); 
+                    kills++; arrowSupply += 2; updateStats();
+                    enemy.element.remove();
+                    activeEnemies = activeEnemies.filter(e => e !== enemy);
+                    return;
+                }
+            }
+            if (ay < -100 || ay > 900 || ax < -50 || ax > 450) arrow.remove();
+            else requestAnimationFrame(animateFrame);
+        }
+        requestAnimationFrame(animateFrame);
+    }
+
+    function updateAim(e) {
+        if (!isDragging || gameOver || winState) return;
+        const point = getSVGPoint(e);
+        const pivot = { x: boatPos.x, y: boatPos.y - 85 };
+        let dx = point.x - pivot.x, dy = point.y - pivot.y;
+        dragData.distance = Math.min(Math.sqrt(dx*dx + dy*dy), 75);
+        dragData.angle = Math.atan2(dy, dx);
+        const rot = (dragData.angle + Math.PI*1.5) * (180 / Math.PI);
+        bowGroup.setAttribute("transform", `translate(0, -85) rotate(${rot})`);
+        bowString.setAttribute("points", `-40,0 0,${dragData.distance} 40,0`);
+        arrowPreview.setAttribute("transform", `translate(0, ${dragData.distance})`);
+        arrowPreview.style.opacity = arrowSupply > 0 ? "1" : "0";
+    }
+
+    svg.addEventListener("mousedown", (e) => { isDragging = true; updateAim(e); });
+    svg.addEventListener("touchstart", (e) => { isDragging = true; updateAim(e); e.preventDefault(); }, {passive: false});
+    window.addEventListener("mousemove", updateAim);
+    window.addEventListener("touchmove", updateAim, {passive: false});
+    window.addEventListener("mouseup", () => { if(isDragging) fireArrow(); isDragging = false; resetBow(); });
+    window.addEventListener("touchend", () => { if(isDragging) fireArrow(); isDragging = false; resetBow(); });
+
+    function resetBow() {
+        bowGroup.setAttribute("transform", `translate(0, -85) rotate(0)`);
+        bowString.setAttribute("points", `-40,0 0,0 40,0`);
+        arrowPreview.setAttribute("transform", `translate(0, 0)`);
+    }
+
+    updateStats();
+
+    // NEW: Intro Text logic - Fade and remove after 2 seconds
+    setTimeout(() => {
+        const intro = document.getElementById('intro-text');
+        if(intro) {
+            intro.style.opacity = '0';
+            setTimeout(() => intro.remove(), 1000);
+        }
+    }, 2000);
+
+</script>
+</body>
+</html>

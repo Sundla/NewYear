@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jigsaw Puzzle | Camera Puzzle + Classic Slider</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a2a32 0%, #0f1a1f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(25, 35, 45, 0.8);
+            backdrop-filter: blur(6px);
+            border-radius: 40px;
+            padding: 20px 15px 20px 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .puzzle-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: #2d3e3a;
+            background-image: radial-gradient(circle at 20% 35%, rgba(70, 100, 90, 0.5) 2%, transparent 2.5%);
+            background-size: 30px 30px;
+            border-radius: 36px;
+            padding: 22px;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15), 0 12px 28px black;
+        }
+
+        /* header area: timer + hint + camera */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .timer-card {
+            background: #0f1a1fcc;
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            color: #f0f3f5;
+            font-weight: bold;
+            box-shadow: inset 0 1px 1px #ffffff20, 0 5px 12px black;
+            font-family: 'Courier New', monospace;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            flex: 1;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .timer-label {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            margin-right: 5px;
+            font-weight: normal;
+            color: #bccec0;
+        }
+
+        .action-btn {
+            background: #4a6f5e;
+            background: linear-gradient(135deg, purple, red);
+            border: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .action-btn:active {
+            transform: scale(0.96);
+            background: #4f7262;
+        }
+
+        /* board */
+        .board {
+            position: relative;
+            margin: 0 auto;
+            background-color: #1e2a24;
+            border-radius: 8px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5), inset 0 0 0 2px #cbbf91;
+        }
+
+        .piece {
+            position: absolute;
+            background-size: cover;
+            background-repeat: no-repeat;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.05s linear, left 0.18s cubic-bezier(0.2, 0.9, 0.4, 1.1), top 0.18s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            cursor: pointer;
+            will-change: left, top;
+            border-radius: 0px;
+        }
+
+        .piece:active {
+            transform: scale(0.97);
+        }
+
+        /* hint overlay */
+        .hint-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.25s ease;
+            cursor: pointer;
+        }
+        .hint-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .hint-image-container {
+            background: #2c3e2f;
+            padding: 20px;
+            border-radius: 32px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .hint-image {
+            display: block;
+            max-width: 80vw;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: 0 6px 14px black;
+            border: 3px solid #e9c889;
+        }
+
+        /* camera modal */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .camera-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .video-preview {
+            width: 90vw;
+            max-width: 480px;
+            border-radius: 28px;
+            border: 3px solid #ffd966;
+            transform: scaleX(-1);
+        }
+        .camera-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .cam-btn {
+            background: #5a7d6c;
+            padding: 10px 28px;
+            font-size: 1rem;
+            border-radius: 60px;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .close-cam {
+            background: #8b3c2c;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #5a7d6c;
+            background: linear-gradient(135deg, #638a78, #3d5e50);
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 8px 24px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .grid-selector {
+            background: rgba(0,0,0,0.55);
+            border-radius: 60px;
+            padding: 5px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .grid-selector label {
+            color: #e6f0ea;
+            font-weight: 500;
+        }
+
+        select {
+            background: #e9efea;
+            border-radius: 50px;
+            padding: 6px 12px;
+            font-weight: bold;
+            border: none;
+            font-family: monospace;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #d4af37dd;
+            backdrop-filter: blur(10px);
+            color: #1f3b2c;
+            font-weight: bold;
+            font-size: 1.8rem;
+            padding: 14px 32px;
+            border-radius: 60px;
+            z-index: 200;
+            white-space: nowrap;
+            box-shadow: 0 12px 25px black;
+            text-align: center;
+            pointer-events: none;
+            animation: fadePop 1.2s ease forwards;
+        }
+
+        @keyframes fadePop {
+            0% { opacity: 0; transform: translate(-50%, -30%) scale(0.7);}
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05);}
+            100% { opacity: 0; transform: translate(-50%, -70%) scale(0.9); visibility: hidden;}
+        }
+
+        @media (max-width: 560px) {
+            .timer-card { font-size: 1rem; padding: 5px 12px; min-width: 120px; }
+            .action-btn { padding: 6px 14px; font-size: 0.75rem; }
+            button { padding: 6px 16px; font-size: 0.85rem; }
+            .celebration { font-size: 1.2rem; padding: 8px 18px; white-space: nowrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="puzzle-wrapper">
+        <div class="game-header">
+            <div class="timer-card">
+                <span class="timer-label">TIME</span>
+                <span id="timerDisplay">00:00:00</span>
+            </div>
+            <button id="hintBtn" class="action-btn">HINT</button>
+            <button id="cameraBtn" class="action-btn">CAMERA</button>
+        </div>
+
+        <div id="puzzleBoard" class="board"></div>
+
+        <div class="info-panel">
+            <button id="shuffleBtn">SHUFFLE</button>
+            <div class="grid-selector">
+                <label>GRID</label>
+                <select id="gridSizeSelect">
+                    <option value="3">3x3</option>
+                    <option value="4">4x4</option>
+                    <option value="5">5x5</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hint Overlay -->
+<div id="hintOverlay" class="hint-overlay">
+    <div class="hint-image-container">
+        <img id="hintFullImage" class="hint-image" alt="Solution">
+        <div class="close-hint" style="text-align:center; margin-top:12px; color:white;">Tap anywhere to close</div>
+    </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="camera-modal">
+    <video id="video" class="video-preview" autoplay playsinline></video>
+    <div class="camera-controls">
+        <button id="captureBtn" class="cam-btn">CAPTURE</button>
+        <button id="closeCamBtn" class="cam-btn close-cam">CLOSE</button>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ---------- DOM elements ----------
+        const boardElement = document.getElementById('puzzleBoard');
+        const timerDisplaySpan = document.getElementById('timerDisplay');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const gridSizeSelect = document.getElementById('gridSizeSelect');
+        const hintBtn = document.getElementById('hintBtn');
+        const hintOverlay = document.getElementById('hintOverlay');
+        const hintFullImage = document.getElementById('hintFullImage');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const cameraModal = document.getElementById('cameraModal');
+        const video = document.getElementById('video');
+        const captureBtn = document.getElementById('captureBtn');
+        const closeCamBtn = document.getElementById('closeCamBtn');
+
+        // Puzzle state
+        let currentGridSize = 3;
+        let pieceSize = 0;
+        let boardWidth = 0;
+        let piecesArray = [];      // {dom, correctRow, correctCol, currentRow, currentCol}
+        let emptyRow = -1, emptyCol = -1;
+        let isGameComplete = false;
+        
+        // Timer
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        
+        // Image source (default puzzle.png, can be replaced by camera)
+        let puzzleImageUrl = 'puzzle.png';
+        let imageLoaded = false;
+        let currentImageSrc = 'puzzle.png';
+        
+        // Helper: get board size (responsive square)
+        function getOptimalBoardSize() {
+            const wrapper = document.querySelector('.puzzle-wrapper');
+            let maxWidth = wrapper ? wrapper.getBoundingClientRect().width - 20 : 500;
+            maxWidth = Math.min(maxWidth, window.innerWidth - 70, 560);
+            maxWidth = Math.max(maxWidth, 240);
+            return Math.floor(maxWidth);
+        }
+        
+        function updateBoardDimensions() {
+            let newSize = getOptimalBoardSize();
+            boardWidth = newSize;
+            pieceSize = Math.floor(boardWidth / currentGridSize);
+            boardElement.style.width = boardWidth + 'px';
+            boardElement.style.height = boardWidth + 'px';
+        }
+        
+        // Timer functions
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            isTimerRunning = false;
+        }
+        
+        function startTimer() {
+            if (timerInterval) stopTimer();
+            if (isGameComplete) return;
+            isTimerRunning = true;
+            timerInterval = setInterval(() => {
+                if (!isGameComplete && isTimerRunning) {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+        
+        function resetTimer() {
+            stopTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+            if (!isGameComplete) startTimer();
+        }
+        
+        function updateTimerDisplay() {
+            const hours = Math.floor(timerSeconds / 3600);
+            const minutes = Math.floor((timerSeconds % 3600) / 60);
+            const seconds = timerSeconds % 60;
+            timerDisplaySpan.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function getPieceAt(row, col) {
+            for (let p of piecesArray) {
+                if (p.currentRow === row && p.currentCol === col) return p;
+            }
+            return null;
+        }
+        
+        // Move piece into empty slot (adjacent check)
+        function swapPieceWithEmpty(piece) {
+            if (isGameComplete) return false;
+            const pieceRow = piece.currentRow;
+            const pieceCol = piece.currentCol;
+            const rowDiff = Math.abs(pieceRow - emptyRow);
+            const colDiff = Math.abs(pieceCol - emptyCol);
+            if ((rowDiff + colDiff) !== 1) return false;
+            
+            piece.currentRow = emptyRow;
+            piece.currentCol = emptyCol;
+            piece.dom.style.left = (emptyCol * pieceSize) + 'px';
+            piece.dom.style.top = (emptyRow * pieceSize) + 'px';
+            
+            emptyRow = pieceRow;
+            emptyCol = pieceCol;
+            checkVictory();
+            return true;
+        }
+        
+        function onPieceClick(piece) {
+            if (isGameComplete) return;
+            const success = swapPieceWithEmpty(piece);
+            if (!success) {
+                piece.dom.style.transform = 'scale(0.96)';
+                setTimeout(() => { if(piece.dom) piece.dom.style.transform = ''; }, 120);
+            } else {
+                piece.dom.style.transform = 'scale(1.02)';
+                setTimeout(() => { if(piece.dom) piece.dom.style.transform = ''; }, 150);
+            }
+        }
+        
+        function checkVictory() {
+            let allCorrect = true;
+            for (let p of piecesArray) {
+                if (p.currentRow !== p.correctRow || p.currentCol !== p.correctCol) {
+                    allCorrect = false;
+                    break;
+                }
+            }
+            if (allCorrect && emptyRow === currentGridSize-1 && emptyCol === currentGridSize-1) {
+                if (!isGameComplete) {
+                    isGameComplete = true;
+                    stopTimer();
+                    showCelebration();
+                }
+            }
+        }
+        
+        function showCelebration() {
+            const div = document.createElement('div');
+            div.className = 'celebration';
+            div.innerText = 'PUZZLE SOLVED!';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1500);
+        }
+        
+        // ---------- GUARANTEED UNSOLVED SHUFFLE (never results in completed puzzle) ----------
+        function performRandomShuffle(steps = 160) {
+            const neighbors = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            for (let s = 0; s < steps; s++) {
+                const validMoves = [];
+                for (let n of neighbors) {
+                    const nr = emptyRow + n[0], nc = emptyCol + n[1];
+                    if (nr >= 0 && nr < currentGridSize && nc >= 0 && nc < currentGridSize) {
+                        const p = getPieceAt(nr, nc);
+                        if (p) validMoves.push(p);
+                    }
+                }
+                if (validMoves.length) {
+                    const rand = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    swapPieceWithEmpty(rand);
+                }
+            }
+            // POST-SHUFFLE SOLVED CHECK & CORRECTION: if puzzle ended up solved, break it with 4-6 forced moves
+            let solvedFlag = true;
+            for (let p of piecesArray) {
+                if (p.currentRow !== p.correctRow || p.currentCol !== p.correctCol) { solvedFlag = false; break; }
+            }
+            if (solvedFlag && emptyRow === currentGridSize-1 && emptyCol === currentGridSize-1) {
+                // apply extra moves to make sure it's unsolved
+                for (let fix = 0; fix < 6; fix++) {
+                    const moves = [];
+                    for (let n of neighbors) {
+                        const nr = emptyRow + n[0], nc = emptyCol + n[1];
+                        if (nr >= 0 && nr < currentGridSize && nc >= 0 && nc < currentGridSize) {
+                            const p = getPieceAt(nr, nc);
+                            if (p) moves.push(p);
+                        }
+                    }
+                    if (moves.length) {
+                        const randP = moves[Math.floor(Math.random() * moves.length)];
+                        swapPieceWithEmpty(randP);
+                    }
+                }
+            }
+        }
+        
+        // rebuild puzzle from given image URL, ensures fresh unsolved state
+        function rebuildPuzzleWithImage(imageUrl, resetTimerFlag = true) {
+            if (!imageUrl) return;
+            currentImageSrc = imageUrl;
+            puzzleImageUrl = imageUrl;
+            
+            stopTimer();
+            isGameComplete = false;
+            updateBoardDimensions();
+            boardElement.innerHTML = '';
+            piecesArray = [];
+            
+            const sz = pieceSize;
+            // create pieces for all cells except bottom-right (empty)
+            for (let row = 0; row < currentGridSize; row++) {
+                for (let col = 0; col < currentGridSize; col++) {
+                    if (row === currentGridSize-1 && col === currentGridSize-1) {
+                        emptyRow = row;
+                        emptyCol = col;
+                        continue;
+                    }
+                    const pieceDiv = document.createElement('div');
+                    pieceDiv.className = 'piece';
+                    pieceDiv.style.width = sz + 'px';
+                    pieceDiv.style.height = sz + 'px';
+                    pieceDiv.style.left = (col * sz) + 'px';
+                    pieceDiv.style.top = (row * sz) + 'px';
+                    pieceDiv.style.backgroundImage = `url('${puzzleImageUrl}')`;
+                    pieceDiv.style.backgroundSize = `${boardWidth}px ${boardWidth}px`;
+                    pieceDiv.style.backgroundPosition = `${-(col * sz)}px ${-(row * sz)}px`;
+                    pieceDiv.style.backgroundRepeat = 'no-repeat';
+                    pieceDiv.style.borderRadius = '0px';
+                    
+                    const pieceObj = {
+                        dom: pieceDiv,
+                        correctRow: row,
+                        correctCol: col,
+                        currentRow: row,
+                        currentCol: col,
+                    };
+                    piecesArray.push(pieceObj);
+                    boardElement.appendChild(pieceDiv);
+                    pieceDiv.addEventListener('click', (function(p) {
+                        return function() { onPieceClick(p); };
+                    })(pieceObj));
+                }
+            }
+            // Perform random shuffle that guarantees unsolved state
+            performRandomShuffle(180);
+            if (resetTimerFlag) {
+                timerSeconds = 0;
+                updateTimerDisplay();
+                stopTimer();
+                startTimer();
+            }
+            imageLoaded = true;
+            // update hint image source
+            hintFullImage.src = currentImageSrc;
+        }
+        
+        // Shuffle Button: reshuffle current image (guaranteed unsolved)
+        function shuffleGame() {
+            if (!imageLoaded && currentImageSrc) {
+                rebuildPuzzleWithImage(currentImageSrc, true);
+                return;
+            }
+            if (!piecesArray.length) return;
+            stopTimer();
+            isGameComplete = false;
+            // reshuffle using current pieces state by moving empty around a lot + correction
+            performRandomShuffle(180);
+            // reset timer but continue from where it was? Actually better reset move timer seconds to keep track?
+            // but user expects shuffle to reset timer? let's reset timer to 0 for fresh start.
+            timerSeconds = 0;
+            updateTimerDisplay();
+            stopTimer();
+            startTimer();
+            // re-check victory flag
+            checkVictory();
+        }
+        
+        // change grid size
+        function changeGridSize() {
+            let newSize = parseInt(gridSizeSelect.value, 10);
+            if (newSize === currentGridSize && piecesArray.length > 0) return;
+            currentGridSize = newSize;
+            if (currentImageSrc) {
+                rebuildPuzzleWithImage(currentImageSrc, true);
+            } else {
+                loadDefaultImageAndRebuild();
+            }
+        }
+        
+        // Resize handler
+        function handleResize() {
+            if (!boardElement || piecesArray.length === 0) return;
+            const newWidth = getOptimalBoardSize();
+            if (newWidth === boardWidth) return;
+            boardWidth = newWidth;
+            const newPieceSize = Math.floor(boardWidth / currentGridSize);
+            if (newPieceSize <= 0) return;
+            pieceSize = newPieceSize;
+            boardElement.style.width = boardWidth + 'px';
+            boardElement.style.height = boardWidth + 'px';
+            for (let p of piecesArray) {
+                const div = p.dom;
+                div.style.width = pieceSize + 'px';
+                div.style.height = pieceSize + 'px';
+                div.style.left = (p.currentCol * pieceSize) + 'px';
+                div.style.top = (p.currentRow * pieceSize) + 'px';
+                div.style.backgroundSize = `${boardWidth}px ${boardWidth}px`;
+                div.style.backgroundPosition = `${-(p.correctCol * pieceSize)}px ${-(p.correctRow * pieceSize)}px`;
+            }
+        }
+        
+        // Hint functionality
+        function showHint() {
+            if (currentImageSrc) {
+                hintFullImage.src = currentImageSrc;
+                hintOverlay.classList.add('active');
+            }
+        }
+        function hideHint() { hintOverlay.classList.remove('active'); }
+        
+        // ---------- CAMERA: capture square photo and create puzzle ----------
+        let stream = null;
+        async function openCamera() {
+            cameraModal.classList.add('active');
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                const constraints = { video: { facingMode: 'user', width: { ideal: 800 }, height: { ideal: 800 } } };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                await video.play();
+            } catch (err) {
+                alert("Camera access failed. Using default image.");
+                closeCameraModal();
+            }
+        }
+        
+        function closeCameraModal() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            cameraModal.classList.remove('active');
+        }
+        
+        function captureSquarePhoto() {
+            if (!video.videoWidth) return;
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+            const size = Math.min(videoWidth, videoHeight);
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            // Since video is mirrored (scaleX -1 in CSS), we need to capture mirrored? but we flip back for natural look
+            // To get natural orientation but square crop: take center square from video
+            const sourceX = (videoWidth - size) / 2;
+            const sourceY = (videoHeight - size) / 2;
+            ctx.drawImage(video, sourceX, sourceY, size, size, 0, 0, 512, 512);
+            // optional: mirror back because front camera shows mirrored? we keep as is user-friendly
+            const photoDataUrl = canvas.toDataURL('image/png');
+            // set new puzzle image
+            currentImageSrc = photoDataUrl;
+            puzzleImageUrl = photoDataUrl;
+            rebuildPuzzleWithImage(photoDataUrl, true);
+            closeCameraModal();
+        }
+        
+        // default fallback image (puzzle.png if exists, else gradient)
+        function loadDefaultImageAndRebuild() {
+            const img = new Image();
+            img.onload = function() {
+                currentImageSrc = img.src;
+                puzzleImageUrl = img.src;
+                rebuildPuzzleWithImage(img.src, true);
+            };
+            img.onerror = function() {
+                // fallback canvas pattern (solid but usable)
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#3f6654';
+                ctx.fillRect(0,0,512,512);
+                ctx.fillStyle = '#f5e2b0';
+                ctx.font = 'bold 36px "Segoe UI"';
+                ctx.textAlign = 'center';
+                ctx.fillText('PUZZLE', 256, 270);
+                ctx.font = '24px monospace';
+                ctx.fillStyle = '#fff9e8';
+                ctx.fillText('sliding puzzle', 256, 360);
+                const fallbackUrl = canvas.toDataURL();
+                currentImageSrc = fallbackUrl;
+                puzzleImageUrl = fallbackUrl;
+                rebuildPuzzleWithImage(fallbackUrl, true);
+            };
+            img.src = 'puzzle.png';
+        }
+        
+        // ---------- EVENT LISTENERS ----------
+        shuffleBtn.addEventListener('click', () => shuffleGame());
+        gridSizeSelect.addEventListener('change', () => changeGridSize());
+        hintBtn.addEventListener('click', showHint);
+        hintOverlay.addEventListener('click', hideHint);
+        cameraBtn.addEventListener('click', openCamera);
+        captureBtn.addEventListener('click', captureSquarePhoto);
+        closeCamBtn.addEventListener('click', closeCameraModal);
+        
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (piecesArray.length && imageLoaded) handleResize();
+                else if (currentImageSrc) rebuildPuzzleWithImage(currentImageSrc, false);
+            }, 100);
+        });
+        
+        // initial load
+        loadDefaultImageAndRebuild();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Memory Match Win Big</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- RESET & GLOBAL ---------- */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        html, body { height: 100%; width: 100%; background: #0a0f1e; font-family: "Arial", sans-serif; overflow-x: hidden; }
+        body { background: radial-gradient(circle at 20% 30%, #1a1f2e, #03060c); }
+        .wrap { position: relative; height: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        
+        #timer {
+            font-family: 'Anton', sans-serif;
+            color: #e4a022;
+            font-size: 48px;
+            padding: 20px 0 10px 0;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .game { transform-style: preserve-3d; perspective: 500px; width: 100%; max-width: 1200px; padding: 10px 20px; display: flex; flex-wrap: wrap; align-content: center; flex-grow: 1; }
+
+        .card { width: 16.66666%; height: 20vh; min-height: 110px; padding: 8px; perspective: 500px; position: relative; cursor: pointer; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+        .inside { width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1); background: #fff; border-radius: 15px; position: relative; }
+        
+        .inside.picked, .inside.matched { transform: rotateY(180deg); }
+
+        /* WAVEY LIGHT EFFECT FOR MATCHED CARDS */
+        .inside.matched {
+            animation: matchGlow 0.8s ease-out forwards;
+            box-shadow: 0 0 20px rgba(228, 160, 34, 0.8);
+        }
+
+        @keyframes matchGlow {
+            0% { box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0.8); border: 1px solid #fff; }
+            50% { box-shadow: 0 0 25px 10px rgba(228, 160, 34, 0.5); border: 1px solid #e4a022; }
+            100% { box-shadow: 0 0 10px 2px rgba(228, 160, 34, 0.3); border: 1px solid #ffdf8c; }
+        }
+
+        .front, .back { position: absolute; left: 0; top: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; border: 1px solid rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .front { transform: rotateY(-180deg); background-color: #fef5e8; background-repeat: no-repeat; background-position: center; background-size: contain; }
+        .back { background: linear-gradient(145deg, #2c3e66, #121d32); background-image: url('backside.png'); background-size: cover; border: 1px solid #ffdf8c; }
+
+        /* IMAGE ASSIGNMENTS */
+        .card[data-id="1"] .front { background-image: url('1.png'); }
+        .card[data-id="2"] .front { background-image: url('2.png'); }
+        .card[data-id="3"] .front { background-image: url('3.png'); }
+        .card[data-id="4"] .front { background-image: url('4.png'); }
+        .card[data-id="5"] .front { background-image: url('5.png'); }
+        .card[data-id="6"] .front { background-image: url('6.png'); }
+        .card[data-id="7"] .front { background-image: url('7.png'); }
+        .card[data-id="8"] .front { background-image: url('8.png'); }
+        .card[data-id="9"] .front { background-image: url('9.png'); }
+        .card[data-id="10"] .front { background-image: url('10.png'); }
+        .card[data-id="11"] .front { background-image: url('11.png'); }
+        .card[data-id="12"] .front { background-image: url('12.png'); }
+
+        .controls { padding: 10px 0 30px; text-align: center; width: 100%; }
+        .change-btn {
+            font-family: 'Anton', sans-serif;
+            padding: 10px 30px; font-size: 16px; cursor: pointer; border-radius: 50px;
+            background: linear-gradient(135deg, #e4a022, #b37a0f); color: #fff; border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-overlay { display: none; background: rgba(0, 0, 0, 0.88); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
+        .modal { display: none; position: relative; width: 520px; max-width: 90%; margin: 0 auto; background: #fefdf7; top: 50%; transform: translateY(-50%); padding: 32px 24px; border-radius: 40px; text-align: center; }
+        .winner { font-size: 50px; font-family: 'Anton', sans-serif; color: #e4a022; }
+        .final-score { font-size: 24px; font-weight: bold; color: #333; margin: 15px 0; }
+        .restart { font-family: 'Anton', sans-serif; padding: 12px 40px; font-size: 24px; cursor: pointer; border-radius: 50px; background: #333; color: #fff; border: none; }
+
+        #player-wrapper { position: absolute; top: -9999px; left: -9999px; visibility: hidden; }
+
+        @media (max-width: 780px) { .card { width: 25%; height: 14vh; padding: 5px; } #timer { font-size: 36px; } }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div id="player-wrapper"><div id="yt-player"></div></div>
+    <div id="timer">00:00:00</div>
+    <div class="game"></div>
+    <div class="controls">
+        <button class="change-btn" id="changeMusic">CHANGE MUSIC</button>
+    </div>
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2 class="winner">YOU WIN!</h2>
+            <div class="final-score" id="scoreText">Score: 00:00:00</div>
+            <button class="restart">PLAY AGAIN</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+    let player;
+    let musicStarted = false;
+    let currentSongIndex = 0;
+    let startTime, timerInterval, timerRunning = false;
+    const playlist = ['tUMc_-Bcunk', 'KGR4luznRnY', 'HhoATZ1Imtw'];
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('yt-player', {
+            height: '0', width: '0',
+            videoId: playlist[currentSongIndex],
+            playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1 },
+            events: { 'onReady': (e) => e.target.setVolume(60) }
+        });
+    }
+
+    function startTimer() {
+        if (!timerRunning) {
+            timerRunning = true;
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+
+    function updateTimer() {
+        let diff = Date.now() - startTime;
+        let h = Math.floor(diff / 3600000);
+        let m = Math.floor((diff % 3600000) / 60000);
+        let s = Math.floor((diff % 60000) / 1000);
+        document.getElementById("timer").innerText = 
+            (h < 10 ? "0"+h : h) + ":" + (m < 10 ? "0"+m : m) + ":" + (s < 10 ? "0"+s : s);
+    }
+
+    function toggleMusic() {
+        if (!musicStarted && player) { player.playVideo(); musicStarted = true; }
+    }
+
+    (function(){
+        const Memory = {
+            init: function(cards) {
+                this.cardsArray = [...cards, ...cards];
+                this.shuffle(this.cardsArray);
+                this.$game = document.querySelector(".game");
+                this.setup();
+            },
+            setup: function() {
+                let html = "";
+                this.cardsArray.forEach(c => {
+                    html += `<div class="card" data-id="${c.id}"><div class="inside"><div class="front"></div><div class="back"></div></div></div>`;
+                });
+                this.$game.innerHTML = html;
+                this.guess = null;
+                this.bindEvents();
+            },
+            bindEvents: function() {
+                document.querySelectorAll(".card").forEach(c => {
+                    c.addEventListener("click", (e) => {
+                        toggleMusic(); 
+                        startTimer();
+                        this.cardClicked(e.currentTarget);
+                    });
+                });
+                document.getElementById("changeMusic").addEventListener("click", () => {
+                    toggleMusic();
+                    currentSongIndex = (currentSongIndex + 1) % playlist.length;
+                    player.loadVideoById(playlist[currentSongIndex]);
+                });
+                document.querySelector(".restart").addEventListener("click", () => location.reload());
+            },
+            cardClicked: function(card) {
+                const inside = card.querySelector(".inside");
+                if (inside.classList.contains("picked") || inside.classList.contains("matched")) return;
+                
+                inside.classList.add("picked");
+
+                if (!this.guess) {
+                    this.guess = card;
+                } else {
+                    const card1 = this.guess;
+                    const card2 = card;
+                    this.guess = null; 
+
+                    if (card1.dataset.id === card2.dataset.id) {
+                        card1.querySelector(".inside").classList.add("matched");
+                        card2.querySelector(".inside").classList.add("matched");
+                        if (document.querySelectorAll(".matched").length === 24) this.win();
+                    } else {
+                        setTimeout(() => {
+                            card1.querySelector(".inside").classList.remove("picked");
+                            card2.querySelector(".inside").classList.remove("picked");
+                        }, 600);
+                    }
+                }
+            },
+            win: function() {
+                clearInterval(timerInterval);
+                document.getElementById("scoreText").innerText = "Score: " + document.getElementById("timer").innerText;
+                setTimeout(() => {
+                    document.querySelector(".modal-overlay").style.display = "block";
+                    document.querySelector(".modal").style.display = "block";
+                }, 500);
+            },
+            shuffle: function(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+        };
+
+        Memory.init([{id:1},{id:2},{id:3},{id:4},{id:5},{id:6},{id:7},{id:8},{id:9},{id:10},{id:11},{id:12}]);
+    })();
+</script>
+</body>
+</html>

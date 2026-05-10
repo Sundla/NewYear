@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TANK WARS</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
+    * { box-sizing: border-box; padding: 0; margin: 0; user-select: none; font-family: 'Quicksand', sans-serif; }
+    
+    body { background-color: #1a1a1a; overflow: hidden; color: white; touch-action: none; }
+    
+    .status { position: fixed; top: 10px; width: 100%; display: flex; justify-content: space-around; z-index: 100; text-shadow: 2px 2px #000; background: rgba(0,0,0,0.7); padding: 10px 0; border-bottom: 3px solid #FF9933; }
+    
+    .viewport { position: relative; width: 100vw; height: 380px; margin-top: 65px; border-top: 4px solid #333; border-bottom: 4px solid #333; overflow: hidden; background: #edc9af; }
+    
+    #world { position: absolute; top: 0; left: 0; width: 2200px; height: 380px; background-color: #edc9af; background-image: radial-gradient(#d4a373 1.5px, transparent 1.5px); background-size: 50px 50px; }
+    
+    .sprite { position: absolute; width: 30px; height: 30px; z-index: 10; }
+    
+    .tank { background: #2e7d32; border: 2px solid darkgreen; border-radius: 4px; }
+    .tank::after { content: ''; position: absolute; width: 6px; height: 16px; background: black; top: -12px; left: 10px; border-radius: 2px; }
+    
+    /* Dynamic Enemy Colors */
+    .enemy { border: 2px solid rgba(0,0,0,0.3); border-radius: 4px; }
+    .enemy::after { content: ''; position: absolute; width: 6px; height: 14px; background: #000; top: -10px; left: 10px; border-radius: 2px; }
+
+    .brick { background: #8d6e63; position: absolute; width: 40px; height: 40px; border: 2px solid #5d4037; border-radius: 4px; }
+    .stone { background: #424242; position: absolute; width: 40px; height: 40px; border: 2px solid #212121; }
+    
+    .bullet { position: absolute; width: 10px; height: 10px; border-radius: 50%; z-index: 15; }
+    .player-shot { background: #ff0000; box-shadow: 0 0 12px #f00; } 
+    .enemy-shot { background: #000; border: 1px solid #fff; } 
+
+    .blast { position: absolute; width: 50px; height: 50px; z-index: 50; pointer-events: none; transform: translate(-10px, -10px); animation: boom 0.4s ease-out forwards; }
+    @keyframes boom {
+        0% { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .ui-layer { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; align-items: center; }
+    .d-pad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 4px; }
+    .ctrl-btn { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 26px; color: white; backdrop-filter: blur(4px); }
+    .ctrl-btn:active { background: rgba(255,255,255,0.4); }
+    
+    .fire-btn { width: 110px; height: 110px; border-radius: 50%; background: #d32f2f; border: 5px solid #b71c1c; color: white; font-size: 22px; font-weight: bold; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; text-align: center; padding: 20px; }
+    .d-none { display: none !important; }
+    .btn-main { padding: 18px 50px; margin-top: 25px; background: #FF9933; color: black; border: none; border-radius: 40px; cursor: pointer; font-size: 1.4rem; font-weight: bold; }
+    .stat-box { margin-top: 15px; font-size: 1.2rem; color: #edc9af; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<div class="status">
+    <div>Stage: <span id="stage-num">1</span></div>
+    <div>Target: <span id="enemy-count">20</span></div>
+    <div>Ammo: <span id="ammo-count">50</span></div>
+    <div>Time: <span id="timer">100</span>s</div>
+</div>
+
+<div id="overlay" class="overlay">
+    <h1 id="overlay-title" style="color: red; font-size: 3rem; margin-bottom: 10px;">TANK WARS</h1>
+    <div id="stat-display" class="stat-box">
+        <div id="stage-msg"></div>
+         <span id="final-kills" style="color:red; font-size:1.8rem;">Stage 1</span>
+    </div>
+    <button class="btn-main" id="start-btn" onclick="startGame()">START MISSION</button>
+</div>
+
+<div class="viewport">
+    <div id="world"></div>
+</div>
+
+<div class="ui-layer">
+    <div class="d-pad">
+        <div class="ctrl-btn" style="grid-column:2" onpointerdown="setMove('up')" onpointerup="stopMove()">▲</div>
+        <div class="ctrl-btn" style="grid-row:2; grid-column:1" onpointerdown="setMove('left')" onpointerup="stopMove()">◀</div>
+        <div class="ctrl-btn" style="grid-row:2; grid-column:3" onpointerdown="setMove('right')" onpointerup="stopMove()">▶</div>
+        <div class="ctrl-btn" style="grid-row:3; grid-column:2" onpointerdown="setMove('down')" onpointerup="stopMove()">▼</div>
+    </div>
+    <div class="fire-btn" onpointerdown="playerFire()">FIRE</div>
+</div>
+
+<script>
+const world = document.getElementById('world');
+const overlay = document.getElementById('overlay');
+const worldW = 2200, worldH = 380;
+
+// Audio setup with Tank.wav
+const sfx = {
+    tankShot: new Audio('Tank.wav'),
+    destroy: new Audio('destroy.wav')
+};
+
+function playSound(sound) {
+    const clone = sound.cloneNode();
+    clone.play().catch(e => console.log("Audio playback requires user interaction."));
+}
+
+const state = { 
+    active: false,
+    stage: 1,
+    player: { x: 2000, y: 170, dir: 'left', vx: 0, vy: 0, speed: 4.5, size: 28 },
+    enemies: [],
+    blocks: [],
+    timer: 100,
+    ammo: 50,
+    kills: 0,
+    timerInt: null
+};
+
+function createBlast(x, y) {
+    playSound(sfx.destroy); // Play destroy sound
+    const blast = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    blast.setAttribute("viewBox", "0 0 100 100");
+    blast.classList.add("blast");
+    blast.style.left = x + "px";
+    blast.style.top = y + "px";
+    blast.innerHTML = `<circle cx="50" cy="50" r="40" fill="#FF4500" /><circle cx="50" cy="50" r="25" fill="#FFD700" /><path d="M50 5 L60 40 L95 50 L60 60 L50 95 L40 60 L5 50 L40 40 Z" fill="white" />`;
+    world.appendChild(blast);
+    setTimeout(() => blast.remove(), 400);
+}
+
+function updateUI() {
+    document.getElementById('stage-num').innerText = state.stage;
+    document.getElementById('enemy-count').innerText = state.enemies.length;
+    document.getElementById('ammo-count').innerText = state.ammo;
+    document.getElementById('timer').innerText = state.timer;
+}
+
+function startGame() {
+    overlay.classList.add('d-none');
+    state.active = true;
+    state.timer = 100;
+    state.ammo = 50;
+    if(state.stage === 1) state.kills = 0; 
+    
+    state.enemies = [];
+    state.blocks = [];
+    state.player.x = 2000;
+    state.player.y = 170;
+    
+    buildWorld();
+    spawnEnemies(state.stage === 1 ? 20 : 40);
+    updateUI();
+    
+    if(state.timerInt) clearInterval(state.timerInt);
+    state.timerInt = setInterval(() => {
+        if(state.active) {
+            state.timer--;
+            updateUI();
+            if(state.timer <= 0) endGame("TIME EXPIRED");
+        }
+    }, 1000);
+    requestAnimationFrame(gameLoop);
+}
+
+function buildWorld() {
+    world.innerHTML = '';
+    const cols = 55, rows = 9;
+    for (let x = 0; x < cols; x++) {
+        for (let y = 0; y < rows; y++) {
+            const isBorder = y === 0 || y === rows - 1 || x === 0 || x === cols - 1;
+            const isRock = Math.random() > 0.88 && x % 2 === 0 && x < cols - 5 && x > 5;
+            if (isBorder || isRock) {
+                const el = document.createElement('div');
+                el.className = isBorder ? 'stone' : 'brick';
+                el.style.left = x * 40 + 'px';
+                el.style.top = y * 40 + 'px';
+                world.appendChild(el);
+                state.blocks.push({ x: x * 40, y: y * 40, type: el.className, el });
+            }
+        }
+    }
+    state.playerEl = document.createElement('div');
+    state.playerEl.className = 'sprite tank';
+    world.appendChild(state.playerEl);
+}
+
+function spawnEnemies(count) {
+    const color = state.stage === 1 ? "#FF9933" : "#ff0000";
+    for (let i = 0; i < count; i++) {
+        let ex, ey;
+        do {
+            ex = 100 + (Math.random() * 1700);
+            ey = 60 + (Math.random() * 240);
+        } while (checkBlockCollision(ex, ey, 30));
+        const en = { x: ex, y: ey, dir: 'right', size: 28, el: document.createElement('div') };
+        en.el.className = 'sprite enemy';
+        en.el.style.backgroundColor = color;
+        world.appendChild(en.el);
+        state.enemies.push(en);
+    }
+}
+
+function setMove(dir) {
+    state.player.dir = dir;
+    const s = state.player.speed;
+    state.player.vx = dir === 'left' ? -s : dir === 'right' ? s : 0;
+    state.player.vy = dir === 'up' ? -s : dir === 'down' ? s : 0;
+}
+function stopMove() { state.player.vx = 0; state.player.vy = 0; }
+
+function checkBlockCollision(nx, ny, size) {
+    return state.blocks.some(b => nx < b.x + 38 && nx + size > b.x && ny < b.y + 38 && ny + size > b.y);
+}
+
+function gameLoop() {
+    if (!state.active) return;
+    let nx = state.player.x + state.player.vx;
+    let ny = state.player.y + state.player.vy;
+    if (!checkBlockCollision(nx, state.player.y, state.player.size)) state.player.x = nx;
+    if (!checkBlockCollision(state.player.x, ny, state.player.size)) state.player.y = ny;
+    let scroll = (window.innerWidth / 2) - state.player.x;
+    scroll = Math.min(0, Math.max(scroll, -(worldW - window.innerWidth)));
+    world.style.transform = `translateX(${scroll}px)`;
+    state.playerEl.style.left = state.player.x + 'px';
+    state.playerEl.style.top = state.player.y + 'px';
+    const rots = { up: 0, right: 90, down: 180, left: 270 };
+    state.playerEl.style.transform = `rotate(${rots[state.player.dir]}deg)`;
+    state.enemies.forEach(en => {
+        let ox = en.x, oy = en.y;
+        if (en.dir === 'up') en.y -= 2; else if (en.dir === 'down') en.y += 2; else if (en.dir === 'left') en.x -= 2; else if (en.dir === 'right') en.x += 2;
+        if (checkBlockCollision(en.x, en.y, en.size) || Math.random() > 0.985) {
+            en.x = ox; en.y = oy; en.dir = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)];
+        }
+        en.el.style.left = en.x + 'px'; en.el.style.top = en.y + 'px'; en.el.style.transform = `rotate(${rots[en.dir]}deg)`;
+        if (Math.random() > 0.99) fire('enemy', en);
+        const dx = Math.abs(en.x - state.player.x); const dy = Math.abs(en.y - state.player.y);
+        if (dx < 26 && dy < 26) { createBlast(en.x, en.y); createBlast(state.player.x, state.player.y); endGame("COLLISION!"); }
+    });
+    requestAnimationFrame(gameLoop);
+}
+
+function playerFire() { 
+    if (state.active && state.ammo > 0) { 
+        state.ammo--; 
+        updateUI(); 
+        playSound(sfx.tankShot); // Play Tank.wav when attack
+        fire('player', state.player); 
+    } 
+}
+
+function fire(type, owner) {
+    const b = document.createElement('div');
+    b.className = `bullet ${type === 'player' ? 'player-shot' : 'enemy-shot'}`;
+    let bx = owner.x + 10, by = owner.y + 10, bd = owner.dir;
+    world.appendChild(b);
+    const bInt = setInterval(() => {
+        const spd = type === 'player' ? 9 : 6;
+        if (bd === 'up') by -= spd; else if (bd === 'down') by += spd; else if (bd === 'left') bx -= spd; else if (bd === 'right') bx += spd;
+        b.style.left = bx + 'px'; b.style.top = by + 'px';
+        for (let i = state.blocks.length - 1; i >= 0; i--) {
+            let bl = state.blocks[i];
+            if (bx > bl.x && bx < bl.x + 40 && by > bl.y && by < bl.y + 40) {
+                if (type === 'player' && bl.type === 'brick') { createBlast(bl.x, bl.y); bl.el.remove(); state.blocks.splice(i, 1); }
+                clearInterval(bInt); b.remove(); return;
+            }
+        }
+        if (type === 'player') {
+            state.enemies.forEach((en, i) => {
+                if (bx > en.x && bx < en.x + 30 && by > en.y && by < en.y + 30) {
+                    createBlast(en.x, en.y); en.el.remove(); state.enemies.splice(i, 1);
+                    state.ammo += 5; state.kills++; updateUI();
+                    if (state.enemies.length === 0) {
+                        if(state.stage === 1) {
+                            state.stage = 2;
+                            endGame("STAGE 1 CLEAR!");
+                        } else {
+                            endGame("ALL STAGES CLEAR!");
+                        }
+                    }
+                    clearInterval(bInt); b.remove();
+                }
+            });
+        } else {
+            if (bx > state.player.x && bx < state.player.x + 28 && by > state.player.y && by < state.player.y + 28) {
+                createBlast(state.player.x, state.player.y); endGame("DESTROYED!");
+                clearInterval(bInt); b.remove();
+            }
+        }
+        if (bx < 0 || bx > worldW || by < 0 || by > worldH) { clearInterval(bInt); b.remove(); }
+    }, 20);
+}
+
+function endGame(msg) {
+    state.active = false;
+    clearInterval(state.timerInt);
+    document.getElementById('overlay-title').innerText = msg;
+    document.getElementById('overlay-title').style.color = (msg.includes("CLEAR")) ? "#4CAF50" : "#ff4444";
+    document.getElementById('final-kills').innerText = state.kills;
+    
+    const startBtn = document.getElementById('start-btn');
+    const stageMsg = document.getElementById('stage-msg');
+    
+    if (msg === "STAGE 1 CLEAR!") {
+        startBtn.innerText = "START STAGE 2";
+        stageMsg.innerText = "Next: 40 Red Tanks Incoming!";
+    } else {
+        startBtn.innerText = "RESTART MISSION";
+        stageMsg.innerText = "Mission ended.";
+        state.stage = 1; 
+    }
+    
+    overlay.classList.remove('d-none');
+}
+</script>
+</body>
+</html>
