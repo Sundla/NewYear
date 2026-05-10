@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Mother's Day — A Gentle Light | तुर्कीज़ ट्रिब्यूट</title>
+  
+  <!-- Fonts: Soft & Elegant -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #eef9ff, #e0f4f8);
+      font-family: 'Quicksand', sans-serif;
+      color: #1c4e5c;
+      overflow-x: hidden;
+    }
+
+    /* soft parallax / light movement */
+    .wave-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: radial-gradient(circle at 10% 30%, rgba(175, 238, 238, 0.4), rgba(127, 255, 212, 0.1));
+    }
+    .floating-shapes {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="30" cy="40" r="12" fill="%2340e0d0" opacity="0.2"/><circle cx="170" cy="120" r="18" fill="%23ffb347" opacity="0.18"/><circle cx="85" cy="85" r="22" fill="%23ff8c69" opacity="0.15"/><circle cx="150" cy="25" r="10" fill="%2340e0d0" opacity="0.25"/><circle cx="20" cy="170" r="15" fill="%23ffb347" opacity="0.2"/></svg>');
+      background-repeat: repeat;
+      background-size: 220px;
+      animation: floatAround 50s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes floatAround {
+      0% { transform: translate(0, 0) rotate(0deg);}
+      100% { transform: translate(30px, 20px) rotate(3deg);}
+    }
+
+    /* main container */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.8rem 4rem;
+      position: relative;
+    }
+
+    /* hero section */
+    .hero {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: gentleRise 1.2s ease;
+    }
+    @keyframes gentleRise {
+      from { opacity: 0; transform: translateY(30px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.4rem;
+      background: linear-gradient(125deg, #1f9a8e, #20b2aa, #ff9a6e);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+    .hero-sub {
+      font-size: 1.2rem;
+      color: #e67e4a;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+    .mother-portrait {
+      width: 240px;
+      height: 240px;
+      object-fit: cover;
+      border-radius: 58% 42% 65% 35% / 42% 55% 45% 58%;
+      margin: 24px auto;
+      display: block;
+      border: 5px solid #ffd1b3;
+      box-shadow: 0 18px 32px -12px rgba(31, 154, 142, 0.3);
+      transition: transform 0.3s;
+    }
+    .mother-portrait:hover { transform: scale(1.02);}
+    .gift-card-btn {
+      display: inline-block;
+      background: linear-gradient(95deg, #ff9a6e, #ffb07c);
+      padding: 12px 36px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 50px;
+      text-decoration: none;
+      color: #fffcf5;
+      box-shadow: 0 8px 16px rgba(255, 120, 60, 0.3);
+      transition: 0.2s;
+      margin: 12px 0 6px;
+      border: none;
+      font-family: inherit;
+    }
+    .gift-card-btn:hover { transform: translateY(-3px); background: #ff8855;}
+
+    /* bilingual flowing sections */
+    .flow-card {
+      background: rgba(255, 255, 250, 0.8);
+      backdrop-filter: blur(6px);
+      border-radius: 48px;
+      padding: 1.8rem 2rem;
+      margin: 1.8rem 0;
+      border: 1px solid #a9e4db;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+    }
+    .eng-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      font-weight: 500;
+      color: #1e6b5e;
+    }
+    .hin-text {
+      font-size: 1rem;
+      line-height: 1.55;
+      color: #d47a48;
+      margin-top: 12px;
+      border-top: 1px dashed #93ddd0;
+      padding-top: 12px;
+    }
+
+    /* section titles */
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin: 3rem 0 1rem 0;
+      color: #289f91;
+      border-left: 5px solid #ffb58a;
+      padding-left: 22px;
+    }
+
+    /* favorite items - minimal smooth bubbles */
+    .fav-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin: 20px 0 10px;
+    }
+    .fav-circle {
+      background: #feefe5;
+      padding: 1rem 1.6rem;
+      border-radius: 80px;
+      text-align: center;
+      transition: 0.2s;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #ffd6bd;
+    }
+    .fav-circle .emoji {
+      font-size: 1.9rem;
+      display: block;
+    }
+    .fav-circle .label {
+      font-weight: 600;
+      margin-top: 8px;
+      color: #cc7a48;
+    }
+    .fav-circle .detail {
+      font-size: 0.85rem;
+      color: #3c8b7c;
+    }
+
+    /* quotes - two quotes (Indian saint + western) */
+    .quote-duo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      margin: 40px 0;
+    }
+    .quote-single {
+      flex: 1;
+      background: #fffbf2;
+      border-radius: 44px;
+      padding: 2rem 1.8rem;
+      text-align: center;
+      border: 1px solid #c6efe9;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+    }
+    .quote-text {
+      font-size: 1.45rem;
+      font-family: 'Playfair Display', serif;
+      font-weight: 500;
+      color: #3d8d7e;
+      line-height: 1.4;
+    }
+    .quote-author {
+      margin-top: 16px;
+      font-weight: 600;
+      color: #ff8a5c;
+      letter-spacing: 0.5px;
+    }
+
+    /* QR + Swipe (touch playful) */
+    .qr-swipe-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 48px;
+      margin: 50px 0 30px;
+    }
+    .qr-block {
+      text-align: center;
+    }
+    .qr-img {
+      width: 140px;
+      background: white;
+      border-radius: 32px;
+      padding: 8px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    }
+    .swipe-block {
+      text-align: center;
+    }
+    .swipe-gif {
+      width: 180px;
+      border-radius: 36px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .swipe-caption {
+      font-weight: 600;
+      margin-top: 10px;
+      color: #e67e4a;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 80px;
+      font-size: 0.8rem;
+      color: #6fa99f;
+      border-top: 1px solid #bde3db;
+      padding-top: 28px;
+    }
+
+    @media (max-width: 780px) {
+      .hero h1 { font-size: 2.2rem; }
+      .quote-text { font-size: 1.2rem; }
+      .flow-card { padding: 1.4rem; }
+    }
+
+    /* Music Panels Styles - sleek side panels, no circular buttons */
+    .music-panel {
+      position: fixed;
+      top: 0;
+      width: 380px;
+      height: 100%;
+      background: rgba(255, 248, 240, 0.98);
+      backdrop-filter: blur(12px);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+      z-index: 2000;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      padding: 1.5rem 1rem 2rem;
+      overflow-y: auto;
+      font-family: 'Quicksand', sans-serif;
+      border-left: 6px solid #ffb07c;
+    }
+    .panel-left {
+      left: 0;
+      transform: translateX(-100%);
+      border-left: none;
+      border-right: 6px solid #ffb07c;
+    }
+    .panel-right {
+      right: 0;
+      transform: translateX(100%);
+    }
+    .music-panel.open {
+      transform: translateX(0);
+    }
+    .panel-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #cb7b4a;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #ffe0cc;
+      padding-bottom: 10px;
+    }
+    .song-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .song-card {
+      background: white;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+      transition: 0.2s;
+      border: 1px solid #ffebdf;
+    }
+    .song-title-bar {
+      background: #fff4ec;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #2c7a6e;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .song-title-bar:hover {
+      background: #ffe4d4;
+    }
+    .song-num {
+      background: #ffb07c;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 30px;
+      color: white;
+      font-size: 0.8rem;
+      margin-right: 12px;
+    }
+    .song-player {
+      display: none;
+      padding: 12px;
+      background: #fffcf8;
+      border-top: 1px solid #ffe0cc;
+    }
+    .song-player iframe {
+      width: 100%;
+      height: 200px;
+      border-radius: 20px;
+      border: none;
+    }
+    .yt-link {
+      display: block;
+      background: #e63946;
+      color: white;
+      text-align: center;
+      padding: 8px;
+      margin-top: 10px;
+      border-radius: 40px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .yt-link:hover {
+      background: #c1121f;
+    }
+    .panel-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 32px;
+      cursor: pointer;
+      color: #cc7a48;
+      background: #fff0e4;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .panel-close:hover {
+      background: #ffdcc4;
+    }
+    .overlay-music {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 1999;
+      display: none;
+      backdrop-filter: blur(2px);
+    }
+    .overlay-music.active {
+      display: block;
+    }
+    .swipe-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 12px;
+      color: #b98f72;
+      background: rgba(255,245,235,0.8);
+      width: fit-content;
+      margin: 0 auto;
+      padding: 6px 14px;
+      border-radius: 40px;
+      pointer-events: none;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    @media (max-width: 550px) {
+      .music-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="wave-bg"></div>
+<div class="floating-shapes"></div>
+
+<!-- Overlay for side panels -->
+<div id="overlayMusic" class="overlay-music" onclick="closeAllPanels()"></div>
+
+<!-- Left Panel: English Songs -->
+<div id="leftPanel" class="music-panel panel-left">
+  <div class="panel-close" onclick="closePanel('left')">&times;</div>
+  <div class="panel-header">🎵 English</div>
+  <div class="song-list" id="englishSongsList"></div>
+</div>
+
+<!-- Right Panel: Hindi Songs -->
+<div id="rightPanel" class="music-panel panel-right">
+  <div class="panel-close" onclick="closePanel('right')">&times;</div>
+  <div class="panel-header">🎶 हिंदी गीत</div>
+  <div class="song-list" id="hindiSongsList"></div>
+</div>
+
+
+
+<div class="container">
+  <!-- Hero: Title + mother photo + gift card button -->
+  <div class="hero">
+    <h1>✨ Mother's Day ✨<br>🌊माँ :हिम्मत :सागर🌊</h1>
+    <div class="hero-sub">A celebration of her gentle spirit</div>
+    <img src="MotherPhoto.jpg" alt="Mother Portrait" class="mother-portrait" onerror="this.src='https://placehold.co/300x300/c8f0ea/f9a56c?text=Maa'">
+    <div><a href="GiftMaker.html" class="gift-card-btn">🎁 Gift Card 🎀</a></div>
+  </div>
+
+  <!-- About Section (Bilingual) -->
+  <div class="flow-card">
+    <div class="eng-text">💙 <strong>About Her — The Ocean of Grace</strong><br>She was the first teacher we learned from, the quiet courage behind every dream. Her hands have painted our childhood with tenderness, and her heart holds the universe of our joys & tears. In her smile, we find home.</div>
+    <div class="hin-text">✨ <strong>माँ के बारे में — हौसले का सागर</strong><br>"वह हमारी पहली शिक्षिका थीं, हर सपने के पीछे का निशब्द साहस। उनके हाथों ने कोमलता से हमारे बचपन को संवारा है, और उनके दिल में हमारी खुशियों और आँसुओं का संसार बसता है। उनकी मुस्कान में ही हमें अपना घर मिलता है।"</div>
+  </div>
+
+  <!-- Wishes Section (Bilingual) -->
+  <div class="flow-card">
+    <div class="eng-text">🌟 <strong>Our Heartfelt Wishes</strong><br>Dear Mom, may every sunrise bring you peace, every flower remind you of the beauty you radiate. We pray that life gives you the same warmth you have given us endlessly. You are our most precious blessing.</div>
+    <div class="hin-text">🌸 <strong>हमारी हार्दिक शुभकामनाएँ</strong><br>प्यारी माँ, हर सूर्योदय आपको शांति दे, हर फूल आपकी सुंदरता की याद दिलाए। हम प्रार्थना करते हैं कि जीवन आपको वही गर्माहट दे जो आपने हमें असीमित रूप से दी है। आप हमारा सबसे अनमोल वरदान हो।</div>
+  </div>
+
+  <!-- Favorites & hobbies -->
+  <div class="section-title">🌸 Mom's Favorite Things · माँ की पसंद</div>
+  <div class="fav-gallery">
+    <div class="fav-circle"><span class="emoji">🎬</span><div class="label">Favorite Film</div><div class="detail">PK / Indra The Tiger</div></div>
+    <div class="fav-circle"><span class="emoji">🎵</span><div class="label">Music Type</div><div class="detail">Arijit - Sonu Nigam - Jubin Nautiyal</div></div>
+    <div class="fav-circle"><span class="emoji">🍲</span><div class="label">Comfort Food</div><div class="detail">Dahi Vada Chaat · Gajar Halwa</div></div>
+    <div class="fav-circle"><span class="emoji">🧶</span><div class="label">Hobby</div><div class="detail">Meeting People & Gardening</div></div>
+    <div class="fav-circle"><span class="emoji">📿</span><div class="label">Joy</div><div class="detail">Mountains Winds</div></div>
+  </div>
+
+  <!-- Two Quotes -->
+  <div class="quote-duo">
+    <div class="quote-single">
+      <div class="quote-text">“जहाँ दया वहाँ धर्म है, जहाँ लोभ वहाँ पाप।<br>माँ का हृदय तो मंदिर है, सदा सुने प्रभु का जाप।”</div>
+      <div class="quote-author">— संत कबीर (Sant Kabir) — a mother's heart is a temple of pure compassion.</div>
+    </div>
+    <div class="quote-single">
+      <div class="quote-text">“The gentle rain that makes the soul bloom. Where there is a mother, there is renewal.”</div>
+      <div class="quote-author">— Inspired by Rumi & Emerson, Western poetic wisdom</div>
+    </div>
+  </div>
+
+  <!-- QR + Swipe GIF section -->
+  <div class="qr-swipe-wrapper">
+    <div class="qr-block">
+      <img src="QRSite.png" class="qr-img" onerror="this.src='https://placehold.co/150x150/d1f0ea/fb9f6e?text=QR+Site'">
+      <p style="margin-top: 8px; font-weight:500;">🔗 Scan to revisit this site</p>
+    </div>
+    <div class="swipe-block">
+      <a href="https://youtube.com/shorts/WXtS-WrGm7w?si=F42KVttPDfP2Ce3D" target="_blank">
+        <img src="swipe.gif" class="swipe-gif" onerror="this.src='https://placehold.co/180x90/c2e9e2/f29462?text=👉Swipe👈'">
+      </a>
+      <div class="swipe-caption"> Swipe Right or Left </div>
+    </div>
+  </div>
+
+  <footer>
+    🌊 Dedicated to a heart  — every day is Mother's Day. 🌊<br>
+    आशीर्वाद michhami dukkadam 
+  </footer>
+</div>
+
+<script>
+/* ===== SONG DATA (UNCHANGED) ===== */
+
+const englishSongs = [
+  { title: "Song 1", artist: "Unlike Pluto", url: "https://youtu.be/mWKDZRJWdF4?si=EF7r9xuOLP0i69hD", videoId: "mWKDZRJWdF4" },
+  { title: "Song 2", artist: "Welcome to internet", url: "https://youtu.be/k1BneeJTDcU?si=Bm_LD_sn6o34mE7y", videoId: "k1BneeJTDcU" },
+  { title: "Song 3", artist: "Sad Machine", url: "https://youtu.be/HAIDqt2aUek?si=35WmYev6Ihd9w0hh", videoId: "HAIDqt2aUek" },
+  { title: "Song 4", artist: "Indila Autumn", url: "https://youtu.be/qUO1_B9odo8?si=Yay8tBPZsF3wdTaX", videoId: "qUO1_B9odo8" },
+  { title: "Song 5", artist: "UAE Anthem", url: "https://youtu.be/A59le56aluA?si=-xuGhcbDt2bTYH8l", videoId: "A59le56aluA" },
+  { title: "Song 6", artist: "A million dreams", url: "https://youtu.be/fCElqWdviUI?si=omAAy2tTKR4Dk_q5", videoId: "fCElqWdviUI" },
+  { title: "Song 7", artist: "Odoriko", url: "https://youtu.be/7HgJIAUtICU?si=e79LwFZYk2cV9MIk", videoId: "7HgJIAUtICU" }
+];
+
+const hindiSongs = [
+  { title: "गीत 1", artist: "Issak Tari", url: "https://youtu.be/YWZR2hcCo1A?si=YAbrtUBsrEhNslfJ", videoId: "YWZR2hcCo1A" },
+  { title: "गीत 2", artist: "Bismil", url: "https://youtu.be/p6ZxI5_A69M?si=__eRcQeIpRHYKBoE", videoId: "p6ZxI5_A69M" },
+  { title: "गीत 3", artist: "Binte Dil", url: "https://youtu.be/9aoUpCXY7uk?si=8_tsZ6ivGvTEqUTG", videoId: "9aoUpCXY7uk" },
+  { title: "गीत 4", artist: "Hanuman Fast Ver", url: "https://youtu.be/khyV7P5rJ14?si=6hByrH7DXEHYG-S8", videoId: "khyV7P5rJ14" },
+  { title: "गीत 5", artist: "kai po che", url: "https://youtu.be/YKcmMmJlKNk?si=grIV7uRoBS0Q16f2", videoId: "YKcmMmJlKNk" },
+  { title: "गीत 6", artist: "Challa", url: "https://youtu.be/1GWyCJHuNms?si=fAjLMrayAZ4ocy4X", videoId: "1GWyCJHuNms" },
+  { title: "गीत 7", artist: "Karma", url: "https://youtu.be/rja5OuQGpAg?si=31riHXIs4rzPbojB", videoId: "rja5OuQGpAg" }
+];
+
+/* ===== BUILD SONG CARDS ===== */
+
+function buildSongCard(song, idx, langPrefix) {
+
+  const card = document.createElement('div');
+  card.className = 'song-card';
+
+  const titleBar = document.createElement('div');
+  titleBar.className = 'song-title-bar';
+
+  titleBar.innerHTML = `
+    <div>
+      <span class="song-num">${idx + 1}</span>
+      ${song.title}
+      <span style="font-size:0.8rem;color:#cb7b4a;">
+        • ${song.artist}
+      </span>
+    </div>
+    <span>▶️</span>
+  `;
+
+  const playerDiv = document.createElement('div');
+  playerDiv.className = 'song-player';
+
+  const iframe = document.createElement('iframe');
+  iframe.allow =
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+
+  iframe.allowFullscreen = true;
+
+  const ytLink = document.createElement('a');
+  ytLink.href = song.url;
+  ytLink.target = "_blank";
+  ytLink.className = "yt-link";
+  ytLink.innerText = "🔴 Open on YouTube";
+
+  playerDiv.appendChild(iframe);
+  playerDiv.appendChild(ytLink);
+
+  card.appendChild(titleBar);
+  card.appendChild(playerDiv);
+
+  titleBar.addEventListener('click', () => {
+
+    document.querySelectorAll('.song-player').forEach(p => {
+      if (p !== playerDiv) {
+        p.style.display = 'none';
+
+        const ifr = p.querySelector('iframe');
+        if (ifr) ifr.src = "";
+      }
+    });
+
+    if (playerDiv.style.display === 'block') {
+
+      playerDiv.style.display = 'none';
+      iframe.src = "";
+
+    } else {
+
+      playerDiv.style.display = 'block';
+
+      iframe.src =
+        `https://www.youtube.com/embed/${song.videoId}?autoplay=1`;
+    }
+  });
+
+  return card;
+}
+
+/* ===== LOAD SONGS ===== */
+
+const englishContainer =
+  document.getElementById('englishSongsList');
+
+const hindiContainer =
+  document.getElementById('hindiSongsList');
+
+englishSongs.forEach((song, idx) => {
+  englishContainer.appendChild(
+    buildSongCard(song, idx, 'eng')
+  );
+});
+
+hindiSongs.forEach((song, idx) => {
+  hindiContainer.appendChild(
+    buildSongCard(song, idx, 'hin')
+  );
+});
+
+/* ===== SMOOTH SIDE PANEL FUNCTION ===== */
+
+const leftPanel = document.getElementById('leftPanel');
+const rightPanel = document.getElementById('rightPanel');
+const overlay = document.getElementById('overlayMusic');
+
+let sx = 0;
+let ex = 0;
+let state = "none";
+
+/* OPEN PANEL */
+function openPanel(side) {
+
+  closeAllPanels();
+
+  if (side === 'left') {
+    leftPanel.classList.add('open');
+    state = "left";
+  }
+
+  if (side === 'right') {
+    rightPanel.classList.add('open');
+    state = "right";
+  }
+
+  overlay.classList.add('active');
+}
+
+/* CLOSE PANEL */
+function closePanel(side) {
+
+  if (side === 'left') {
+    leftPanel.classList.remove('open');
+  }
+
+  if (side === 'right') {
+    rightPanel.classList.remove('open');
+  }
+
+  stopAllPlayers();
+
+  overlay.classList.remove('active');
+  state = "none";
+}
+
+/* CLOSE ALL */
+function closeAllPanels() {
+
+  leftPanel.classList.remove('open');
+  rightPanel.classList.remove('open');
+
+  stopAllPlayers();
+
+  overlay.classList.remove('active');
+  state = "none";
+}
+
+/* STOP ALL PLAYERS */
+function stopAllPlayers() {
+
+  document.querySelectorAll('.song-player iframe')
+    .forEach(i => i.src = "");
+
+  document.querySelectorAll('.song-player')
+    .forEach(p => p.style.display = 'none');
+}
+
+/* SWIPE OPEN/CLOSE */
+
+document.addEventListener("touchstart", e => {
+  sx = e.changedTouches[0].screenX;
+});
+
+document.addEventListener("touchend", e => {
+
+  ex = e.changedTouches[0].screenX;
+
+  /* OPEN */
+  if (state === "none") {
+
+    if (ex - sx > 70) {
+      openPanel('left');
+    }
+
+    else if (sx - ex > 70) {
+      openPanel('right');
+    }
+  }
+
+  /* CLOSE */
+  else {
+
+    if (Math.abs(ex - sx) > 70) {
+      closeAllPanels();
+    }
+  }
+});
+
+/* OVERLAY CLOSE */
+overlay.addEventListener('click', closeAllPanels);
+
+/* ESC CLOSE */
+document.addEventListener('keydown', e => {
+
+  if (e.key === 'Escape') {
+    closeAllPanels();
+  }
+});
+
+/* FLOATING BACKGROUND EFFECT (UNCHANGED) */
+
+const shapes = document.querySelector('.floating-shapes');
+
+document.body.addEventListener('mousemove', (e) => {
+
+  const x =
+    (e.clientX / window.innerWidth) * 20 - 10;
+
+  const y =
+    (e.clientY / window.innerHeight) * 20 - 10;
+
+  if (shapes) {
+    shapes.style.transform =
+      `translate(${x * 0.3}px, ${y * 0.2}px)`;
+  }
+});
+
+document.body.addEventListener('touchmove', (e) => {
+
+  if (e.touches.length) {
+
+    const x =
+      (e.touches[0].clientX / window.innerWidth) * 24 - 12;
+
+    const y =
+      (e.touches[0].clientY / window.innerHeight) * 24 - 12;
+
+    if (shapes) {
+      shapes.style.transform =
+        `translate(${x * 0.4}px, ${y * 0.3}px)`;
+    }
+  }
+});
+
+document.body.addEventListener('touchend', () => {
+
+  if (shapes) {
+    shapes.style.transform = 'translate(0,0)';
+  }
+});
+</script>
+
+<style>
+  /* hide any residual movie/nav elements */
+  .media-nav, .nav-panel, .movie-buttons, [class*="nav-btn"], [class*="media-"], .modal, .video-container {
+    display: none !important;
+  }
+  .gift-card-btn, .swipe-gif, .qr-img { display: inline-block; }
+  body { background: #f6fefc; }
+  .flow-card { background: rgba(255, 250, 240, 0.85); }
+  .quote-single { background: #fffef7; }
+  .fav-circle { background: #fffbee; }
+  .section-title { color: #2d9c8c; }
+  .hero h1 { background: linear-gradient(125deg, #2b9e8f, #34c6b5, #ffa162); background-clip: text; -webkit-background-clip: text; }
+  .music-panel { display: block; }
+  .swipe-hint { pointer-events: none; }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+<!-- PANEL -->
+
+<div class="anime-panel">
+
+<nav id="nav">
+  <ul>
+    <li><a onclick="openAnime1()">Anime1</a></li>
+    <li><a onclick="openAnime2()">Anime2</a></li>
+    <li><a onclick="openMovie1()">Movie1</a></li>
+  </ul>
+
+  <button class="icon" id="toggle">
+    <div class="line line1"></div>
+    <div class="line line2"></div>
+  </button>
+</nav>
+
+<div class="player" id="player">
+  <div class="enjoy-simple" id="enjoyMsg">⬇️ Enjoy ⬇️</div>
+
+  <div class="video-box" id="videoBox"></div>
+
+  <a class="watch" id="watchLink" target="_blank"></a>
+
+  <button class="close" onclick="closeMovie()">Close</button>
+</div>
+
+</div>
+
+<style>
+.anime-panel{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* NAV */
+
+#nav{
+  background:blue;
+  padding:20px;
+  width:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  transition:width .6s linear;
+}
+
+#nav.active{
+  width:280px;
+}
+
+#nav ul{
+  display:flex;
+  list-style:none;
+  padding:0;
+  margin:0;
+  width:0;
+  overflow:hidden;
+  transition:width .6s linear;
+}
+
+#nav.active ul{
+  width:100%;
+}
+
+#nav ul li{
+  opacity:0;
+  transition:.6s;
+}
+
+#nav.active ul li{
+  opacity:1;
+}
+
+#nav ul a{
+  text-decoration:none;
+  color:#fff;
+  margin:0 10px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+/* ICON */
+
+.icon{
+  background:none;
+  border:none;
+  cursor:pointer;
+  height:30px;
+  width:30px;
+  position:relative;
+}
+
+.icon .line{
+  background:#fff;
+  height:2px;
+  width:20px;
+  position:absolute;
+  left:5px;
+  transition:transform .6s;
+}
+
+.line1{
+  top:10px;
+}
+
+.line2{
+  bottom:10px;
+}
+
+#nav.active .line1{
+  transform:rotate(-45deg) translateY(5.5px);
+}
+
+#nav.active .line2{
+  transform:rotate(45deg) translateY(-5.5px);
+}
+
+/* PLAYER */
+
+.player{
+  text-align:center;
+  display:none;
+  max-width:720px;
+  width:100%;
+}
+
+.enjoy-simple{
+  font-size:26px;
+  font-weight:800;
+  color:red
+  margin-bottom:15px;
+}
+
+.video-box{
+  position:relative;
+  padding-top:56.25%;
+}
+
+.video-box iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+.watch{
+  display:block;
+  margin:20px 0;
+  font-size:22px;
+  font-weight:700;
+  color:red;
+  text-decoration:none;
+}
+
+.close{
+  background:#0a8f08;
+  color:#fff;
+  font-size:22px;
+  font-weight:700;
+  padding:14px 40px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+</style>
+
+<script>
+const nav=document.getElementById('nav');
+const player=document.getElementById('player');
+const videoBox=document.getElementById('videoBox');
+const watch=document.getElementById('watchLink');
+const enjoy=document.getElementById('enjoyMsg');
+
+document.getElementById('toggle').onclick=()=>{
+  nav.classList.toggle('active');
+};
+
+function show(){
+  nav.style.display='none';
+  player.style.display='block';
+  videoBox.innerHTML='';
+}
+
+/* Anime 1 */
+
+function openAnime1(){
+  show();
+
+  enjoy.innerHTML="⬇️ Enjoy ⬇️";
+
+  videoBox.innerHTML=
+  `<iframe src="https://archive.org/embed/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv"></iframe>`;
+
+  watch.textContent="Enjoy all on Internet Archives";
+
+  watch.href=
+  "https://archive.org/details/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv";
+}
+
+/* Anime 2 */
+
+function openAnime2(){
+  show();
+
+  enjoy.innerHTML="⬇️ Enjoy ⬇️";
+
+  videoBox.innerHTML=
+  `<iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4"></iframe>`;
+
+  watch.textContent="Enjoy all Ghibli Films here";
+
+  watch.href=
+  "https://archive.org/details/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4";
+}
+
+/* Movie 1 */
+
+function openMovie1(){
+  show();
+
+  enjoy.innerHTML="⬇️ Enjoy Movie 1 ⬇️";
+
+  videoBox.innerHTML=
+  `<iframe src="https://www.youtube.com/embed/QuOGDaMbBpk"></iframe>`;
+
+  watch.textContent="Open in YouTube";
+
+  watch.href=
+  "https://youtu.be/QuOGDaMbBpk?si=qIcnX2C4HmREB9Lh";
+}
+
+function closeMovie(){
+  player.style.display='none';
+  nav.style.display='flex';
+  nav.classList.remove('active');
+}
+</script>
+
+<br><br>
+
+
+</body>
+</html>
