@@ -1,872 +1,1142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Mother's Day — A Gentle Light | तुर्कीज़ ट्रिब्यूट</title>
-  
-  <!-- Fonts: Soft & Elegant -->
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    body {
-      background: linear-gradient(145deg, #eef9ff, #e0f4f8);
-      font-family: 'Quicksand', sans-serif;
-      color: #1c4e5c;
-      overflow-x: hidden;
-    }
+<title>Mother's Day</title>
 
-    /* soft parallax / light movement */
-    .wave-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-      background: radial-gradient(circle at 10% 30%, rgba(175, 238, 238, 0.4), rgba(127, 255, 212, 0.1));
-    }
-    .floating-shapes {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="30" cy="40" r="12" fill="%2340e0d0" opacity="0.2"/><circle cx="170" cy="120" r="18" fill="%23ffb347" opacity="0.18"/><circle cx="85" cy="85" r="22" fill="%23ff8c69" opacity="0.15"/><circle cx="150" cy="25" r="10" fill="%2340e0d0" opacity="0.25"/><circle cx="20" cy="170" r="15" fill="%23ffb347" opacity="0.2"/></svg>');
-      background-repeat: repeat;
-      background-size: 220px;
-      animation: floatAround 50s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes floatAround {
-      0% { transform: translate(0, 0) rotate(0deg);}
-      100% { transform: translate(30px, 20px) rotate(3deg);}
-    }
-
-    /* main container */
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.8rem 4rem;
-      position: relative;
-    }
-
-    /* hero section */
-    .hero {
-      text-align: center;
-      margin-bottom: 2rem;
-      animation: gentleRise 1.2s ease;
-    }
-    @keyframes gentleRise {
-      from { opacity: 0; transform: translateY(30px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-    .hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 3.4rem;
-      background: linear-gradient(125deg, #1f9a8e, #20b2aa, #ff9a6e);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      letter-spacing: 1px;
-      margin-bottom: 0.5rem;
-    }
-    .hero-sub {
-      font-size: 1.2rem;
-      color: #e67e4a;
-      font-weight: 500;
-      margin-top: 6px;
-    }
-    .mother-portrait {
-      width: 240px;
-      height: 240px;
-      object-fit: cover;
-      border-radius: 58% 42% 65% 35% / 42% 55% 45% 58%;
-      margin: 24px auto;
-      display: block;
-      border: 5px solid #ffd1b3;
-      box-shadow: 0 18px 32px -12px rgba(31, 154, 142, 0.3);
-      transition: transform 0.3s;
-    }
-    .mother-portrait:hover { transform: scale(1.02);}
-    .gift-card-btn {
-      display: inline-block;
-      background: linear-gradient(95deg, #ff9a6e, #ffb07c);
-      padding: 12px 36px;
-      font-size: 1.3rem;
-      font-weight: 600;
-      border-radius: 50px;
-      text-decoration: none;
-      color: #fffcf5;
-      box-shadow: 0 8px 16px rgba(255, 120, 60, 0.3);
-      transition: 0.2s;
-      margin: 12px 0 6px;
-      border: none;
-      font-family: inherit;
-    }
-    .gift-card-btn:hover { transform: translateY(-3px); background: #ff8855;}
-
-    /* bilingual flowing sections */
-    .flow-card {
-      background: rgba(255, 255, 250, 0.8);
-      backdrop-filter: blur(6px);
-      border-radius: 48px;
-      padding: 1.8rem 2rem;
-      margin: 1.8rem 0;
-      border: 1px solid #a9e4db;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
-    }
-    .eng-text {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      font-weight: 500;
-      color: #1e6b5e;
-    }
-    .hin-text {
-      font-size: 1rem;
-      line-height: 1.55;
-      color: #d47a48;
-      margin-top: 12px;
-      border-top: 1px dashed #93ddd0;
-      padding-top: 12px;
-    }
-
-    /* section titles */
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      margin: 3rem 0 1rem 0;
-      color: #289f91;
-      border-left: 5px solid #ffb58a;
-      padding-left: 22px;
-    }
-
-    /* favorite items - minimal smooth bubbles */
-    .fav-gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      margin: 20px 0 10px;
-    }
-    .fav-circle {
-      background: #feefe5;
-      padding: 1rem 1.6rem;
-      border-radius: 80px;
-      text-align: center;
-      transition: 0.2s;
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
-      border: 1px solid #ffd6bd;
-    }
-    .fav-circle .emoji {
-      font-size: 1.9rem;
-      display: block;
-    }
-    .fav-circle .label {
-      font-weight: 600;
-      margin-top: 8px;
-      color: #cc7a48;
-    }
-    .fav-circle .detail {
-      font-size: 0.85rem;
-      color: #3c8b7c;
-    }
-
-    /* quotes - two quotes (Indian saint + western) */
-    .quote-duo {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 28px;
-      margin: 40px 0;
-    }
-    .quote-single {
-      flex: 1;
-      background: #fffbf2;
-      border-radius: 44px;
-      padding: 2rem 1.8rem;
-      text-align: center;
-      border: 1px solid #c6efe9;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.02);
-    }
-    .quote-text {
-      font-size: 1.45rem;
-      font-family: 'Playfair Display', serif;
-      font-weight: 500;
-      color: #3d8d7e;
-      line-height: 1.4;
-    }
-    .quote-author {
-      margin-top: 16px;
-      font-weight: 600;
-      color: #ff8a5c;
-      letter-spacing: 0.5px;
-    }
-
-    /* QR + Swipe (touch playful) */
-    .qr-swipe-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 48px;
-      margin: 50px 0 30px;
-    }
-    .qr-block {
-      text-align: center;
-    }
-    .qr-img {
-      width: 140px;
-      background: white;
-      border-radius: 32px;
-      padding: 8px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
-    }
-    .swipe-block {
-      text-align: center;
-    }
-    .swipe-gif {
-      width: 180px;
-      border-radius: 36px;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .swipe-caption {
-      font-weight: 600;
-      margin-top: 10px;
-      color: #e67e4a;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 80px;
-      font-size: 0.8rem;
-      color: #6fa99f;
-      border-top: 1px solid #bde3db;
-      padding-top: 28px;
-    }
-
-    @media (max-width: 780px) {
-      .hero h1 { font-size: 2.2rem; }
-      .quote-text { font-size: 1.2rem; }
-      .flow-card { padding: 1.4rem; }
-    }
-
-    /* Music Panels Styles - sleek side panels, no circular buttons */
-    .music-panel {
-      position: fixed;
-      top: 0;
-      width: 380px;
-      height: 100%;
-      background: rgba(255, 248, 240, 0.98);
-      backdrop-filter: blur(12px);
-      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
-      z-index: 2000;
-      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      padding: 1.5rem 1rem 2rem;
-      overflow-y: auto;
-      font-family: 'Quicksand', sans-serif;
-      border-left: 6px solid #ffb07c;
-    }
-    .panel-left {
-      left: 0;
-      transform: translateX(-100%);
-      border-left: none;
-      border-right: 6px solid #ffb07c;
-    }
-    .panel-right {
-      right: 0;
-      transform: translateX(100%);
-    }
-    .music-panel.open {
-      transform: translateX(0);
-    }
-    .panel-header {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      color: #cb7b4a;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 2px solid #ffe0cc;
-      padding-bottom: 10px;
-    }
-    .song-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .song-card {
-      background: white;
-      border-radius: 28px;
-      overflow: hidden;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
-      transition: 0.2s;
-      border: 1px solid #ffebdf;
-    }
-    .song-title-bar {
-      background: #fff4ec;
-      padding: 12px 18px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #2c7a6e;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .song-title-bar:hover {
-      background: #ffe4d4;
-    }
-    .song-num {
-      background: #ffb07c;
-      width: 28px;
-      height: 28px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 30px;
-      color: white;
-      font-size: 0.8rem;
-      margin-right: 12px;
-    }
-    .song-player {
-      display: none;
-      padding: 12px;
-      background: #fffcf8;
-      border-top: 1px solid #ffe0cc;
-    }
-    .song-player iframe {
-      width: 100%;
-      height: 200px;
-      border-radius: 20px;
-      border: none;
-    }
-    .yt-link {
-      display: block;
-      background: #e63946;
-      color: white;
-      text-align: center;
-      padding: 8px;
-      margin-top: 10px;
-      border-radius: 40px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: 0.2s;
-    }
-    .yt-link:hover {
-      background: #c1121f;
-    }
-    .panel-close {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      font-size: 32px;
-      cursor: pointer;
-      color: #cc7a48;
-      background: #fff0e4;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: 0.2s;
-    }
-    .panel-close:hover {
-      background: #ffdcc4;
-    }
-    .overlay-music {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.3);
-      z-index: 1999;
-      display: none;
-      backdrop-filter: blur(2px);
-    }
-    .overlay-music.active {
-      display: block;
-    }
-    .swipe-hint {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-size: 12px;
-      color: #b98f72;
-      background: rgba(255,245,235,0.8);
-      width: fit-content;
-      margin: 0 auto;
-      padding: 6px 14px;
-      border-radius: 40px;
-      pointer-events: none;
-      z-index: 100;
-      backdrop-filter: blur(4px);
-    }
-    @media (max-width: 550px) {
-      .music-panel { width: 100%; }
-    }
-  </style>
-</head>
-<body>
-<div class="wave-bg"></div>
-<div class="floating-shapes"></div>
-
-<!-- Overlay for side panels -->
-<div id="overlayMusic" class="overlay-music" onclick="closeAllPanels()"></div>
-
-<!-- Left Panel: English Songs -->
-<div id="leftPanel" class="music-panel panel-left">
-  <div class="panel-close" onclick="closePanel('left')">&times;</div>
-  <div class="panel-header">🎵 English</div>
-  <div class="song-list" id="englishSongsList"></div>
-</div>
-
-<!-- Right Panel: Hindi Songs -->
-<div id="rightPanel" class="music-panel panel-right">
-  <div class="panel-close" onclick="closePanel('right')">&times;</div>
-  <div class="panel-header">🎶 हिंदी गीत</div>
-  <div class="song-list" id="hindiSongsList"></div>
-</div>
-
-
-
-<div class="container">
-  <!-- Hero: Title + mother photo + gift card button -->
-  <div class="hero">
-    <h1>✨ Mother's Day ✨<br>🌊माँ :हिम्मत :सागर🌊</h1>
-    <div class="hero-sub">A celebration of her gentle spirit</div>
-    <img src="MotherPhoto.jpg" alt="Mother Portrait" class="mother-portrait" onerror="this.src='https://placehold.co/300x300/c8f0ea/f9a56c?text=Maa'">
-    <div><a href="GiftMaker.html" class="gift-card-btn">🎁 Gift Card 🎀</a></div>
-  </div>
-
-  <!-- About Section (Bilingual) -->
-  <div class="flow-card">
-    <div class="eng-text">💙 <strong>About Her — The Ocean of Grace</strong><br>She was the first teacher we learned from, the quiet courage behind every dream. Her hands have painted our childhood with tenderness, and her heart holds the universe of our joys & tears. In her smile, we find home.</div>
-    <div class="hin-text">✨ <strong>माँ के बारे में — हौसले का सागर</strong><br>"वह हमारी पहली शिक्षिका थीं, हर सपने के पीछे का निशब्द साहस। उनके हाथों ने कोमलता से हमारे बचपन को संवारा है, और उनके दिल में हमारी खुशियों और आँसुओं का संसार बसता है। उनकी मुस्कान में ही हमें अपना घर मिलता है।"</div>
-  </div>
-
-  <!-- Wishes Section (Bilingual) -->
-  <div class="flow-card">
-    <div class="eng-text">🌟 <strong>Our Heartfelt Wishes</strong><br>Dear Mom, may every sunrise bring you peace, every flower remind you of the beauty you radiate. We pray that life gives you the same warmth you have given us endlessly. You are our most precious blessing.</div>
-    <div class="hin-text">🌸 <strong>हमारी हार्दिक शुभकामनाएँ</strong><br>प्यारी माँ, हर सूर्योदय आपको शांति दे, हर फूल आपकी सुंदरता की याद दिलाए। हम प्रार्थना करते हैं कि जीवन आपको वही गर्माहट दे जो आपने हमें असीमित रूप से दी है। आप हमारा सबसे अनमोल वरदान हो।</div>
-  </div>
-
-  <!-- Favorites & hobbies -->
-  <div class="section-title">🌸 Mom's Favorite Things · माँ की पसंद</div>
-  <div class="fav-gallery">
-    <div class="fav-circle"><span class="emoji">🎬</span><div class="label">Favorite Film</div><div class="detail">PK / Indra The Tiger</div></div>
-    <div class="fav-circle"><span class="emoji">🎵</span><div class="label">Music Type</div><div class="detail">Arijit - Sonu Nigam - Jubin Nautiyal</div></div>
-    <div class="fav-circle"><span class="emoji">🍲</span><div class="label">Comfort Food</div><div class="detail">Dahi Vada Chaat · Gajar Halwa</div></div>
-    <div class="fav-circle"><span class="emoji">🧶</span><div class="label">Hobby</div><div class="detail">Meeting People & Gardening</div></div>
-    <div class="fav-circle"><span class="emoji">📿</span><div class="label">Joy</div><div class="detail">Mountains Winds</div></div>
-  </div>
-  
-  
-  
-  
-  
-<h1 class="games-title">Games</h1>
-
-<div class="games-triangle">
-
-  <a href="game1.html" class="game-btn top-btn">
-    Play X
-  </a>
-
-  <div class="bottom-row">
-    <a href="game2.html" class="game-btn">
-      Casino
-    </a>
-
-    <a href="game3.html" class="game-btn">
-      GTA
-    </a>
-  </div>
-
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&family=Playfair+Display:wght@500;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  overflow-x:hidden;
+  font-family:'Quicksand',sans-serif;
+
+  background:
+  linear-gradient(
+    180deg,
+    #f6ffff 0%,
+    #edfefd 20%,
+    #eef7ff 40%,
+    #fff9f4 70%,
+    #f8ffff 100%
+  );
+
+  color:#365a61;
+}
+
+/* =========================
+CHAOTIC ZIGZAG PARALLAX BG
+========================= */
+
+.lines-bg{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  z-index:-5;
+}
+
+/* RANDOM LAYER */
+
+.lines-bg::before{
+  content:"";
+  position:absolute;
+  inset:-150%;
+
+  background:
+
+  repeating-linear-gradient(
+    23deg,
+    rgba(47,196,185,.32) 0px,
+    rgba(47,196,185,.32) 2px,
+    transparent 2px,
+    transparent 48px
+  ),
+
+  repeating-linear-gradient(
+    -41deg,
+    rgba(255,176,118,.25) 0px,
+    rgba(255,176,118,.25) 2px,
+    transparent 2px,
+    transparent 62px
+  ),
+
+  repeating-linear-gradient(
+    72deg,
+    rgba(87,187,255,.18) 0px,
+    rgba(87,187,255,.18) 2px,
+    transparent 2px,
+    transparent 54px
+  ),
+
+  repeating-linear-gradient(
+    -67deg,
+    rgba(255,161,161,.12) 0px,
+    rgba(255,161,161,.12) 2px,
+    transparent 2px,
+    transparent 38px
+  );
+
+  animation:
+  chaosMove1 28s linear infinite;
+}
+
+/* SECOND RANDOM LAYER */
+
+.lines-bg::after{
+  content:"";
+  position:absolute;
+  inset:-140%;
+
+  background:
+
+  repeating-linear-gradient(
+    131deg,
+    rgba(0,196,255,.14) 0px,
+    rgba(0,196,255,.14) 2px,
+    transparent 2px,
+    transparent 46px
+  ),
+
+  repeating-linear-gradient(
+    -19deg,
+    rgba(57,223,196,.18) 0px,
+    rgba(57,223,196,.18) 2px,
+    transparent 2px,
+    transparent 58px
+  ),
+
+  repeating-linear-gradient(
+    97deg,
+    rgba(255,191,140,.16) 0px,
+    rgba(255,191,140,.16) 2px,
+    transparent 2px,
+    transparent 40px
+  );
+
+  animation:
+  chaosMove2 38s linear infinite;
+}
+
+@keyframes chaosMove1{
+
+  0%{
+    transform:
+    translate(0px,0px)
+    rotate(0deg)
+    scale(1);
+  }
+
+  25%{
+    transform:
+    translate(120px,-90px)
+    rotate(4deg)
+    scale(1.05);
+  }
+
+  50%{
+    transform:
+    translate(-80px,140px)
+    rotate(-3deg)
+    scale(1.08);
+  }
+
+  75%{
+    transform:
+    translate(150px,80px)
+    rotate(5deg)
+    scale(1.04);
+  }
+
+  100%{
+    transform:
+    translate(0px,0px)
+    rotate(0deg)
+    scale(1);
+  }
+}
+
+@keyframes chaosMove2{
+
+  0%{
+    transform:
+    translate(0px,0px)
+    rotate(0deg)
+    scale(1);
+  }
+
+  20%{
+    transform:
+    translate(-160px,100px)
+    rotate(-5deg)
+    scale(1.08);
+  }
+
+  45%{
+    transform:
+    translate(90px,-140px)
+    rotate(6deg)
+    scale(1.02);
+  }
+
+  70%{
+    transform:
+    translate(-110px,-60px)
+    rotate(-4deg)
+    scale(1.06);
+  }
+
+  100%{
+    transform:
+    translate(0px,0px)
+    rotate(0deg)
+    scale(1);
+  }
+}
+
+/* =========================
+FLOATING RANDOM LINES
+========================= */
+
+.floating-lines{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  z-index:-4;
+  pointer-events:none;
+}
+
+.floating-lines span{
+  position:absolute;
+
+  height:2px;
+
+  background:
+  linear-gradient(
+    90deg,
+    transparent,
+    rgba(44,196,181,.85),
+    transparent
+  );
+
+  border-radius:20px;
+
+  opacity:.34;
+
+  filter:blur(.3px);
+}
+
+.floating-lines span:nth-child(1){
+  width:260px;
+  top:8%;
+  left:-20%;
+  transform:rotate(18deg);
+  animation:floatA 18s linear infinite;
+}
+
+.floating-lines span:nth-child(2){
+  width:180px;
+  top:23%;
+  left:-25%;
+  transform:rotate(-39deg);
+  animation:floatB 16s linear infinite;
+}
+
+.floating-lines span:nth-child(3){
+  width:340px;
+  top:47%;
+  left:-35%;
+  transform:rotate(63deg);
+  animation:floatC 24s linear infinite;
+}
+
+.floating-lines span:nth-child(4){
+  width:240px;
+  top:66%;
+  left:-18%;
+  transform:rotate(-58deg);
+  animation:floatD 20s linear infinite;
+}
+
+.floating-lines span:nth-child(5){
+  width:310px;
+  top:82%;
+  left:-40%;
+  transform:rotate(28deg);
+  animation:floatE 21s linear infinite;
+}
+
+.floating-lines span:nth-child(6){
+  width:170px;
+  top:92%;
+  left:-22%;
+  transform:rotate(-74deg);
+  animation:floatF 17s linear infinite;
+}
+
+@keyframes floatA{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(18deg);
+  }
+
+  to{
+    transform:
+    translateX(160vw)
+    translateY(100px)
+    rotate(30deg);
+  }
+}
+
+@keyframes floatB{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(-39deg);
+  }
+
+  to{
+    transform:
+    translateX(150vw)
+    translateY(-140px)
+    rotate(-12deg);
+  }
+}
+
+@keyframes floatC{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(63deg);
+  }
+
+  to{
+    transform:
+    translateX(170vw)
+    translateY(-60px)
+    rotate(90deg);
+  }
+}
+
+@keyframes floatD{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(-58deg);
+  }
+
+  to{
+    transform:
+    translateX(140vw)
+    translateY(150px)
+    rotate(-18deg);
+  }
+}
+
+@keyframes floatE{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(28deg);
+  }
+
+  to{
+    transform:
+    translateX(170vw)
+    translateY(-90px)
+    rotate(48deg);
+  }
+}
+
+@keyframes floatF{
+  from{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(-74deg);
+  }
+
+  to{
+    transform:
+    translateX(150vw)
+    translateY(120px)
+    rotate(-40deg);
+  }
+}
+
+/* =========================
+CONTAINER
+========================= */
+
+.container{
+  max-width:1180px;
+  margin:auto;
+  padding:30px 18px 100px;
+}
+
+/* =========================
+HERO
+========================= */
+
+.hero{
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.hero h1{
+  font-family:'Playfair Display',serif;
+
+  font-size:
+  clamp(2.8rem,6vw,5rem);
+
+  line-height:1.05;
+
+  margin-bottom:10px;
+
+  background:
+  linear-gradient(
+    90deg,
+    #2d7d77,
+    #327fa5,
+    #b57a52,
+    #2d7d77
+  );
+
+  background-size:300% 300%;
+
+  animation:titleFlow 8s ease infinite;
+
+  -webkit-background-clip:text;
+  color:transparent;
+
+  text-shadow:
+  0 2px 10px rgba(0,0,0,.04);
+}
+
+@keyframes titleFlow{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.hero-sub{
+  font-family:'Great Vibes',cursive;
+  font-size:2rem;
+  color:#a36e52;
+  margin-bottom:28px;
+}
+
+/* =========================
+3D PHOTO
+========================= */
+
+.photo-wrap{
+  display:flex;
+  justify-content:center;
+  position:relative;
+  perspective:1600px;
+}
+
+.mother-portrait{
+  width:min(82vw,330px);
+
+  aspect-ratio:1/1;
+
+  object-fit:cover;
+
+  border-radius:
+  58% 42% 63% 37% /
+  39% 58% 42% 61%;
+
+  border:5px solid rgba(255,255,255,.8);
+
+  box-shadow:
+  0 20px 40px rgba(52,198,181,.16),
+  0 10px 18px rgba(255,166,111,.18);
+
+  transform-style:preserve-3d;
+
+  transition:
+  transform .4s ease,
+  box-shadow .4s ease;
+}
+
+.mother-portrait:hover{
+  transform:
+  rotateY(4deg)
+  rotateX(4deg)
+  scale(1.02);
+}
+
+/* HEART */
+
+.ig-heart{
+  position:absolute;
+  top:50%;
+  left:50%;
+
+  transform:
+  translate(-50%,-50%)
+  scale(.2);
+
+  opacity:0;
+
+  font-size:110px;
+
+  pointer-events:none;
+}
+
+.ig-heart.show{
+  animation:heartPop 1s ease forwards;
+}
+
+@keyframes heartPop{
+
+  0%{
+    opacity:0;
+    transform:
+    translate(-50%,-50%)
+    scale(.2);
+  }
+
+  20%{
+    opacity:1;
+    transform:
+    translate(-50%,-50%)
+    scale(1.2);
+  }
+
+  100%{
+    opacity:0;
+    transform:
+    translate(-50%,-50%)
+    scale(1.4);
+  }
+}
+
+/* =========================
+BUTTON
+========================= */
+
+.gift-card-btn{
+  display:inline-block;
+
+  margin-top:24px;
+
+  padding:14px 34px;
+
+  border-radius:60px;
+
+  text-decoration:none;
+  color:white;
+
+  font-weight:700;
+  font-size:1.15rem;
+
+  background:
+  linear-gradient(
+    135deg,
+    #36857f,
+    #4c82a5,
+    #bc825f
+  );
+
+  box-shadow:
+  0 10px 22px rgba(44,90,110,.14);
+
+  transition:.3s;
+}
+
+.gift-card-btn:hover{
+  transform:
+  translateY(-4px)
+  scale(1.03);
+}
+
+<br>
+
+/* =========================
+FLOW CARDS
+========================= */
+
+.flow-card{
+  margin-top:28px;
+
+  background:
+  rgba(255,255,255,.78);
+
+  backdrop-filter:blur(10px);
+
+  border-radius:38px;
+
+  padding:32px;
+
+  border:
+  1px solid rgba(66,150,145,.18);
+
+  box-shadow:
+  0 10px 24px rgba(0,0,0,.04);
+
+  transition:.35s;
+}
+
+.flow-card:hover{
+  transform:
+  translateY(-6px);
+}
+
+.eng-text{
+  font-size:1.12rem;
+  line-height:1.9;
+  color:#355c60;
+}
+
+.hin-text{
+  margin-top:18px;
+
+  border-top:
+  1px dashed rgba(85,168,160,.35);
+
+  padding-top:18px;
+
+  color:#9d6d52;
+
+  line-height:1.9;
+}
+
+/* =========================
+SECTION TITLE
+========================= */
+
+.section-title{
+  font-size:2.2rem;
+
+  margin:60px 0 24px;
+
+  color:#2f7276;
+
+  font-family:'Playfair Display',serif;
+}
+
+/* =========================
+FAVORITES
+========================= */
+
+.fav-gallery{
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fit,minmax(180px,1fr));
+
+  gap:20px;
+}
+
+.fav-circle{
+  background:
+  rgba(255,255,255,.82);
+
+  border-radius:32px;
+
+  padding:22px 18px;
+
+  text-align:center;
+
+  border:
+  1px solid rgba(84,155,148,.18);
+
+  box-shadow:
+  0 6px 16px rgba(0,0,0,.03);
+
+  transition:.3s;
+}
+
+.fav-circle:hover{
+  transform:
+  translateY(-5px)
+  scale(1.02);
+}
+
+.emoji{
+  font-size:2rem;
+}
+
+.label{
+  margin-top:10px;
+  font-weight:700;
+  color:#98684b;
+}
+
+.detail{
+  margin-top:8px;
+  color:#386167;
+}
+
+/* =========================
+GAME BUTTONS
+========================= */
+
 .games-title{
   text-align:center;
-  font-size:42px;
-  margin-bottom:22px;
-  color:#35e0cf;
-  text-shadow:0 0 12px rgba(53,224,207,0.5);
-  font-family:'Playfair Display', serif;
+
+  margin-top:70px;
+  margin-bottom:24px;
+
+  font-size:3rem;
+
+  color:#2f7276;
+
+  font-family:'Playfair Display',serif;
 }
 
 .games-triangle{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:14px;
-  margin-bottom:45px;
+  gap:16px;
 }
 
 .bottom-row{
   display:flex;
-  gap:14px;
+  gap:16px;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
 .game-btn{
-  min-width:120px;
-  padding:12px 18px;
-  text-align:center;
+  position:relative;
+  overflow:hidden;
+
+  min-width:130px;
+
   text-decoration:none;
-  font-size:20px;
+
+  color:#ffffff;
+
   font-weight:700;
-  color:white;
-  border-radius:14px;
-  background:linear-gradient(145deg,#0d5c5c,#0b3f3f);
-  border:2px solid #1dc7b8;
-  box-shadow:0 0 12px rgba(29,199,184,0.35);
-  transition:0.25s;
-  font-family:'Quicksand', sans-serif;
+  font-size:1.1rem;
+
+  padding:14px 22px;
+
+  border-radius:18px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #348a83,
+    #447ea4,
+    #b77a57
+  );
+
+  box-shadow:
+  0 10px 24px rgba(44,90,110,.18);
+
+  transition:.3s;
 }
 
-.top-btn{
-  margin-bottom:2px;
+.game-btn::before{
+  content:"";
+
+  position:absolute;
+
+  top:-140%;
+  left:-40%;
+
+  width:45%;
+  height:320%;
+
+  background:
+  linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.55),
+    transparent
+  );
+
+  transform:rotate(20deg);
+
+  animation:shine 4s linear infinite;
+}
+
+@keyframes shine{
+  0%{
+    left:-60%;
+  }
+  100%{
+    left:160%;
+  }
 }
 
 .game-btn:hover{
-  transform:scale(1.06);
-  box-shadow:0 0 22px rgba(29,199,184,0.7);
+  transform:
+  translateY(-4px)
+  scale(1.04);
 }
+
+/* =========================
+QUOTES
+========================= */
+
+.quote-duo{
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fit,minmax(280px,1fr));
+
+  gap:24px;
+
+  margin-top:50px;
+}
+
+.quote-single{
+  background:
+  rgba(255,255,255,.82);
+
+  border-radius:34px;
+
+  padding:32px;
+
+  box-shadow:
+  0 6px 18px rgba(0,0,0,.03);
+
+  transition:.3s;
+}
+
+.quote-single:hover{
+  transform:translateY(-5px);
+}
+
+.quote-text{
+  font-size:1.3rem;
+  line-height:1.8;
+
+  color:#355d61;
+
+  font-family:'Playfair Display',serif;
+}
+
+.quote-author{
+  margin-top:18px;
+  color:#9f6d4f;
+}
+
+/* =========================
+QR
+========================= */
+
+.qr-wrap{
+  margin-top:70px;
+  display:flex;
+  justify-content:center;
+}
+
+.qr-cube{
+  width:170px;
+  height:170px;
+
+  position:relative;
+
+  transform-style:preserve-3d;
+
+  transition:transform 2.4s ease;
+}
+
+.qr-cube.spin{
+  transform:
+  rotateX(360deg)
+  rotateY(360deg);
+}
+
+.face{
+  position:absolute;
+
+  inset:0;
+
+  border-radius:22px;
+
+  background-size:cover;
+
+  border:2px solid rgba(255,255,255,.8);
+}
+
+.front{transform:translateZ(85px);}
+.back{transform:rotateY(180deg) translateZ(85px);}
+.left{transform:rotateY(-90deg) translateZ(85px);}
+.right{transform:rotateY(90deg) translateZ(85px);}
+.top{transform:rotateX(90deg) translateZ(85px);}
+.bottom{transform:rotateX(-90deg) translateZ(85px);}
+
+/* =========================
+FOOTER
+========================= */
+
+footer{
+  margin-top:80px;
+  text-align:center;
+  color:#5f8083;
+  line-height:1.8;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media(max-width:700px){
+
+  .hero-sub{
+    font-size:1.5rem;
+  }
+
+  .flow-card{
+    padding:24px;
+  }
+
+  .quote-text{
+    font-size:1.1rem;
+  }
+
+  .games-title{
+    font-size:2.4rem;
+  }
+}
+
 </style>
-  
-  
-  
-  
-  
+</head>
 
-  <!-- Two Quotes -->
-  <div class="quote-duo">
-    <div class="quote-single">
-      <div class="quote-text">“जहाँ दया वहाँ धर्म है, जहाँ लोभ वहाँ पाप।<br>माँ का हृदय तो मंदिर है, सदा सुने प्रभु का जाप।”</div>
-      <div class="quote-author">— संत कबीर (Sant Kabir) — a mother's heart is a temple of pure compassion.</div>
-    </div>
-    <div class="quote-single">
-      <div class="quote-text">“The gentle rain that makes the soul bloom. Where there is a mother, there is renewal.”</div>
-      <div class="quote-author">— Inspired by Rumi & Emerson, Western poetic wisdom</div>
-    </div>
-  </div>
+<body>
 
-  <!-- QR + Swipe GIF section -->
-  <div class="qr-swipe-wrapper">
-    <div class="qr-block">
-      <img src="QRSite.png" class="qr-img" onerror="this.src='https://placehold.co/150x150/d1f0ea/fb9f6e?text=QR+Site'">
-      <p style="margin-top: 8px; font-weight:500;">🔗 Scan to revisit this site</p>
-    </div>
-    <div class="swipe-block">
-      <a href="https://youtube.com/shorts/WXtS-WrGm7w?si=F42KVttPDfP2Ce3D" target="_blank">
-        <img src="swipe.gif" class="swipe-gif" onerror="this.src='https://placehold.co/180x90/c2e9e2/f29462?text=👉Swipe👈'">
-      </a>
-      <div class="swipe-caption"> Swipe Right or Left </div>
-    </div>
-  </div>
+<div class="lines-bg"></div>
 
-  <footer>
-    🌊 Dedicated to a heart  — every day is Mother's Day. 🌊<br>
-    आशीर्वाद michhami dukkadam 
-  </footer>
+<div class="floating-lines">
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
 </div>
 
-<script>
-/* ===== SONG DATA (UNCHANGED) ===== */
+<div class="container">
 
-const englishSongs = [
-  { title: "Song 1", artist: "Unlike Pluto", url: "https://youtu.be/mWKDZRJWdF4?si=EF7r9xuOLP0i69hD", videoId: "mWKDZRJWdF4" },
-  { title: "Song 2", artist: "Welcome to internet", url: "https://youtu.be/k1BneeJTDcU?si=Bm_LD_sn6o34mE7y", videoId: "k1BneeJTDcU" },
-  { title: "Song 3", artist: "Sad Machine", url: "https://youtu.be/HAIDqt2aUek?si=35WmYev6Ihd9w0hh", videoId: "HAIDqt2aUek" },
-  { title: "Song 4", artist: "Indila Autumn", url: "https://youtu.be/qUO1_B9odo8?si=Yay8tBPZsF3wdTaX", videoId: "qUO1_B9odo8" },
-  { title: "Song 5", artist: "UAE Anthem", url: "https://youtu.be/A59le56aluA?si=-xuGhcbDt2bTYH8l", videoId: "A59le56aluA" },
-  { title: "Song 6", artist: "A million dreams", url: "https://youtu.be/fCElqWdviUI?si=omAAy2tTKR4Dk_q5", videoId: "fCElqWdviUI" },
-  { title: "Song 7", artist: "Odoriko", url: "https://youtu.be/7HgJIAUtICU?si=e79LwFZYk2cV9MIk", videoId: "7HgJIAUtICU" }
-];
-
-const hindiSongs = [
-  { title: "गीत 1", artist: "Issak Tari", url: "https://youtu.be/YWZR2hcCo1A?si=YAbrtUBsrEhNslfJ", videoId: "YWZR2hcCo1A" },
-  { title: "गीत 2", artist: "Bismil", url: "https://youtu.be/p6ZxI5_A69M?si=__eRcQeIpRHYKBoE", videoId: "p6ZxI5_A69M" },
-  { title: "गीत 3", artist: "Binte Dil", url: "https://youtu.be/9aoUpCXY7uk?si=8_tsZ6ivGvTEqUTG", videoId: "9aoUpCXY7uk" },
-  { title: "गीत 4", artist: "Hanuman Fast Ver", url: "https://youtu.be/khyV7P5rJ14?si=6hByrH7DXEHYG-S8", videoId: "khyV7P5rJ14" },
-  { title: "गीत 5", artist: "kai po che", url: "https://youtu.be/YKcmMmJlKNk?si=grIV7uRoBS0Q16f2", videoId: "YKcmMmJlKNk" },
-  { title: "गीत 6", artist: "Challa", url: "https://youtu.be/1GWyCJHuNms?si=fAjLMrayAZ4ocy4X", videoId: "1GWyCJHuNms" },
-  { title: "गीत 7", artist: "Karma", url: "https://youtu.be/rja5OuQGpAg?si=31riHXIs4rzPbojB", videoId: "rja5OuQGpAg" }
-];
-
-/* ===== BUILD SONG CARDS ===== */
+<div class="hero">
 
-function buildSongCard(song, idx, langPrefix) {
+<h1>
+✨ Mother's Day ✨
+<br>
+🌊 माँ : हिम्मत : सागर 
+</h1>
+<br>
+<div class="hero-sub">
+Ocean Of Love • Gentle Soul
+</div>
 
-  const card = document.createElement('div');
-  card.className = 'song-card';
+<div class="photo-wrap">
 
-  const titleBar = document.createElement('div');
-  titleBar.className = 'song-title-bar';
+<img
+src="MotherPhoto.jpg"
+class="mother-portrait"
+id="momPhoto"
+>
 
-  titleBar.innerHTML = `
-    <div>
-      <span class="song-num">${idx + 1}</span>
-      ${song.title}
-      <span style="font-size:0.8rem;color:#cb7b4a;">
-        • ${song.artist}
-      </span>
-    </div>
-    <span>▶️</span>
-  `;
+<div class="ig-heart"
+id="igHeart">
+❤️
+</div>
 
-  const playerDiv = document.createElement('div');
-  playerDiv.className = 'song-player';
+</div>
 
-  const iframe = document.createElement('iframe');
-  iframe.allow =
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+<a href="GiftMaker.html"
+class="gift-card-btn">
+🎁 Gift Card 
+</a>
 
-  iframe.allowFullscreen = true;
+</div>
 
-  const ytLink = document.createElement('a');
-  ytLink.href = song.url;
-  ytLink.target = "_blank";
-  ytLink.className = "yt-link";
-  ytLink.innerText = "🔴 Open on YouTube";
+<div class="flow-card">
 
-  playerDiv.appendChild(iframe);
-  playerDiv.appendChild(ytLink);
+<div class="eng-text">
 
-  card.appendChild(titleBar);
-  card.appendChild(playerDiv);
+💙 <strong>About Her</strong><br><br>
 
-  titleBar.addEventListener('click', () => {
+She was the first teacher we learned from, the quiet courage behind every dream. Her hands have painted our childhood with tenderness, and her heart holds the universe of our joys & tears. In her smile, we find home.
 
-    document.querySelectorAll('.song-player').forEach(p => {
-      if (p !== playerDiv) {
-        p.style.display = 'none';
+</div>
 
-        const ifr = p.querySelector('iframe');
-        if (ifr) ifr.src = "";
-      }
-    });
+<div class="hin-text">
 
-    if (playerDiv.style.display === 'block') {
+✨ <strong>माँ के बारे में</strong><br><br>
 
-      playerDiv.style.display = 'none';
-      iframe.src = "";
+"वह हमारी पहली शिक्षिका थीं, हर सपने के पीछे का निशब्द साहस। उनके हाथों ने कोमलता से हमारे बचपन को संवारा है, और उनके दिल में हमारी खुशियों और आँसुओं का संसार बसता है। उनकी मुस्कान में ही हमें अपना घर मिलता है।"
 
-    } else {
+</div>
 
-      playerDiv.style.display = 'block';
+</div>
 
-      iframe.src =
-        `https://www.youtube.com/embed/${song.videoId}?autoplay=1`;
-    }
-  });
+<div class="flow-card">
 
-  return card;
-}
+<div class="eng-text">
 
-/* ===== LOAD SONGS ===== */
+🌸 <strong>Heartfelt Wishes</strong><br><br>
 
-const englishContainer =
-  document.getElementById('englishSongsList');
+Dear Mom, may every sunrise bring you peace, every flower remind you of the beauty you radiate. We pray that life gives you the same warmth you have given us endlessly. 
 
-const hindiContainer =
-  document.getElementById('hindiSongsList');
+</div>
 
-englishSongs.forEach((song, idx) => {
-  englishContainer.appendChild(
-    buildSongCard(song, idx, 'eng')
-  );
-});
+<div class="hin-text">
 
-hindiSongs.forEach((song, idx) => {
-  hindiContainer.appendChild(
-    buildSongCard(song, idx, 'hin')
-  );
-});
+🌊 <strong>हार्दिक शुभकामनाएँ</strong><br><br>
 
-/* ===== SMOOTH SIDE PANEL FUNCTION ===== */
+प्यारी माँ, हर सूर्योदय आपको शांति दे, हर फूल आपकी सुंदरता की याद दिलाए। हम प्रार्थना करते हैं कि जीवन आपको वही गर्माहट दे जो आपने हमें असीमित रूप से दी है।
 
-const leftPanel = document.getElementById('leftPanel');
-const rightPanel = document.getElementById('rightPanel');
-const overlay = document.getElementById('overlayMusic');
+</div>
 
-let sx = 0;
-let ex = 0;
-let state = "none";
+</div>
 
-/* OPEN PANEL */
-function openPanel(side) {
+<div class="section-title">
+🌸 Mom's Favorite Things
+</div>
 
-  closeAllPanels();
+<div class="fav-gallery">
 
-  if (side === 'left') {
-    leftPanel.classList.add('open');
-    state = "left";
-  }
+<div class="fav-circle">
+<div class="emoji">🎬</div>
+<div class="label">Favorite Film</div>
+<div class="detail">
+PK / Indra The Tiger
+</div>
+</div>
 
-  if (side === 'right') {
-    rightPanel.classList.add('open');
-    state = "right";
-  }
+<div class="fav-circle">
+<div class="emoji">🎵</div>
+<div class="label">Music</div>
+<div class="detail">
+Arijit • Sonu Nigam • Jubin Nautiyal
+</div>
+</div>
 
-  overlay.classList.add('active');
-}
+<div class="fav-circle">
+<div class="emoji">🍲</div>
+<div class="label">Comfort Food</div>
+<div class="detail">
+Dahi Vada Chaat• Gajar Halwa
+</div>
+</div>
 
-/* CLOSE PANEL */
-function closePanel(side) {
+<div class="fav-circle">
+<div class="emoji">🌿</div>
+<div class="label">Hobby</div>
+<div class="detail">
+Gardening & Meeting People
+</div>
+</div>
 
-  if (side === 'left') {
-    leftPanel.classList.remove('open');
-  }
+</div>
 
-  if (side === 'right') {
-    rightPanel.classList.remove('open');
-  }
+<h1 class="games-title">
+Games
+</h1>
 
-  stopAllPlayers();
+<div class="games-triangle">
 
-  overlay.classList.remove('active');
-  state = "none";
-}
+<a href="game1.html"
+class="game-btn">
+Play X
+</a>
 
-/* CLOSE ALL */
-function closeAllPanels() {
+<div class="bottom-row">
 
-  leftPanel.classList.remove('open');
-  rightPanel.classList.remove('open');
+<a href="game2.html"
+class="game-btn">
+Casino
+</a>
 
-  stopAllPlayers();
+<a href="game3.html"
+class="game-btn">
+GTA
+</a>
 
-  overlay.classList.remove('active');
-  state = "none";
-}
+</div>
+</div>
 
-/* STOP ALL PLAYERS */
-function stopAllPlayers() {
+<div class="quote-duo">
 
-  document.querySelectorAll('.song-player iframe')
-    .forEach(i => i.src = "");
+<div class="quote-single">
 
-  document.querySelectorAll('.song-player')
-    .forEach(p => p.style.display = 'none');
-}
+<div class="quote-text">
+“जहाँ दया वहाँ धर्म है, जहाँ लोभ वहाँ पाप।
+माँ का हृदय तो मंदिर है, सदा सुने प्रभु का जाप।”
 
-/* SWIPE OPEN/CLOSE */
+</div>
 
-document.addEventListener("touchstart", e => {
-  sx = e.changedTouches[0].screenX;
-});
+<div class="quote-author">
+— संत कबीर
+</div>
 
-document.addEventListener("touchend", e => {
+</div>
 
-  ex = e.changedTouches[0].screenX;
+<div class="quote-single">
 
-  /* OPEN */
-  if (state === "none") {
+<div class="quote-text">
+“The gentle rain that makes the soul bloom. Where there is a mother, there is renewal.”
+</div>
 
-    if (ex - sx > 70) {
-      openPanel('left');
-    }
+<div class="quote-author">
+— Inspired by Rumi
+</div>
 
-    else if (sx - ex > 70) {
-      openPanel('right');
-    }
-  }
+</div>
 
-  /* CLOSE */
-  else {
+</div>
 
-    if (Math.abs(ex - sx) > 70) {
-      closeAllPanels();
-    }
-  }
-});
+<div class="qr-wrap">
 
-/* OVERLAY CLOSE */
-overlay.addEventListener('click', closeAllPanels);
+<div class="qr-cube"
+id="qrCube">
 
-/* ESC CLOSE */
-document.addEventListener('keydown', e => {
+<div class="face front"
+style="background-image:url('QRSite.png')"></div>
 
-  if (e.key === 'Escape') {
-    closeAllPanels();
-  }
-});
+<div class="face back"
+style="background-image:url('QRSite.png')"></div>
 
-/* FLOATING BACKGROUND EFFECT (UNCHANGED) */
+<div class="face left"
+style="background-image:url('QRSite.png')"></div>
 
-const shapes = document.querySelector('.floating-shapes');
+<div class="face right"
+style="background-image:url('QRSite.png')"></div>
 
-document.body.addEventListener('mousemove', (e) => {
+<div class="face top"
+style="background-image:url('QRSite.png')"></div>
 
-  const x =
-    (e.clientX / window.innerWidth) * 20 - 10;
+<div class="face bottom"
+style="background-image:url('QRSite.png')"></div>
 
-  const y =
-    (e.clientY / window.innerHeight) * 20 - 10;
+</div>
 
-  if (shapes) {
-    shapes.style.transform =
-      `translate(${x * 0.3}px, ${y * 0.2}px)`;
-  }
-});
+</div>
 
-document.body.addEventListener('touchmove', (e) => {
+<br><br>
 
-  if (e.touches.length) {
 
-    const x =
-      (e.touches[0].clientX / window.innerWidth) * 24 - 12;
-
-    const y =
-      (e.touches[0].clientY / window.innerHeight) * 24 - 12;
-
-    if (shapes) {
-      shapes.style.transform =
-        `translate(${x * 0.4}px, ${y * 0.3}px)`;
-    }
-  }
-});
-
-document.body.addEventListener('touchend', () => {
-
-  if (shapes) {
-    shapes.style.transform = 'translate(0,0)';
-  }
-});
-</script>
-
-<style>
-  /* hide any residual movie/nav elements */
-  .media-nav, .nav-panel, .movie-buttons, [class*="nav-btn"], [class*="media-"], .modal, .video-container {
-    display: none !important;
-  }
-  .gift-card-btn, .swipe-gif, .qr-img { display: inline-block; }
-  body { background: #f6fefc; }
-  .flow-card { background: rgba(255, 250, 240, 0.85); }
-  .quote-single { background: #fffef7; }
-  .fav-circle { background: #fffbee; }
-  .section-title { color: #2d9c8c; }
-  .hero h1 { background: linear-gradient(125deg, #2b9e8f, #34c6b5, #ffa162); background-clip: text; -webkit-background-clip: text; }
-  .music-panel { display: block; }
-  .swipe-hint { pointer-events: none; }
-</style>
-
-
-
-
-
-
-
-
-
+<br>
 
 
 <!-- PANEL -->
@@ -899,6 +1169,15 @@ document.body.addEventListener('touchend', () => {
 </div>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  overflow-x:hidden;
+}
+
 .anime-panel{
   display:flex;
   justify-content:center;
@@ -995,27 +1274,33 @@ document.body.addEventListener('touchend', () => {
 .player{
   text-align:center;
   display:none;
-  max-width:720px;
   width:100%;
+  max-width:720px;
+  margin:auto;
 }
 
 .enjoy-simple{
   font-size:26px;
   font-weight:800;
-  color:red
+  color:red;
   margin-bottom:15px;
 }
 
 .video-box{
   position:relative;
-  padding-top:56.25%;
+  width:100vw;
+  height:56.25vw;
+  left:50%;
+  transform:translateX(-50%);
 }
 
 .video-box iframe{
   position:absolute;
-  inset:0;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
+  border:none;
 }
 
 .watch{
@@ -1064,7 +1349,7 @@ function openAnime1(){
   enjoy.innerHTML="⬇️ Enjoy ⬇️";
 
   videoBox.innerHTML=
-  `<iframe src="https://archive.org/embed/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv"></iframe>`;
+  `<iframe src="https://archive.org/embed/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv" allowfullscreen></iframe>`;
 
   watch.textContent="Enjoy all on Internet Archives";
 
@@ -1080,7 +1365,7 @@ function openAnime2(){
   enjoy.innerHTML="⬇️ Enjoy ⬇️";
 
   videoBox.innerHTML=
-  `<iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4"></iframe>`;
+  `<iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4" allowfullscreen></iframe>`;
 
   watch.textContent="Enjoy all Ghibli Films here";
 
@@ -1096,7 +1381,7 @@ function openMovie1(){
   enjoy.innerHTML="⬇️ Enjoy Movie 1 ⬇️";
 
   videoBox.innerHTML=
-  `<iframe src="https://www.youtube.com/embed/QuOGDaMbBpk"></iframe>`;
+  `<iframe src="https://www.youtube.com/embed/QuOGDaMbBpk" allowfullscreen></iframe>`;
 
   watch.textContent="Open in YouTube";
 
@@ -1108,11 +1393,362 @@ function closeMovie(){
   player.style.display='none';
   nav.style.display='flex';
   nav.classList.remove('active');
+  videoBox.innerHTML='';
 }
 </script>
 
-<br><br>
 
+<footer>
+
+⭐ Dedicated to a heart full of love ⭐
+<br>
+आशीर्वाद • michhami dukkadam
+
+</footer>
+
+</div>
+
+<script>
+
+/* DOUBLE TAP HEART */
+
+const photo =
+document.getElementById('momPhoto');
+
+const heart =
+document.getElementById('igHeart');
+
+let lastTap = 0;
+
+photo.addEventListener('touchend',handleTap);
+photo.addEventListener('dblclick',showHeart);
+
+function handleTap(){
+
+let now = new Date().getTime();
+
+if(now - lastTap < 300){
+showHeart();
+}
+
+lastTap = now;
+}
+
+function showHeart(){
+
+heart.classList.remove('show');
+
+void heart.offsetWidth;
+
+heart.classList.add('show');
+}
+
+/* 3D PHOTO MOVEMENT */
+
+document.addEventListener('mousemove',(e)=>{
+
+let x =
+(window.innerWidth/2 - e.clientX)/40;
+
+let y =
+(window.innerHeight/2 - e.clientY)/40;
+
+photo.style.transform =
+`
+rotateY(${x}deg)
+rotateX(${-y}deg)
+`;
+
+});
+
+/* QR SPIN */
+
+const cube =
+document.getElementById('qrCube');
+
+cube.addEventListener('click',()=>{
+
+cube.classList.toggle('spin');
+
+});
+
+/* LONG PRESS DOWNLOAD */
+
+let pressTimer;
+
+cube.addEventListener('touchstart',()=>{
+
+pressTimer = setTimeout(()=>{
+
+const a =
+document.createElement('a');
+
+a.href = 'QRSite.png';
+
+a.download = 'QRCode.png';
+
+a.click();
+
+},700);
+
+});
+
+cube.addEventListener('touchend',()=>{
+
+clearTimeout(pressTimer);
+
+});
+
+</script>
+
+ 
+<!-- Songs Side Panels Start Here..............-->
+
+<div id="overlayMusic" class="overlay-music" onclick="closeAllPanels()"></div>
+
+<div id="leftPanel" class="music-panel panel-left">
+  <div class="panel-close" onclick="closePanel('left')">&times;</div>
+  <div class="panel-header">🎵 Foreign</div>
+  <div class="song-list" id="englishSongsList"></div>
+</div>
+
+<div id="rightPanel" class="music-panel panel-right">
+  <div class="panel-close" onclick="closePanel('right')">&times;</div>
+  <div class="panel-header">🎶 हिंदी गीत</div>
+  <div class="song-list" id="hindiSongsList"></div>
+</div>
+
+<style>
+    /* Music Panels Styles */
+    .music-panel {
+      position: fixed;
+      top: 0;
+      width: 380px;
+      height: 100%;
+      background: rgba(255, 248, 240, 0.98);
+      backdrop-filter: blur(12px);
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+      z-index: 2000;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      padding: 1.5rem 1rem 2rem;
+      overflow-y: auto;
+      font-family: 'Quicksand', sans-serif;
+      border-left: 6px solid #ffb07c;
+    }
+    .panel-left {
+      left: 0;
+      transform: translateX(-100%);
+      border-left: none;
+      border-right: 6px solid #ffb07c;
+    }
+    .panel-right {
+      right: 0;
+      transform: translateX(100%);
+    }
+    .music-panel.open {
+      transform: translateX(0);
+    }
+    .panel-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: black;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #ffe0cc;
+      padding-bottom: 10px;
+    }
+    .song-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .song-card {
+      background: white;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+      transition: 0.2s;
+      border: 1px solid #ffebdf;
+    }
+    .song-title-bar {
+      background: #fff4ec;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #2c7a6e;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .song-title-bar:hover { background: #ffe0cc; }
+    .song-num {
+      background: #ffb07c;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 30px;
+      color: white;
+      font-size: 0.8rem;
+      margin-right: 12px;
+    }
+    .song-player {
+      display: none;
+      padding: 12px;
+      background: #fffcf8;
+      border-top: 1px solid #ffe0cc;
+    }
+    .song-player iframe {
+      width: 100%;
+      height: 200px;
+      border-radius: 20px;
+      border: none;
+    }
+    .yt-link {
+      display: block;
+      background: #e63946;
+      color: white;
+      text-align: center;
+      padding: 8px;
+      margin-top: 10px;
+      border-radius: 40px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .yt-link:hover { background: #c1121f; }
+    .panel-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 32px;
+      cursor: pointer;
+      color: #cc7a48;
+      background: #fff0e4;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .overlay-music {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 1999;
+      display: none;
+      backdrop-filter: blur(2px);
+    }
+    .overlay-music.active { display: block; }
+    @media (max-width: 550px) { .music-panel { width: 100%; } }
+</style>
+
+<script>
+/* SONG DATA */
+const englishSongs = [
+  { title: "Song 1", artist: "Unlike Pluto", url: "https://youtu.be/mWKDZRJWdF4", videoId: "mWKDZRJWdF4" },
+  { title: "Song 2", artist: "Welcome to internet", url: "https://youtu.be/k1BneeJTDcU", videoId: "k1BneeJTDcU" },
+  { title: "Song 3", artist: "Sad Machine", url: "https://youtu.be/HAIDqt2aUek", videoId: "HAIDqt2aUek" },
+  { title: "Song 4", artist: "Indila Autumn", url: "https://youtu.be/qUO1_B9odo8", videoId: "qUO1_B9odo8" },
+  { title: "Song 5", artist: "UAE Anthem", url: "https://youtu.be/A59le56aluA", videoId: "A59le56aluA" },
+  { title: "Song 6", artist: "A million dreams", url: "https://youtu.be/fCElqWdviUI", videoId: "fCElqWdviUI" },
+  { title: "Song 7", artist: "Odoriko", url: "https://youtu.be/7HgJIAUtICU", videoId: "7HgJIAUtICU" },
+  { title: "Song 8", artist: "Wild", url: "https://youtu.be/BQogzYUoQWU", videoId: "BQogzYUoQWU" }
+];
+
+const hindiSongs = [
+  { title: "गीत 1", artist: "Issak Tari", url: "https://youtu.be/YWZR2hcCo1A", videoId: "YWZR2hcCo1A" },
+  { title: "गीत 2", artist: "Bismil", url: "https://youtu.be/p6ZxI5_A69M", videoId: "p6ZxI5_A69M" },
+  { title: "गीत 3", artist: "Binte Dil", url: "https://youtu.be/9aoUpCXY7uk", videoId: "9aoUpCXY7uk" },
+  { title: "गीत 4", artist: "Hanuman Fast Ver", url: "https://youtu.be/khyV7P5rJ14", videoId: "khyV7P5rJ14" },
+  { title: "गीत 5", artist: "kai po che", url: "https://youtu.be/YKcmMmJlKNk", videoId: "YKcmMmJlKNk" },
+  { title: "गीत 6", artist: "Challa", url: "https://youtu.be/1GWyCJHuNms", videoId: "1GWyCJHuNms" },
+  { title: "गीत 7", artist: "Karma", url: "https://youtu.be/rja5OuQGpAg", videoId: "rja5OuQGpAg" },
+  { title: "गीत 8", artist: "Dheera", url: "https://youtu.be/oMwyxM9MZ50", videoId: "oMwyxM9MZ50" }
+];
+
+/* BUILD SONG CARDS */
+function buildSongCard(song, idx) {
+  const card = document.createElement('div');
+  card.className = 'song-card';
+  card.innerHTML = `
+    <div class="song-title-bar">
+      <div><span class="song-num">${idx + 1}</span>${song.title}<span style="font-size:0.8rem;color:#cb7b4a;"> • ${song.artist}</span></div>
+      <span>▶️</span>
+    </div>
+    <div class="song-player">
+      <iframe allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <a href="${song.url}" target="_blank" class="yt-link">🔴 Open on YouTube</a>
+    </div>
+  `;
+
+  card.querySelector('.song-title-bar').addEventListener('click', () => {
+    const playerDiv = card.querySelector('.song-player');
+    const iframe = card.querySelector('iframe');
+    const isCurrentlyOpen = playerDiv.style.display === 'block';
+
+    document.querySelectorAll('.song-player').forEach(p => {
+      p.style.display = 'none';
+      p.querySelector('iframe').src = "";
+    });
+
+    if (!isCurrentlyOpen) {
+      playerDiv.style.display = 'block';
+      iframe.src = `https://www.youtube.com/embed/${song.videoId}?autoplay=1`;
+    }
+  });
+  return card;
+}
+
+/* INITIALIZE LISTS */
+const englishContainer = document.getElementById('englishSongsList');
+const hindiContainer = document.getElementById('hindiSongsList');
+
+englishSongs.forEach((song, idx) => englishContainer.appendChild(buildSongCard(song, idx)));
+hindiSongs.forEach((song, idx) => hindiContainer.appendChild(buildSongCard(song, idx)));
+
+/* PANEL CONTROLS */
+const leftPanel = document.getElementById('leftPanel');
+const rightPanel = document.getElementById('rightPanel');
+const overlay = document.getElementById('overlayMusic');
+let state = "none";
+
+function openPanel(side) {
+  closeAllPanels();
+  if (side === 'left') { leftPanel.classList.add('open'); state = "left"; }
+  else { rightPanel.classList.add('open'); state = "right"; }
+  overlay.classList.add('active');
+}
+
+function closePanel() { closeAllPanels(); }
+
+function closeAllPanels() {
+  leftPanel.classList.remove('open');
+  rightPanel.classList.remove('open');
+  overlay.classList.remove('active');
+  document.querySelectorAll('.song-player iframe').forEach(i => i.src = "");
+  document.querySelectorAll('.song-player').forEach(p => p.style.display = 'none');
+  state = "none";
+}
+
+/* SWIPE LOGIC */
+let sx = 0;
+document.addEventListener("touchstart", e => sx = e.changedTouches[0].screenX);
+document.addEventListener("touchend", e => {
+  let ex = e.changedTouches[0].screenX;
+  if (state === "none") {
+    if (ex - sx > 70) openPanel('left');
+    else if (sx - ex > 70) openPanel('right');
+  } else if (Math.abs(ex - sx) > 70) {
+    closeAllPanels();
+  }
+});
+</script>
 
 </body>
 </html>
