@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gift Card Maker - Professional Editor</title>
+
+    <!-- APP SETTINGS -->
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- INSTALLABLE APP -->
+    <link rel="manifest" id="manifestPlaceholder">
+
+    <!-- ICON -->
+    <link rel="apple-touch-icon" id="appleIcon">
+
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary: #6366f1;
@@ -54,7 +64,6 @@
             align-items: flex-start;
         }
 
-        /* --- CONTROL PANEL --- */
         .controls {
             background: #1e293b;
             padding: 25px;
@@ -126,7 +135,9 @@
             transition: background 0.3s;
         }
 
-        .upload-btn:hover { background: #475569; }
+        .upload-btn:hover {
+            background: #475569;
+        }
 
         .download-btn {
             background: linear-gradient(90deg, #f59e0b, #ea580c);
@@ -140,11 +151,17 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
             transition: transform 0.1s;
+            margin-top: 10px;
         }
 
-        .download-btn:active { transform: translateY(2px); }
+        .download-btn:active {
+            transform: translateY(2px);
+        }
 
-        /* --- PREVIEW CARD --- */
+        #installBtn {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+        }
+
         #giftCardArea {
             padding: 20px;
             background: transparent;
@@ -169,7 +186,7 @@
         .card-canvas::before {
             content: "";
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            inset: 0;
             background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
             opacity: 0.1;
         }
@@ -221,12 +238,23 @@
         }
 
         @media (max-width: 850px) {
-            .main-layout { flex-direction: column; align-items: center; }
-            .card-canvas { width: 90vw; height: 120vw; }
-            .controls { width: 90vw; }
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card-canvas {
+                width: 90vw;
+                height: 120vw;
+            }
+
+            .controls {
+                width: 90vw;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="header">
@@ -235,7 +263,9 @@
     </div>
 
     <div class="main-layout">
+
         <div class="controls">
+
             <div class="input-group">
                 <label>Recipient Name</label>
                 <input type="text" id="inputName" placeholder="e.g. Rahul Tomar" maxlength="20">
@@ -247,38 +277,106 @@
             </div>
 
             <label>Choose Card Theme</label>
+
             <div class="theme-selector">
                 <div class="theme-btn active" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-theme="neon"></div>
+
                 <div class="theme-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" data-theme="gold"></div>
+
                 <div class="theme-btn" style="background: linear-gradient(135deg, #ec4899, #be185d);" data-theme="rose"></div>
+
                 <div class="theme-btn" style="background: linear-gradient(135deg, #10b981, #059669);" data-theme="emerald"></div>
+
                 <div class="theme-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b);" data-theme="crimson"></div>
+
                 <div class="theme-btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2);" data-theme="ocean"></div>
             </div>
 
             <label for="fileUpload" class="upload-btn">📸 UPLOAD PHOTO</label>
+
             <input type="file" id="fileUpload" accept="image/*" style="display:none">
 
-            <button class="download-btn" id="downloadBtn">✨ DOWNLOAD GIFT CARD</button>
+            <button class="download-btn" id="downloadBtn">
+                ✨ DOWNLOAD GIFT CARD
+            </button>
+
+            <button class="download-btn" id="installBtn">
+                📲  Install APP
+            </button>
+
         </div>
 
         <div id="giftCardArea">
+
             <div class="card-canvas" id="captureTarget">
-                <div class="occasion-text" id="displayOccasion">HAPPY BIRTHDAY</div>
-                
+
+                <div class="occasion-text" id="displayOccasion">
+                    HAPPY BIRTHDAY
+                </div>
+
                 <div class="photo-frame" id="displayPhoto"></div>
 
-                <div class="to-label">Specialy for</div>
-                <div class="name-text" id="displayName">Rahul</div>
+                <div class="to-label">
+                    Specialy for
+                </div>
 
-                <div class="footer-decoration">✨ EXCLUSIVE GIFT CARD ✨</div>
+                <div class="name-text" id="displayName">
+                    Rahul
+                </div>
+
+                <div class="footer-decoration">
+                    ✨ EXCLUSIVE GIFT CARD ✨
+                </div>
+
             </div>
+
         </div>
+
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
+
+        // APP ICON IMAGE
+        const iconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
+            <rect width="100%" height="100%" fill="white"/>
+            <text x="50%" y="54%" font-size="260" text-anchor="middle">🎁</text>
+        </svg>`;
+
+        const iconBlob = new Blob([iconSVG], {type:'image/svg+xml'});
+        const iconURL = URL.createObjectURL(iconBlob);
+
+        document.getElementById("appleIcon").href = iconURL;
+
+        // MANIFEST
+        const manifestData = {
+            name: "Gift Card Maker",
+            short_name: "GiftMaker",
+            start_url: ".",
+            display: "standalone",
+            background_color: "#ffffff",
+            theme_color: "#0f172a",
+            icons: [
+                {
+                    src: iconURL,
+                    sizes: "512x512",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob(
+            [JSON.stringify(manifestData)],
+            {type:'application/json'}
+        );
+
+        const manifestURL = URL.createObjectURL(manifestBlob);
+
+        document.getElementById("manifestPlaceholder").setAttribute("href", manifestURL);
+
+        // ELEMENTS
         const inputName = document.getElementById('inputName');
         const inputOccasion = document.getElementById('inputOccasion');
         const displayName = document.getElementById('displayName');
@@ -288,8 +386,9 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const themeBtns = document.querySelectorAll('.theme-btn');
         const captureTarget = document.getElementById('captureTarget');
+        const installBtn = document.getElementById('installBtn');
 
-        // Live Preview Typing
+        // LIVE PREVIEW
         inputName.addEventListener('input', () => {
             displayName.innerText = inputName.value || "Recipient";
         });
@@ -298,50 +397,113 @@
             displayOccasion.innerText = inputOccasion.value || "THE OCCASION";
         });
 
-        // Theme Selection
+        // THEMES
         themeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
+
                 themeBtns.forEach(b => b.classList.remove('active'));
+
                 btn.classList.add('active');
-                
-                // Apply the background from the button to the card
+
                 captureTarget.style.background = btn.style.background;
             });
         });
 
-        // Photo Upload Handling
+        // PHOTO UPLOAD
         fileUpload.addEventListener('change', function() {
+
             const file = this.files[0];
+
             if (file) {
+
                 const reader = new FileReader();
+
                 reader.onload = function(e) {
-                    displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
+
+                    displayPhoto.style.backgroundImage =
+                    `url('${e.target.result}')`;
+
                 }
+
                 reader.readAsDataURL(file);
             }
         });
 
-        // Download Logic
+        // DOWNLOAD CARD
         downloadBtn.addEventListener('click', () => {
-            // Provide feedback
+
             downloadBtn.innerText = "Generating...";
-            
+
             html2canvas(captureTarget, {
-                scale: 2, // High quality
+                scale: 2,
                 useCORS: true,
                 backgroundColor: null
-            }).then(canvas => {
+            })
+
+            .then(canvas => {
+
                 const link = document.createElement('a');
-                link.download = `GiftCard_${displayName.innerText}.png`;
+
+                link.download =
+                `GiftCard_${displayName.innerText}.png`;
+
                 link.href = canvas.toDataURL('image/png');
+
                 link.click();
-                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
-            }).catch(err => {
+
+                downloadBtn.innerText =
+                "✨ DOWNLOAD GIFT CARD";
+            })
+
+            .catch(err => {
+
                 console.error(err);
+
                 alert("Error generating card.");
-                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
+
+                downloadBtn.innerText =
+                "✨ DOWNLOAD GIFT CARD";
             });
         });
+
+        // INSTALL APP
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+
+            e.preventDefault();
+
+            deferredPrompt = e;
+        });
+
+        installBtn.addEventListener('click', async () => {
+
+            if (deferredPrompt) {
+
+                deferredPrompt.prompt();
+
+                await deferredPrompt.userChoice;
+
+                deferredPrompt = null;
+
+            } else {
+
+                alert(
+`To install app:
+
+ANDROID:
+Open browser menu → Install App
+
+IPHONE:
+Share → Add to Home Screen
+
+PC:
+Click install icon in address bar`
+                );
+            }
+        });
+
     </script>
+
 </body>
 </html>
