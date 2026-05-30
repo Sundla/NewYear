@@ -14,8 +14,39 @@
         body { background: #f0f4fe; font-family: 'Inter', sans-serif; padding: 24px; color: #0f172a; }
         .app-wrapper { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
         .preview-section { flex: 2; min-width: 350px; }
-        .master-slide { width: 100%; aspect-ratio: 16/9; border-radius: 20px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; overflow: hidden; transition: background 0.3s; }
-        .master-slide img { max-width: 100%; max-height: 180px; object-fit: contain; margin-top: 15px; border-radius: 8px; }
+        
+        .master-slide { 
+            width: 100%; 
+            min-height: 400px; 
+            height: auto;
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            display: block; 
+            transition: background 0.3s; 
+        }
+        
+        .master-slide h1 {
+            font-size: 40px;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+        
+        .master-slide p {
+            font-size: 20px;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        
+        .master-slide img { 
+            display: block;
+            max-width: 100%; 
+            max-height: 250px; 
+            object-fit: contain; 
+            border-radius: 8px; 
+            clear: both;
+        }
         
         .nav-controls { margin-top: 20px; display: flex; gap: 10px; align-items: center; }
         .thumb-row { display: flex; gap: 10px; margin-top: 20px; overflow-x: auto; padding-bottom: 10px; }
@@ -145,33 +176,89 @@
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('l', 'mm', 'a4');
         const theme = themes[activeThemeIdx];
+        
         for (let i = 0; i < slides.length; i++) {
             if (i !== 0) pdf.addPage();
             pdf.setFillColor(theme.bg); pdf.rect(0,0,297,210,'F');
-            pdf.setTextColor(theme.title); pdf.setFontSize(40); pdf.text(pdf.splitTextToSize(slides[i].title, 260), 20, 30);
-            pdf.setTextColor(theme.text); pdf.setFontSize(20); pdf.text(pdf.splitTextToSize(slides[i].description, 260), 20, 50);
+            
+            // Draw Title
+            pdf.setTextColor(theme.title); pdf.setFontSize(40); 
+            const titleLines = pdf.splitTextToSize(slides[i].title, 260);
+            pdf.text(titleLines, 20, 30);
+            
+            // Calculate starting Y position for Description based on Title height
+            let descY = 30 + (titleLines.length * 15);
+            
+            // Draw Description
+            pdf.setTextColor(theme.text); pdf.setFontSize(20); 
+            const descLines = pdf.splitTextToSize(slides[i].description, 260);
+            pdf.text(descLines, 20, descY);
+            
+            // Calculate starting Y position for Image based on Description height
+            let imgY = descY + (descLines.length * 10);
+            
             if(slides[i].img) {
                 const img = new Image(); img.src = slides[i].img; await img.decode();
-                const ratio = Math.min(100 / img.naturalWidth, 80 / img.naturalHeight);
-                pdf.addImage(slides[i].img, 'PNG', 20, 70, img.naturalWidth * ratio, img.naturalHeight * ratio);
+                const maxAvailableHeight = 190 - imgY;
+                let ratio = Math.min(100 / img.naturalWidth, 80 / img.naturalHeight);
+                let finalImgHeight = img.naturalHeight * ratio;
+                
+                if (finalImgHeight > maxAvailableHeight && maxAvailableHeight > 20) {
+                    ratio = maxAvailableHeight / img.naturalHeight;
+                }
+                pdf.addImage(slides[i].img, 'PNG', 20, imgY, img.naturalWidth * ratio, img.naturalHeight * ratio);
             }
         }
         pdf.save("Presentation.pdf");
     }
 
-    function exportPPTX() {
+    async function exportPPTX() {
         let pptx = new PptxGenJS();
         const theme = themes[activeThemeIdx];
-        slides.forEach(s => {
+        
+        for (let i = 0; i < slides.length; i++) {
+            const s = slides[i];
             let slide = pptx.addSlide();
             slide.background = { color: theme.bg.replace('#','') };
-            slide.addText(s.title, { x: 0.5, y: 0.5, fontSize: 40, bold: true, color: theme.title.replace('#','') });
-            slide.addText(s.description, { x: 0.5, y: 1.5, fontSize: 20, color: theme.text.replace('#','') });
+            
+            const titleCharsPerLine = 30; 
+            const descCharsPerLine = 60;
+            
+            const titleLines = Math.max(1, Math.ceil((s.title || "").length / titleCharsPerLine));
+            const descLines = Math.max(1, Math.ceil((s.description || "").length / descCharsPerLine));
+            
+            let titleY = 0.5;
+            let titleH = titleLines * 0.6;
+            
+            let descY = titleY + titleH + 0.2;
+            let descH = descLines * 0.4;
+            
+            let imgY = descY + descH + 0.2;
+            
+            // Add Title
+            slide.addText(s.title, { x: 0.5, y: titleY, h: titleH, fontSize: 40, bold: true, color: theme.title.replace('#',''), vertical: 'top' });
+            
+            // Add Description
+            slide.addText(s.description, { x: 0.5, y: descY, h: descH, fontSize: 20, color: theme.text.replace('#',''), vertical: 'top' });
+            
+            // Add Image asynchronously with valid image metrics
             if(s.img) {
-                let img = new Image(); img.src = s.img;
-                slide.addImage({ data: s.img, x: 0.5, y: 2.5, w: 5, h: (5 * img.naturalHeight) / img.naturalWidth, sizing: { type: 'contain' } });
+                const img = new Image(); img.src = s.img; await img.decode();
+                let maxH = 7.0 - imgY; 
+                if(maxH < 1.5) maxH = 1.5;
+                
+                // Calculate dynamic structural width/height to match PDF full aspect scale rule
+                let widthVal = 5;
+                let heightVal = (5 * img.naturalHeight) / img.naturalWidth;
+                
+                if (heightVal > maxH) {
+                    heightVal = maxH;
+                    widthVal = (maxH * img.naturalWidth) / img.naturalHeight;
+                }
+                
+                slide.addImage({ data: s.img, x: 0.5, y: imgY, w: widthVal, h: heightVal, sizing: { type: 'contain' } });
             }
-        });
+        }
         pptx.writeFile({ fileName: "Presentation.pptx" });
     }
 
