@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gift Card Maker - Professional Editor</title>
 
-    <!-- APP SETTINGS -->
     <meta name="theme-color" content="#0f172a">
 
-    <!-- INSTALLABLE APP -->
     <link rel="manifest" id="manifestPlaceholder">
 
-    <!-- ICON -->
     <link rel="apple-touch-icon" id="appleIcon">
 
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
@@ -44,6 +41,7 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
+            width: 100%;
         }
 
         .header h1 {
@@ -52,6 +50,47 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        /* Side-by-Side Maker Button Row */
+        .maker-btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Individual Navigation Buttons styling */
+        .maker-nav-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .maker-nav-btn:hover {
+            background: var(--primary);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .maker-nav-btn:active {
+            transform: translateY(0);
         }
 
         .main-layout {
@@ -232,7 +271,6 @@
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
-            /* Same dimensions as previous .wave-btn had: padding 14px 34px, but we need same height */
             padding: 14px 34px;
             min-width: 140px;
         }
@@ -267,13 +305,13 @@
         .ham-left-wave {
             left: -70px;
             background: radial-gradient(circle, rgba(0,229,255,.9), transparent 70%);
-            animation: hamLeftFlow 4s ease-in-out infinite; /* slower: 4s instead of 3s */
+            animation: hamLeftFlow 4s ease-in-out infinite;
         }
 
         .ham-right-wave {
             right: -70px;
             background: radial-gradient(circle, rgba(127,92,255,.9), transparent 70%);
-            animation: hamRightFlow 4s ease-in-out infinite; /* slower: 4s instead of 3s */
+            animation: hamRightFlow 4s ease-in-out infinite;
         }
 
         @keyframes hamLeftFlow {
@@ -317,7 +355,7 @@
             gap: 8px;
             box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.15);
-            transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1); /* slower smooth */
+            transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             z-index: 200;
             pointer-events: none;
             opacity: 0;
@@ -379,6 +417,10 @@
             }
             .hamburger-nav {
                 padding: 12px 28px;
+            }
+            .maker-btn-container {
+                max-width: 90vw;
+                padding: 0 10px;
             }
         }
 
@@ -474,7 +516,10 @@
 
     <div class="header">
         <h1>GIFT CARD MAKER</h1>
-        <p>Create & Download Personalized Greetings</p>
+        <div class="maker-btn-container">
+            <a href="ProjectMaker.html" class="maker-nav-btn">📂 P Maker</a>
+            <a href="VideoMaker.html" class="maker-nav-btn">🎬 V Maker</a>
+        </div>
     </div>
 
     <div class="main-layout">
@@ -523,14 +568,12 @@
 
         </div>
         
-        <!-- Hamburger Navigation Menu (exactly same height as previous Home button, slower animation) -->
         <div class="hamburger-nav-wrapper">
             <div class="hamburger-nav" id="hamburgerMenuBtn">
                 <div class="ham-wave ham-left-wave"></div>
                 <div class="ham-wave ham-right-wave"></div>
                 <span class="ham-btn-text">☰ MENU</span>
             </div>
-            <!-- Dropdown links container -->
             <div class="dropdown-menu" id="dropdownMenu">
                 <a href="game1.html">🎮 Play X</a>
                 <a href="game2.html">🎲 Casino</a>
@@ -539,10 +582,8 @@
                 <a href="MothersDay.html">🌸 M Day</a>
             </div>
         </div>
-        <!-- Background overlay to close menu -->
         <div class="menu-overlay" id="menuOverlay"></div>
         
-        <!-- Gift card preview area -->
         <div id="giftCardArea">
             <div class="card-canvas" id="captureTarget">
                 <div class="occasion-text" id="displayOccasion">
@@ -566,7 +607,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
-
         // APP ICON IMAGE
         const iconSVG = `
         <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
@@ -602,7 +642,6 @@
         );
 
         const manifestURL = URL.createObjectURL(manifestBlob);
-
         document.getElementById("manifestPlaceholder").setAttribute("href", manifestURL);
 
         // ELEMENTS
@@ -629,94 +668,59 @@
         // THEMES
         themeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-
                 themeBtns.forEach(b => b.classList.remove('active'));
-
                 btn.classList.add('active');
-
                 captureTarget.style.background = btn.style.background;
             });
         });
 
         // PHOTO UPLOAD
         fileUpload.addEventListener('change', function() {
-
             const file = this.files[0];
-
             if (file) {
-
                 const reader = new FileReader();
-
                 reader.onload = function(e) {
-
-                    displayPhoto.style.backgroundImage =
-                    `url('${e.target.result}')`;
-
+                    displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
                 }
-
                 reader.readAsDataURL(file);
             }
         });
 
         // DOWNLOAD CARD
         downloadBtn.addEventListener('click', () => {
-
             downloadBtn.innerText = "Generating...";
-
             html2canvas(captureTarget, {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: null
             })
-
             .then(canvas => {
-
                 const link = document.createElement('a');
-
-                link.download =
-                `GiftCard_${displayName.innerText}.png`;
-
+                link.download = `GiftCard_${displayName.innerText}.png`;
                 link.href = canvas.toDataURL('image/png');
-
                 link.click();
-
-                downloadBtn.innerText =
-                "✨ DOWNLOAD GIFT CARD";
+                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
             })
-
             .catch(err => {
-
                 console.error(err);
-
                 alert("Error generating card.");
-
-                downloadBtn.innerText =
-                "✨ DOWNLOAD GIFT CARD";
+                downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
             });
         });
 
         // INSTALL APP
         let deferredPrompt;
-
         window.addEventListener('beforeinstallprompt', (e) => {
-
             e.preventDefault();
-
             deferredPrompt = e;
         });
 
         installBtn.addEventListener('click', async () => {
-
             if (deferredPrompt) {
-
                 deferredPrompt.prompt();
-
                 await deferredPrompt.userChoice;
-
                 deferredPrompt = null;
-
             } else {
-
                 alert(
 `To install app:
 
@@ -732,7 +736,7 @@ Click install icon in address bar`
             }
         });
 
-        // HAMBURGER MENU FUNCTIONALITY (slower animation, same height as home button, no extra changes)
+        // HAMBURGER MENU FUNCTIONALITY
         const hamburgerBtn = document.getElementById('hamburgerMenuBtn');
         const dropdown = document.getElementById('dropdownMenu');
         const overlay = document.getElementById('menuOverlay');
@@ -759,12 +763,10 @@ Click install icon in address bar`
             hamburgerBtn.addEventListener('click', toggleMenu);
         }
         
-        // Click on overlay closes menu
         if (overlay) {
             overlay.addEventListener('click', closeMenu);
         }
         
-        // If any dropdown link clicked, close menu smoothly
         const menuLinks = document.querySelectorAll('.dropdown-menu a');
         menuLinks.forEach(link => {
             link.addEventListener('click', function() {
@@ -772,21 +774,18 @@ Click install icon in address bar`
             });
         });
         
-        // Prevent menu from closing when clicking inside dropdown
         if (dropdown) {
             dropdown.addEventListener('click', function(e) {
                 e.stopPropagation();
             });
         }
         
-        // Close menu on window resize if open (better UX)
         window.addEventListener('resize', function() {
             if (dropdown && dropdown.classList.contains('open')) {
                 closeMenu();
             }
         });
         
-        // doc click fallback
         document.addEventListener('click', function(event) {
             if (dropdown && dropdown.classList.contains('open')) {
                 if (!hamburgerBtn.contains(event.target) && !dropdown.contains(event.target)) {

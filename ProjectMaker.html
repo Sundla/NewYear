@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PPT Maker Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f0f4fe; font-family: 'Inter', sans-serif; padding: 24px; color: #0f172a; }
+        .app-wrapper { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
+        .preview-section { flex: 2; min-width: 350px; }
+        .master-slide { width: 100%; aspect-ratio: 16/9; border-radius: 20px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; overflow: hidden; transition: background 0.3s; }
+        .master-slide img { max-width: 100%; max-height: 180px; object-fit: contain; margin-top: 15px; border-radius: 8px; }
+        
+        .nav-controls { margin-top: 20px; display: flex; gap: 10px; align-items: center; }
+        .thumb-row { display: flex; gap: 10px; margin-top: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .thumb { width: 60px; height: 40px; background: #ddd; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .active-thumb { border: 2px solid #4f46e5; }
+        
+        .tool-panel { flex: 1; min-width: 300px; background: white; padding: 24px; border-radius: 20px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; width: 100%; }
+        
+        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; }
+        .theme-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
+        
+        #imageInput { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <div class="preview-section">
+        <div class="master-slide" id="slideDisplay">
+            <h1 id="dTitle">Title</h1>
+            <p id="dDesc">Description</p>
+            <img id="dImg" src="" style="display:none;">
+        </div>
+        
+        <div class="nav-controls">
+            <button onclick="changeSlide(-1)" style="width:auto;"><i class="fas fa-chevron-left"></i></button>
+            <span id="counter">1 / 1</span>
+            <button onclick="changeSlide(1)" style="width:auto;"><i class="fas fa-chevron-right"></i></button>
+            <button onclick="addSlide()" style="background:#10b981; color:white; width:auto;"><i class="fas fa-plus"></i></button>
+            <button onclick="deleteSlide()" style="background:#fee2e2; color:#dc2626; width:auto;"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="thumb-row" id="thumbList"></div>
+    </div>
+
+    <div class="tool-panel">
+        <input type="text" id="titleIn" placeholder="Title">
+        <textarea id="descIn" rows="4" placeholder="Description"></textarea>
+        
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;">Upload Image</button>
+        
+        <button onclick="exportPDF()" style="background:#b91c1c; color:white;">Download PDF</button>
+        <button onclick="exportPPTX()" style="background:#2d6a4f; color:white;">Download PPTX</button>
+
+        <p style="margin-top:20px; font-weight:bold; font-size: 14px;">Select Theme:</p>
+        <div class="theme-grid" id="themeGrid"></div>
+    </div>
+</div>
+
+<script>
+    // 10 Themes: Background, Title Color, Text Color
+    const themes = [
+        { bg: "#ffffff", title: "#000000", text: "#333333" },
+        { bg: "#1e293b", title: "#ffffff", text: "#cbd5e1" },
+        { bg: "#fff1f2", title: "#9f1239", text: "#881337" },
+        { bg: "#f0fdf4", title: "#166534", text: "#16a34a" },
+        { bg: "#eff6ff", title: "#1e3a8a", text: "#2563eb" },
+        { bg: "#111827", title: "#fbbf24", text: "#f3f4f6" },
+        { bg: "#fef3c7", title: "#92400e", text: "#d97706" },
+        { bg: "#f5f3ff", title: "#5b21b6", text: "#7c3aed" },
+        { bg: "#1a1a1a", title: "#e5e7eb", text: "#9ca3af" },
+        { bg: "#fef2f2", title: "#991b1b", text: "#b91c1c" }
+    ];
+
+    let slides = [{ title: "Welcome", description: "Start your presentation.", img: null }];
+    let current = 0;
+    let activeThemeIdx = 0;
+
+    function initThemes() {
+        const grid = document.getElementById("themeGrid");
+        themes.forEach((t, i) => {
+            const btn = document.createElement("div");
+            btn.className = "theme-swatch";
+            btn.style.background = t.bg;
+            btn.onclick = () => { activeThemeIdx = i; updateView(); };
+            grid.appendChild(btn);
+        });
+    }
+
+    function updateView() {
+        const theme = themes[activeThemeIdx];
+        const display = document.getElementById("slideDisplay");
+        display.style.background = theme.bg;
+        document.getElementById("dTitle").style.color = theme.title;
+        document.getElementById("dDesc").style.color = theme.text;
+        
+        document.getElementById("dTitle").innerText = slides[current].title;
+        document.getElementById("dDesc").innerText = slides[current].description;
+        
+        const imgEl = document.getElementById("dImg");
+        if(slides[current].img) { imgEl.src = slides[current].img; imgEl.style.display = "block"; } 
+        else { imgEl.style.display = "none"; }
+        
+        document.getElementById("counter").innerText = `${current + 1} / ${slides.length}`;
+        document.getElementById("titleIn").value = slides[current].title;
+        document.getElementById("descIn").value = slides[current].description;
+        renderThumbs();
+    }
+
+    document.getElementById("imageInput").onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => { slides[current].img = event.target.result; updateView(); };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    function renderThumbs() {
+        const list = document.getElementById("thumbList");
+        list.innerHTML = "";
+        slides.forEach((_, i) => {
+            const div = document.createElement("div");
+            div.className = `thumb ${i === current ? 'active-thumb' : ''}`;
+            div.innerText = i + 1;
+            div.onclick = () => { current = i; updateView(); };
+            list.appendChild(div);
+        });
+    }
+
+    document.getElementById("titleIn").oninput = (e) => { slides[current].title = e.target.value; updateView(); };
+    document.getElementById("descIn").oninput = (e) => { slides[current].description = e.target.value; updateView(); };
+    function changeSlide(dir) { current = Math.max(0, Math.min(slides.length - 1, current + dir)); updateView(); }
+    function addSlide() { slides.splice(current + 1, 0, { title: "New Slide", description: "Add content here", img: null }); current++; updateView(); }
+    function deleteSlide() { if(slides.length > 1) { slides.splice(current, 1); if(current >= slides.length) current--; updateView(); } }
+
+    async function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const theme = themes[activeThemeIdx];
+        for (let i = 0; i < slides.length; i++) {
+            if (i !== 0) pdf.addPage();
+            pdf.setFillColor(theme.bg); pdf.rect(0,0,297,210,'F');
+            pdf.setTextColor(theme.title); pdf.setFontSize(40); pdf.text(pdf.splitTextToSize(slides[i].title, 260), 20, 30);
+            pdf.setTextColor(theme.text); pdf.setFontSize(20); pdf.text(pdf.splitTextToSize(slides[i].description, 260), 20, 50);
+            if(slides[i].img) {
+                const img = new Image(); img.src = slides[i].img; await img.decode();
+                const ratio = Math.min(100 / img.naturalWidth, 80 / img.naturalHeight);
+                pdf.addImage(slides[i].img, 'PNG', 20, 70, img.naturalWidth * ratio, img.naturalHeight * ratio);
+            }
+        }
+        pdf.save("Presentation.pdf");
+    }
+
+    function exportPPTX() {
+        let pptx = new PptxGenJS();
+        const theme = themes[activeThemeIdx];
+        slides.forEach(s => {
+            let slide = pptx.addSlide();
+            slide.background = { color: theme.bg.replace('#','') };
+            slide.addText(s.title, { x: 0.5, y: 0.5, fontSize: 40, bold: true, color: theme.title.replace('#','') });
+            slide.addText(s.description, { x: 0.5, y: 1.5, fontSize: 20, color: theme.text.replace('#','') });
+            if(s.img) {
+                let img = new Image(); img.src = s.img;
+                slide.addImage({ data: s.img, x: 0.5, y: 2.5, w: 5, h: (5 * img.naturalHeight) / img.naturalWidth, sizing: { type: 'contain' } });
+            }
+        });
+        pptx.writeFile({ fileName: "Presentation.pptx" });
+    }
+
+    initThemes();
+    updateView();
+</script>
+</body>
+</html>
