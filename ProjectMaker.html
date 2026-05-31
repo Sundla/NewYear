@@ -61,6 +61,19 @@
         .theme-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
         
         #imageInput { display: none; }
+
+        /* Style for the new Image PDF Maker panel at the bottom */
+        .pdf-maker-panel { width: 100%; max-width: 1200px; margin: 40px auto 0 auto; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .pdf-maker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .pdf-maker-title { font-size: 18px; font-weight: bold; }
+        .pdf-maker-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .pdf-maker-buttons { display: flex; gap: 10px; }
+        .pdf-thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .pdf-thumb-wrapper { position: relative; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: #f8fafc; }
+        .pdf-thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .pdf-thumb-remove { position: absolute; top: 5px; right: 5px; background: rgba(220, 38, 38, 0.85); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; }
+        #bulkImageInput { display: none; }
+        #pdfNameInput { width: 220px; margin-bottom: 0; padding: 8px 12px; display: none; }
     </style>
 </head>
 <body>
@@ -98,6 +111,21 @@
     </div>
 </div>
 
+<div class="pdf-maker-panel">
+    <div class="pdf-maker-header">
+        <div class="pdf-maker-title"><i class="fas fa-images"></i> Image PDF Maker</div>
+        <div class="pdf-maker-controls">
+            <input type="text" id="pdfNameInput" placeholder="Enter PDF File Name">
+            <div class="pdf-maker-buttons">
+                <input type="file" id="bulkImageInput" accept="image/*" multiple>
+                <button onclick="document.getElementById('bulkImageInput').click()" style="background:#10b981; color:white; width:auto; margin-bottom:0;"><i class="fas fa-plus"></i> Add Images</button>
+                <button onclick="exportImagesToPDF()" style="background:#b91c1c; color:white; width:auto; margin-bottom:0;"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            </div>
+        </div>
+    </div>
+    <div class="pdf-thumb-grid" id="pdfThumbGrid"></div>
+</div>
+
 <script>
     // 10 Themes: Background, Title Color, Text Color
     const themes = [
@@ -116,6 +144,7 @@
     let slides = [{ title: "Welcome", description: "Start your presentation.", img: null }];
     let current = 0;
     let activeThemeIdx = 0;
+    let pdfImages = []; // Stores DataURLs for the Image PDF Maker
 
     function initThemes() {
         const grid = document.getElementById("themeGrid");
@@ -260,6 +289,113 @@
             }
         }
         pptx.writeFile({ fileName: "Presentation.pptx" });
+    }
+
+    // Logic for Image PDF Maker
+    document.getElementById("bulkImageInput").onchange = (e) => {
+        const files = Array.from(e.target.files);
+        let processed = 0;
+        
+        if (files.length > 0) {
+            document.getElementById("pdfNameInput").style.display = "inline-block";
+        }
+        
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                pdfImages.push(event.target.result);
+                processed++;
+                if (processed === files.length) {
+                    renderPdfThumbs();
+                    document.getElementById("bulkImageInput").value = "";
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    function renderPdfThumbs() {
+        const grid = document.getElementById("pdfThumbGrid");
+        grid.innerHTML = "";
+        
+        if (pdfImages.length === 0) {
+            document.getElementById("pdfNameInput").style.display = "none";
+        } else {
+            document.getElementById("pdfNameInput").style.display = "inline-block";
+        }
+        
+        pdfImages.forEach((imgSrc, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "pdf-thumb-wrapper";
+            
+            const img = document.createElement("img");
+            img.src = imgSrc;
+            
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "pdf-thumb-remove";
+            removeBtn.innerHTML = "<i class='fas fa-times'></i>";
+            removeBtn.onclick = () => {
+                pdfImages.splice(index, 1);
+                renderPdfThumbs();
+            };
+            
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            grid.appendChild(wrapper);
+        });
+    }
+
+    async function exportImagesToPDF() {
+        if (pdfImages.length === 0) {
+            alert("Please add at least one image first.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        
+        // Setup initial blank array configuration for dynamic dimension creation
+        let firstImg = new Image();
+        firstImg.src = pdfImages[0];
+        await firstImg.decode();
+        
+        // Dynamic single canvas configuration logic: width is locked to 210mm
+        const targetWidth = 210;
+        let targetHeight = (targetWidth * firstImg.naturalHeight) / firstImg.naturalWidth;
+        
+        // Initialize PDF dynamically using the dimensions calculated from the first image
+        const pdf = new jsPDF({
+            orientation: targetHeight > targetWidth ? 'p' : 'l',
+            unit: 'mm',
+            format: [targetWidth, targetHeight]
+        });
+
+        for (let i = 0; i < pdfImages.length; i++) {
+            const img = new Image();
+            img.src = pdfImages[i];
+            await img.decode();
+
+            // All images maintain exact uniform match size logic perfectly across distinct aspect pages
+            const currentHeight = (targetWidth * img.naturalHeight) / img.naturalWidth;
+
+            if (i !== 0) {
+                // Dynamically append new layout page sizing matching image bounding boxes flawlessly
+                pdf.addPage([targetWidth, currentHeight], currentHeight > targetWidth ? 'p' : 'l');
+            }
+            
+            // Render from point 0,0 across entire workspace context to leave zero background canvas margins showing
+            pdf.addImage(pdfImages[i], 'NONE', 0, 0, targetWidth, currentHeight);
+        }
+        
+        // Get custom name or fallback to standard default name
+        let filename = document.getElementById("pdfNameInput").value.trim();
+        if(!filename) {
+            filename = "Images";
+        }
+        if(!filename.endsWith(".pdf")) {
+            filename += ".pdf";
+        }
+        
+        pdf.save(filename);
     }
 
     initThemes();
