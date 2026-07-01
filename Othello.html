@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Othello Clash</title>
+    <style>
+        :root {
+            --bg-main: #0b0c10;
+            --bg-panel: #1f2833;
+            --bg-board: #2e6f40; /* Traditional Othello Green preserved */
+            --border-board: #1b4326;
+            --text-main: #c5c6c7;
+            --text-bright: #ffffff;
+            --accent-blue: #45f3ff;
+            --accent-red: #ff2a74;
+            --accent-green: #00ff87;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            background-image: radial-gradient(circle at 50% 15%, #1f2833 0%, #0b0c10 75%);
+        }
+
+        h1 { 
+            margin: 10px 0 20px 0; 
+            font-size: 2.2rem; 
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-bright);
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.3);
+        }
+
+        #game-container {
+            background: rgba(31, 40, 51, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 480px;
+            box-sizing: border-box;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+            color: var(--text-bright);
+        }
+
+        #turnDisplay {
+            color: var(--accent-blue);
+            text-shadow: 0 0 8px rgba(69, 243, 255, 0.2);
+        }
+
+        #notificationBanner {
+            width: 100%;
+            background: rgba(255, 42, 116, 0.15);
+            border: 1px solid var(--accent-red);
+            color: var(--text-bright);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: none;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(255, 42, 116, 0.2);
+        }
+        #notificationBanner.active { display: block; }
+
+        .board-view-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--bg-board);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.5), 0 10px 25px rgba(0,0,0,0.4);
+            border: 4px solid #141923;
+        }
+
+        canvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
+            touch-action: none; 
+        }
+
+        .action-controls {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            background: #141923;
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+            min-width: 100px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn:hover {
+            color: var(--text-bright);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: #1c2331;
+        }
+        .btn-primary { 
+            background: transparent;
+            color: var(--accent-blue); 
+            border: 1px solid var(--accent-blue);
+        }
+        .btn-primary:hover {
+            background: var(--accent-blue);
+            color: #0b0c10;
+            box-shadow: 0 0 15px rgba(69, 243, 255, 0.4);
+            border-color: var(--accent-blue);
+        }
+        .btn-danger { 
+            background: transparent;
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: #0b0c10;
+            box-shadow: 0 0 15px rgba(255, 42, 116, 0.4);
+            border-color: var(--accent-red);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 12, 16, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-card {
+            background: #151c24;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+        }
+        .modal-title { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            margin-bottom: 20px; 
+            color: var(--text-bright);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .modal-options { display: flex; flex-direction: column; gap: 12px; }
+        
+        .modal-opt-btn {
+            background: #1f2833; 
+            color: var(--text-bright);
+            padding: 14px; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+        .modal-opt-btn:hover {
+            background: transparent;
+            color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 12px rgba(69, 243, 255, 0.2);
+        }
+        
+        .results-text {
+            text-align: center;
+            font-family: inherit;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Othello Clash</h1>
+
+    <div id="game-container">
+        <div class="info-bar">
+            <span id="turnDisplay">Turn: Dark (Player)</span>
+            <span id="scoreDisplay">Dark: 2 | Light: 2</span>
+        </div>
+
+        <div id="notificationBanner">Banner Notification</div>
+
+        <div class="board-view-frame">
+            <canvas id="othelloCanvas" width="600" height="600"></canvas>
+            
+            <div class="modal-overlay active" id="setupModal">
+                <div class="modal-card">
+                    <div class="modal-title">Select Opponent Mode</div>
+                    <div class="modal-options">
+                        <div class="modal-opt-btn" id="modePVP">Local 2-Player (PvP)</div>
+                        <div class="modal-opt-btn" id="modeEasyAI">vs Easy AI</div>
+                        <div class="modal-opt-btn" id="modeHardAI">vs Strategic AI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="resultsModal">
+                <div class="modal-card">
+                    <div class="modal-title" id="winnerHeader">Match Complete</div>
+                    <div class="results-text" id="resultsDetails"></div>
+                    <button class="btn btn-primary" style="width:100%" onclick="location.reload()">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-controls">
+            <button class="btn btn-primary" id="newGameBtn">New Game</button>
+            <button class="btn btn-danger" id="resignBtn">Resign</button>
+        </div>
+    </div>
+
+    <script>
+        var gGameState;
+        var gAITimeout = null;
+        
+        // --- Web Audio API Real-time Synthesis Sound Manager ---
+        var SoundManager = {
+            ctx: null,
+
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            playFlipSound: function() {
+                this.init();
+                if (!this.ctx) return;
+                let now = this.ctx.currentTime;
+                
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                let filter = this.ctx.createBiquadFilter();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.exponentialRampToValueAtTime(70, now + 0.08);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(300, now);
+
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.12);
+            },
+
+            playHintSound: function() {
+                this.init();
+                if (!this.ctx) return;
+                let now = this.ctx.currentTime;
+
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(650, now);
+                
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.06);
+            },
+
+            playWinSound: function() {
+                this.init();
+                if (!this.ctx) return;
+                let now = this.ctx.currentTime;
+                
+                let notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+                notes.forEach((freq, index) => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    let timeOffset = index * 0.12;
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + timeOffset);
+
+                    gain.gain.setValueAtTime(0.2, now + timeOffset);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + timeOffset + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + timeOffset);
+                    osc.stop(now + timeOffset + 0.45);
+                });
+            },
+
+            playLoseSound: function() {
+                this.init();
+                if (!this.ctx) return;
+                let now = this.ctx.currentTime;
+
+                let notes = [220.00, 261.63, 311.13]; 
+                notes.forEach((freq) => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    let filter = this.ctx.createBiquadFilter();
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, now);
+                    osc.frequency.linearRampToValueAtTime(freq * 0.7, now + 0.6);
+
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(400, now);
+
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.65);
+                });
+            },
+
+            playDrawSound: function() {
+                this.init();
+                if (!this.ctx) return;
+                let now = this.ctx.currentTime;
+
+                [349.23, 440.00].forEach((freq) => {
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.45);
+                });
+            }
+        };
+
+        var Constants = {
+            Cell: { EMPTY: 0, DARK: 1, LIGHT: 2 },
+            Mode: { PVP: 0, EASY_AI: 1, HARD_AI: 2 },
+            Directions: [
+                [-1, -1], [-1, 0], [-1, 1],
+                [ 0, -1],          [ 0, 1],
+                [ 1, -1], [ 1, 0], [ 1, 1]
+            ]
+        };
+
+        function GameState(mode) {
+            this.size = 8;
+            this.gameMode = mode;
+            this.board = Array(this.size).fill(null).map(() => Array(this.size).fill(Constants.Cell.EMPTY));
+            
+            this.board[3][3] = Constants.Cell.LIGHT;
+            this.board[3][4] = Constants.Cell.DARK;
+            this.board[4][3] = Constants.Cell.DARK;
+            this.board[4][4] = Constants.Cell.LIGHT;
+
+            this.currentTurn = Constants.Cell.DARK;
+            this.isGameOver = false;
+            this.darkScore = 2;
+            this.lightScore = 2;
+
+            this.getValidMoves = function(color) {
+                var validMoves = [];
+                for (var r = 0; r < this.size; r++) {
+                    for (var c = 0; c < this.size; c++) {
+                        if (this.isValidMove(r, c, color).length > 0) {
+                            validMoves.push({row: r, col: c});
+                        }
+                    }
+                }
+                return validMoves;
+            };
+
+            this.isValidMove = function(row, col, color) {
+                if (this.board[row][col] !== Constants.Cell.EMPTY) return [];
+                
+                var opponent = (color === Constants.Cell.DARK) ? Constants.Cell.LIGHT : Constants.Cell.DARK;
+                var piecesToFlip = [];
+
+                for (var d = 0; d < Constants.Directions.length; d++) {
+                    var dr = Constants.Directions[d][0];
+                    var dc = Constants.Directions[d][1];
+                    
+                    var r = row + dr;
+                    var c = col + dc;
+                    var pathFlips = [];
+
+                    while (r >= 0 && r < this.size && c >= 0 && c < this.size && this.board[r][c] === opponent) {
+                        pathFlips.push({row: r, col: c});
+                        r += dr;
+                        c += dc;
+                    }
+
+                    if (r >= 0 && r < this.size && c >= 0 && c < this.size && this.board[r][c] === color) {
+                        piecesToFlip = piecesToFlip.concat(pathFlips);
+                    }
+                }
+                return piecesToFlip;
+            };
+
+            this.executeMove = function(row, col) {
+                if (this.isGameOver) return false;
+                
+                var flips = this.isValidMove(row, col, this.currentTurn);
+                if (flips.length === 0) return false;
+
+                clearTimeout(gAITimeout);
+
+                this.board[row][col] = this.currentTurn;
+                for (var i = 0; i < flips.length; i++) {
+                    this.board[flips[i].row][flips[i].col] = this.currentTurn;
+                }
+
+                SoundManager.playFlipSound();
+                this.updateScores();
+                this.advanceTurn();
+                return true;
+            };
+
+            this.updateScores = function() {
+                var dCount = 0;
+                var lCount = 0;
+                for (var r = 0; r < this.size; r++) {
+                    for (var c = 0; c < this.size; c++) {
+                        if (this.board[r][c] === Constants.Cell.DARK) dCount++;
+                        if (this.board[r][c] === Constants.Cell.LIGHT) lCount++;
+                    }
+                }
+                this.darkScore = dCount;
+                this.lightScore = lCount;
+            };
+
+            this.advanceTurn = function() {
+                var nextColor = (this.currentTurn === Constants.Cell.DARK) ? Constants.Cell.LIGHT : Constants.Cell.DARK;
+                var nextMoves = this.getValidMoves(nextColor);
+
+                if (nextMoves.length > 0) {
+                    this.currentTurn = nextColor;
+                } else {
+                    var standardCurrentMoves = this.getValidMoves(this.currentTurn);
+                    if (standardCurrentMoves.length === 0) {
+                        this.isGameOver = true;
+                    } else {
+                        gUI.showPassBanner((nextColor === Constants.Cell.DARK ? "Dark" : "Light") + " passes turn!");
+                        SoundManager.playHintSound();
+                    }
+                }
+            };
+        }
+
+        var AI_WEIGHTS = [
+            [100, -20,  10,   5,   5,  10, -20, 100],
+            [-20, -50,  -2,  -2,  -2,  -2, -50, -20],
+            [ 10,  -2,   5,   1,   1,   5,  -2,  10],
+            [  5,  -2,   1,   1,   1,   1,  -2,   5],
+            [  5,  -2,   1,   1,   1,   1,  -2,   5],
+            [ 10,  -2,   5,   1,   1,   5,  -2,  10],
+            [-20, -50,  -2,  -2,  -2,  -2, -50, -20],
+            [100, -20,  10,   5,   5,  10, -20, 100]
+        ];
+
+        var AILogic = {
+            computeMove: function() {
+                var validMoves = gGameState.getValidMoves(gGameState.currentTurn);
+                if (validMoves.length === 0) return;
+
+                if (gGameState.gameMode === Constants.Mode.EASY_AI) {
+                    var index = Math.floor(Math.random() * validMoves.length);
+                    AILogic.makeDelayedMove(validMoves[index]);
+                } else if (gGameState.gameMode === Constants.Mode.HARD_AI) {
+                    var bestMove = validMoves[0];
+                    var highestValue = -Infinity;
+
+                    for (var i = 0; i < validMoves.length; i++) {
+                        var move = validMoves[i];
+                        var weight = AI_WEIGHTS[move.row][move.col];
+                        if (weight > highestValue) {
+                            highestValue = weight;
+                            bestMove = move;
+                        }
+                    }
+                    AILogic.makeDelayedMove(bestMove);
+                }
+            },
+            makeDelayedMove: function(move) {
+                clearTimeout(gAITimeout);
+                gAITimeout = setTimeout(function() {
+                    if (gGameState.executeMove(move.row, move.col)) {
+                        gUI.updateUI();
+                    }
+                }, 600);
+            }
+        };
+
+        class OthelloUI {
+            constructor() {
+                this.canvas = document.getElementById("othelloCanvas");
+                this.ctx = this.canvas.getContext("2d");
+                this.size = 8;
+                this.setupDOM();
+            }
+
+            setupDOM() {
+                document.getElementById("modePVP").addEventListener("click", () => this.startNewGame(Constants.Mode.PVP));
+                document.getElementById("modeEasyAI").addEventListener("click", () => this.startNewGame(Constants.Mode.EASY_AI));
+                document.getElementById("modeHardAI").addEventListener("click", () => this.startNewGame(Constants.Mode.HARD_AI));
+                document.getElementById("newGameBtn").addEventListener("click", () => {
+                    clearTimeout(gAITimeout); // FIXED: Instantly stalls active AI timers upon invoking menu overlay
+                    SoundManager.playHintSound();
+                    document.getElementById("setupModal").classList.add("active");
+                });
+                document.getElementById("resignBtn").addEventListener("click", () => this.handleResignation());
+
+                const handleInput = (clientX, clientY) => {
+                    if (!gGameState || gGameState.isGameOver) return; // FIXED: Safety guard added
+                    if (gGameState.gameMode !== Constants.Mode.PVP && gGameState.currentTurn === Constants.Cell.LIGHT) return;
+
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    const x = (clientX - rect.left) * scaleX;
+                    const y = (clientY - rect.top) * scaleY;
+                    
+                    const spacing = this.canvas.width / this.size;
+                    const col = Math.floor(x / spacing);
+                    const row = Math.floor(y / spacing);
+
+                    if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
+                        if (gGameState.executeMove(row, col)) {
+                            this.updateUI();
+                        }
+                    }
+                };
+
+                this.canvas.addEventListener("click", (e) => handleInput(e.clientX, e.clientY));
+                this.canvas.addEventListener("touchstart", (e) => {
+                    e.preventDefault();
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+            }
+
+            startNewGame(mode) {
+                clearTimeout(gAITimeout);
+                SoundManager.init(); 
+                SoundManager.playHintSound();
+                gGameState = new GameState(mode);
+                document.getElementById("setupModal").classList.remove("active");
+                document.getElementById("resultsModal").classList.remove("active");
+                document.getElementById("notificationBanner").style.display = "none";
+                this.updateUI();
+            }
+
+            showPassBanner(msg) {
+                var banner = document.getElementById("notificationBanner");
+                banner.textContent = msg;
+                banner.classList.add("active");
+                setTimeout(() => { banner.classList.remove("active"); }, 1500);
+            }
+
+            handleResignation() {
+                if (!gGameState || gGameState.isGameOver) return; // FIXED: Added instance check to prevent crash on early click
+                clearTimeout(gAITimeout);
+                gGameState.isGameOver = true;
+                SoundManager.playLoseSound();
+                
+                var winner = (gGameState.currentTurn === Constants.Cell.DARK) ? "Light" : "Dark";
+                this.endGameDisplay(winner, "Match ended by concession.");
+            }
+
+            updateUI() {
+                var turnStr = "Dark (Player)";
+                if (gGameState.currentTurn === Constants.Cell.LIGHT) {
+                    turnStr = (gGameState.gameMode === Constants.Mode.PVP) ? "Light (Player)" : "Light (AI Opponent)";
+                }
+                document.getElementById("turnDisplay").textContent = `Turn: ${turnStr}`;
+                document.getElementById("scoreDisplay").textContent = `Dark: ${gGameState.darkScore} | Light: ${gGameState.lightScore}`;
+                
+                this.drawBoard();
+
+                if (gGameState.isGameOver) {
+                    document.getElementById("turnDisplay").textContent = "Game Over";
+                    document.getElementById("turnDisplay").style.color = "var(--accent-red)";
+                    
+                    var winnerText = "Draw Match";
+                    if (gGameState.darkScore > gGameState.lightScore) {
+                        winnerText = "Dark Wins";
+                        SoundManager.playWinSound(); 
+                    } else if (gGameState.lightScore > gGameState.darkScore) {
+                        winnerText = "Light Wins";
+                        if (gGameState.gameMode !== Constants.Mode.PVP) SoundManager.playLoseSound();
+                        else SoundManager.playWinSound(); 
+                    } else {
+                        SoundManager.playDrawSound();
+                    }
+
+                    this.endGameDisplay(winnerText, `Final Count Layout:<br><b style='color:#fff'>Dark:</b> ${gGameState.darkScore} Stones<br><b style='color:#fff'>Light:</b> ${gGameState.lightScore} Stones`);
+                    return;
+                } else {
+                    document.getElementById("turnDisplay").style.color = "var(--accent-blue)";
+                }
+
+                if (gGameState.gameMode !== Constants.Mode.PVP && gGameState.currentTurn === Constants.Cell.LIGHT) {
+                    AILogic.computeMove();
+                }
+            }
+
+            endGameDisplay(header, details) {
+                document.getElementById("winnerHeader").textContent = header;
+                document.getElementById("resultsDetails").innerHTML = details;
+                document.getElementById("resultsModal").classList.add("active");
+            }
+
+            drawBoard() {
+                const cSize = this.canvas.width;
+                this.ctx.clearRect(0, 0, cSize, cSize);
+
+                this.ctx.fillStyle = "#2e6f40";
+                this.ctx.fillRect(0, 0, cSize, cSize);
+
+                const spacing = cSize / this.size;
+
+                this.ctx.strokeStyle = "rgba(16, 25, 16, 0.6)";
+                this.ctx.lineWidth = 2;
+                for (let i = 1; i < this.size; i++) {
+                    let offset = i * spacing;
+                    this.ctx.beginPath(); this.ctx.moveTo(offset, 0); this.ctx.lineTo(offset, cSize); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(0, offset); this.ctx.lineTo(cSize, offset); this.ctx.stroke();
+                }
+
+                this.ctx.fillStyle = "rgba(16, 25, 16, 0.8)";
+                var markerPositions = [2, 6];
+                markerPositions.forEach(r => {
+                    markerPositions.forEach(c => {
+                        this.ctx.beginPath();
+                        this.ctx.arc(c * spacing, r * spacing, 5, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                    });
+                });
+
+                var activeHints = [];
+                if (gGameState && !gGameState.isGameOver) {
+                    if (gGameState.gameMode === Constants.Mode.PVP || gGameState.currentTurn === Constants.Cell.DARK) {
+                        activeHints = gGameState.getValidMoves(gGameState.currentTurn);
+                    }
+                }
+
+                const radius = spacing * 0.41;
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (!gGameState) continue;
+                        const cellState = gGameState.board[r][c];
+                        const cx = c * spacing + spacing / 2;
+                        const cy = r * spacing + spacing / 2;
+
+                        if (cellState !== Constants.Cell.EMPTY) {
+                            var colorType = (cellState === Constants.Cell.DARK) ? "black" : "white";
+                            this.drawOthelloPiece(cx, cy, radius, colorType);
+                        } else {
+                            var isHint = activeHints.some(m => m.row === r && m.col === c);
+                            if (isHint) {
+                                this.ctx.strokeStyle = "rgba(69, 243, 255, 0.5)";
+                                this.ctx.lineWidth = 2;
+                                this.ctx.beginPath();
+                                this.ctx.arc(cx, cy, spacing * 0.15, 0, 2 * Math.PI);
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+
+            drawOthelloPiece(cx, cy, radius, type) {
+                this.ctx.save();
+                this.ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowOffsetX = 3;
+                this.ctx.shadowOffsetY = 5;
+
+                const gradient = this.ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, radius * 0.05, cx, cy, radius);
+                if (type === "white") {
+                    gradient.addColorStop(0, "#ffffff");
+                    gradient.addColorStop(0.6, "#e8ecf0");
+                    gradient.addColorStop(1, "#a3a9b2");
+                } else {
+                    gradient.addColorStop(0, "#505460");
+                    gradient.addColorStop(0.35, "#1a1c23");
+                    gradient.addColorStop(1, "#050608");
+                }
+
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath(); this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI); this.ctx.fill();
+                this.ctx.shadowColor = "transparent";
+
+                this.ctx.strokeStyle = type === "white" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath(); this.ctx.arc(cx, cy, radius - 1, 0, 2 * Math.PI); this.ctx.stroke();
+
+                const shineGrad = this.ctx.createLinearGradient(cx - radius * 0.4, cy - radius * 0.5, cx + radius * 0.2, cy + radius * 0.2);
+                shineGrad.addColorStop(0, "rgba(255, 255, 255, 0.45)");
+                shineGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+                this.ctx.fillStyle = shineGrad;
+                this.ctx.translate(cx - radius * 0.15, cy - radius * 0.3);
+                this.ctx.rotate(-22 * Math.PI / 180);
+                this.ctx.beginPath(); this.ctx.ellipse(0, 0, radius * 0.45, radius * 0.22, 0, 0, 2 * Math.PI); this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+        }
+
+        var gUI;
+        window.onload = () => { gUI = new OthelloUI(); };
+    </script>
+</body>
+</html>

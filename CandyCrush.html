@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Striped Candy Pop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Candy Pop</title>
     <style>
         :root {
             --bg-vanilla: #fdf5e6;
@@ -21,32 +21,68 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #game-container {
             width: 100vw;
             height: 100vh;
+            /* Use safe dynamic viewport limits to combat mobile address bar clipping */
+            height: 100dvh; 
             max-width: 450px;
             display: flex;
             flex-direction: column;
             position: relative;
+            box-sizing: border-box;
+            /* Automatically avoids status bars, cameras, and device notches */
+            padding-top: max(10px, env(safe-area-inset-top));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
 
-        #score-board {
-            height: 80px;
+        /* Fixed High-Visibility Top Bar Layout */
+        #top-bar {
+            height: 60px;
+            min-height: 60px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            font-size: 2.2rem;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 15;
+            background: rgba(253, 245, 230, 0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        #score-board, #bomb-counter {
+            font-size: 1.4rem;
             font-weight: 900;
             color: #d35400;
             text-shadow: 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #bomb-counter {
+            cursor: pointer;
+        }
+
+        #bomb-counter.active-bomb-mode {
+            color: #e74c3c;
+            animation: pulse-bomb 0.5s infinite alternate;
+        }
+
+        @keyframes pulse-bomb {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px red); }
+            100% { transform: scale(1.08); filter: drop-shadow(0 0 10px red); }
         }
 
         #grid {
             position: relative;
             flex-grow: 1;
-            margin: 10px;
+            margin: 10px 15px;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 15px;
             border: 5px solid #f3e5ab;
@@ -73,29 +109,77 @@
             filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.2));
         }
 
-        /* Popping and Special Effects */
         @keyframes extremePop {
             0% { transform: scale(1); opacity: 1; }
-            40% { transform: scale(1.4) rotate(10deg); opacity: 1; }
-            100% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            40% { transform: scale(1.3) rotate(12deg); opacity: 1; }
+            100% { transform: scale(0) rotate(-15deg); opacity: 0; }
         }
 
         .popping {
-            animation: extremePop 0.3s ease-out forwards;
+            animation: extremePop 0.25s ease-out forwards;
             z-index: 10 !important;
             pointer-events: none;
         }
 
-        /* Striped Overlay Glow */
         .striped-h, .striped-v {
             filter: drop-shadow(0 0 5px white) !important;
+        }
+
+        /* Royal Sparkling Presentation Text Overlay Banner */
+        #bomb-banner {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #4a0e4e, #8a2387, #e94057, #f27121);
+            background-size: 300% 300%;
+            color: #f1c40f;
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 2.1rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            box-shadow: 0 0 25px rgba(233, 64, 87, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.8), 0 0 12px #f1c40f;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            border: 4px solid #f1c40f;
+            opacity: 0;
+        }
+
+        @keyframes royalEntrance {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; background-position: 0% 50%; }
+            15% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); opacity: 1; }
+            30% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; background-position: 100% 50%; }
+            70% { transform: translate(-50%, -50%) scale(1.05) rotate(0deg); opacity: 1; filter: brightness(1.25); }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
+
+        .animate-banner {
+            animation: royalEntrance 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Particle shards elements */
+        .sparkle-particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 101;
+            mix-blend-mode: screen;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="score-board">SCORE: <span id="score-val">0</span></div>
+    <div id="top-bar">
+        <div id="score-board">SCORE: <span id="score-val">0</span></div>
+        <div id="bomb-counter" onclick="activateCandyBomb()">💣 BOMBS: <span id="bomb-count">0</span></div>
+    </div>
+    
     <div id="grid">
         <svg width="0" height="0" style="position:absolute">
             <defs>
@@ -106,7 +190,6 @@
                 <radialGradient id="gradPurple" cx="40%" cy="40%" r="60%" fx="30%" fy="30%"><stop offset="0%" style="stop-color:#eeddff;"/><stop offset="100%" style="stop-color:#550099;"/></radialGradient>
                 <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:white;stop-opacity:0.8"/><stop offset="50%" style="stop-color:white;stop-opacity:0"/></linearGradient>
                 
-                <!-- Striped Patterns -->
                 <pattern id="patternH" x="0" y="0" width="1" height="0.3" patternUnits="objectBoundingBox">
                     <rect x="0" y="0" width="100%" height="2px" fill="white" fill-opacity="0.6"/>
                 </pattern>
@@ -116,24 +199,184 @@
             </defs>
         </svg>
     </div>
+    
+    <div id="bomb-banner">👑 A Candy Bomb! ✨</div>
 </div>
 
 <script>
+// --- AUDIO SYNTHESIS SOUND MANAGER ---
+const SoundManager = {
+    ctx: null,
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+
+    playSwap() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(520, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    },
+
+    playSparklingPop(index = 0) {
+        this.init();
+        const now = this.ctx.currentTime;
+        const timeOffset = Math.min(index * 0.03, 0.2); 
+        const playTime = now + timeOffset;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        const baseFreq = 480 + (index * 40);
+        osc.frequency.setValueAtTime(baseFreq, playTime);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.6, playTime + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        gain.gain.setValueAtTime(0.15, playTime);
+        gain.gain.linearRampToValueAtTime(0.005, playTime + 0.15);
+        osc.start(playTime);
+        osc.stop(playTime + 0.15);
+
+        // High frequency crystal sparkle layer
+        const sizzle = this.ctx.createOscillator();
+        const sizzleGain = this.ctx.createGain();
+        sizzle.type = 'triangle';
+        sizzle.frequency.setValueAtTime(6500, playTime);
+        sizzle.frequency.linearRampToValueAtTime(2200, playTime + 0.08);
+        sizzle.connect(sizzleGain);
+        sizzleGain.connect(this.ctx.destination);
+        sizzleGain.gain.setValueAtTime(0.05, playTime);
+        sizzleGain.gain.linearRampToValueAtTime(0.001, playTime + 0.08);
+        sizzle.start(playTime);
+        sizzle.stop(playTime + 0.08);
+    },
+
+    playRoyalBannerSound() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const melody = [392.00, 523.25, 659.25, 783.99, 1046.50]; 
+        
+        melody.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + (i * 0.06));
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(180, now);
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            gain.gain.setValueAtTime(0.15, now + (i * 0.06));
+            gain.gain.exponentialRampToValueAtTime(0.005, now + (i * 0.06) + 0.4);
+            
+            osc.start(now + (i * 0.06));
+            osc.stop(now + (i * 0.06) + 0.4);
+        });
+    },
+
+    playSparkSuckSound() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(750, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1600, this.ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.35);
+    },
+
+    playBombMultiBurst(candyCount) {
+        this.init();
+        const now = this.ctx.currentTime;
+        const iterations = Math.min(candyCount, 22);
+        
+        for (let i = 0; i < iterations; i++) {
+            const burstTime = now + (i * 0.028); 
+            
+            const boomOsc = this.ctx.createOscillator();
+            const boomGain = this.ctx.createGain();
+            boomOsc.type = 'sawtooth';
+            boomOsc.frequency.setValueAtTime(160 - (i * 2), burstTime);
+            boomOsc.frequency.linearRampToValueAtTime(30, burstTime + 0.22);
+            boomOsc.connect(boomGain);
+            boomGain.connect(this.ctx.destination);
+            boomGain.gain.setValueAtTime(0.24, burstTime);
+            boomGain.gain.exponentialRampToValueAtTime(0.01, burstTime + 0.22);
+            boomOsc.start(burstTime);
+            boomOsc.stop(burstTime + 0.22);
+
+            const crackleOsc = this.ctx.createOscillator();
+            const crackleGain = this.ctx.createGain();
+            crackleOsc.type = 'triangle';
+            crackleOsc.frequency.setValueAtTime(4500 + (Math.random() * 1500), burstTime);
+            crackleOsc.frequency.linearRampToValueAtTime(600, burstTime + 0.12);
+            crackleOsc.connect(crackleGain);
+            crackleGain.connect(this.ctx.destination);
+            crackleGain.gain.setValueAtTime(0.07, burstTime);
+            crackleGain.gain.linearRampToValueAtTime(0.001, burstTime + 0.12);
+            crackleOsc.start(burstTime);
+            crackleOsc.stop(burstTime + 0.12);
+        }
+    },
+
+    playError() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+};
+
+// --- CORE MATCHING ENGINE STATE ---
 const grid = document.getElementById('grid');
 const scoreVal = document.getElementById('score-val');
+const bombCountEl = document.getElementById('bomb-count');
+const bombCounterBtn = document.getElementById('bomb-counter');
+const bombBanner = document.getElementById('bomb-banner');
+const gameContainer = document.getElementById('game-container');
+
 const rows = 8;
 const cols = 6;
 let candySize;
 let board = [];
 let score = 0;
+let bombsAvailable = 0;
+let bombModeActive = false;
+let lastMilestoneEarned = 0;
 let isProcessing = false;
+let cascadeCount = 0;
 
 const candyTypes = [
-    { grad: 'url(#gradRed)', svg: (g) => `<rect x="15" y="15" width="70" height="70" rx="20" fill="${g}"/>` },
-    { grad: 'url(#gradYellow)', svg: (g) => `<circle cx="50" cy="50" r="42" fill="${g}"/>` },
-    { grad: 'url(#gradGreen)', svg: (g) => `<path d="M50 10 L90 50 L50 90 L10 50 Z" fill="${g}"/>` },
-    { grad: 'url(#gradBlue)', svg: (g) => `<ellipse cx="50" cy="50" rx="45" ry="30" fill="${g}"/>` },
-    { grad: 'url(#gradPurple)', svg: (g) => `<path d="M25 25 Q50 5 75 25 T75 75 Q50 95 25 75 T25 25" fill="${g}"/>` }
+    { color: '#e74c3c', grad: 'url(#gradRed)', svg: (g) => `<rect x="15" y="15" width="70" height="70" rx="20" fill="${g}"/>` },
+    { color: '#f1c40f', grad: 'url(#gradYellow)', svg: (g) => `<circle cx="50" cy="50" r="42" fill="${g}"/>` },
+    { color: '#2ecc71', grad: 'url(#gradGreen)', svg: (g) => `<path d="M50 10 L90 50 L50 90 L10 50 Z" fill="${g}"/>` },
+    { color: '#3498db', grad: 'url(#gradBlue)', svg: (g) => `<ellipse cx="50" cy="50" rx="45" ry="30" fill="${g}"/>` },
+    { color: '#9b59b6', grad: 'url(#gradPurple)', svg: (g) => `<path d="M25 25 Q50 5 75 25 T75 75 Q50 95 25 75 T25 25" fill="${g}"/>` }
 ];
 
 function initGame() {
@@ -159,7 +402,7 @@ function spawnCandy(r, c, typeIdx = null, special = null) {
     const candy = document.createElement('div');
     candy.className = 'candy';
     candy.dataset.type = typeIdx;
-    candy.dataset.special = special || "none"; // "h" or "v"
+    candy.dataset.special = special || "none";
     
     let stripeOverlay = "";
     if (special === "h") stripeOverlay = `<rect x="0" y="0" width="100" height="100" fill="url(#patternH)" />`;
@@ -189,15 +432,35 @@ function updatePosition(el, r, c) {
     el.dataset.c = c;
 }
 
-// Input Logic
+// Controls handlers
 let startX, startY, activeCandy;
-function handleTouchStart(e) { if(isProcessing) return; startX = e.touches[0].clientX; startY = e.touches[0].clientY; activeCandy = e.currentTarget; }
-function handleMouseDown(e) { if(isProcessing) return; startX = e.clientX; startY = e.clientY; activeCandy = e.currentTarget; document.onmouseup = handleMouseUp; }
+function handleTouchStart(e) { 
+    SoundManager.init();
+    if(isProcessing) return; 
+    startX = e.touches[0].clientX; 
+    startY = e.touches[0].clientY; 
+    activeCandy = e.currentTarget; 
+    if(bombModeActive) handleBombDeployment(activeCandy);
+}
+
+function handleMouseDown(e) { 
+    SoundManager.init();
+    if(isProcessing) return; 
+    startX = e.clientX; 
+    startY = e.clientY; 
+    activeCandy = e.currentTarget; 
+    if(bombModeActive) {
+        handleBombDeployment(activeCandy);
+        return;
+    }
+    document.onmouseup = handleMouseUp; 
+}
+
 function handleMouseUp(e) { handleEnd(e.clientX, e.clientY); document.onmouseup = null; }
 function handleTouchEnd(e) { handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); }
 
 function handleEnd(endX, endY) {
-    if (!activeCandy) return;
+    if (!activeCandy || bombModeActive) return;
     const diffX = endX - startX;
     const diffY = endY - startY;
     if (Math.abs(diffX) < 15 && Math.abs(diffY) < 15) return;
@@ -218,6 +481,7 @@ async function swapCandies(r1, c1, r2, c2) {
     const candy1 = board[r1][c1];
     const candy2 = board[r2][c2];
 
+    SoundManager.playSwap();
     updatePosition(candy1, r2, c2);
     updatePosition(candy2, r1, c1);
     board[r1][c1] = candy2;
@@ -225,6 +489,7 @@ async function swapCandies(r1, c1, r2, c2) {
 
     await new Promise(r => setTimeout(r, 250));
 
+    cascadeCount = 0; 
     if (!checkAndRefill()) {
         updatePosition(candy1, r1, c1);
         updatePosition(candy2, r2, c2);
@@ -238,9 +503,8 @@ async function swapCandies(r1, c1, r2, c2) {
 function checkAndRefill(silent = false) {
     let matches = [];
     let toRemove = new Set();
-    let specialToCreate = []; // {r, c, type, special}
+    let specialToCreate = [];
 
-    // Horizontal check
     for (let r = 0; r < rows; r++) {
         let count = 1;
         for (let c = 0; c < cols; c++) {
@@ -257,7 +521,6 @@ function checkAndRefill(silent = false) {
         }
     }
 
-    // Vertical check
     for (let c = 0; c < cols; c++) {
         let count = 1;
         for (let r = 0; r < rows; r++) {
@@ -280,15 +543,13 @@ function checkAndRefill(silent = false) {
     }
 
     matches.forEach(m => {
-        // Striped logic: if 4 matched
         if (m.group.length === 4) {
-            // Pick a position (the one the user likely moved to)
             let lead = m.group[0];
             specialToCreate.push({
                 r: parseInt(lead.dataset.r), 
                 c: parseInt(lead.dataset.c), 
                 type: parseInt(lead.dataset.type), 
-                special: m.dir === 'h' ? 'v' : 'h' // 4 horizontal makes vertical stripes (tall), etc
+                special: m.dir === 'h' ? 'v' : 'h'
             });
         }
 
@@ -299,21 +560,31 @@ function checkAndRefill(silent = false) {
         });
     });
 
-    if (!silent) { score += toRemove.size * 10; scoreVal.innerText = score; }
+    if (!silent) { 
+        score += toRemove.size * 10; 
+        scoreVal.innerText = score; 
+        SoundManager.playSparklingPop(cascadeCount);
+        cascadeCount++;
+        checkMilestones();
+    }
 
     toRemove.forEach(candy => {
         candy.classList.add('popping');
-        board[candy.dataset.r][candy.dataset.c] = null;
-        setTimeout(() => candy.remove(), 300);
+        generateShatterSparks(candy, candyTypes[candy.dataset.type].color, 8);
+        if(board[candy.dataset.r][candy.dataset.c] === candy) {
+            board[candy.dataset.r][candy.dataset.c] = null;
+        }
+        setTimeout(() => candy.remove(), 250);
     });
 
     setTimeout(() => {
-        // Create the striped candies after the pop
         specialToCreate.forEach(s => {
-            board[s.r][s.c] = spawnCandy(s.r, s.c, s.type, s.special);
+            if (board[s.r][s.c] === null) {
+                board[s.r][s.c] = spawnCandy(s.r, s.c, s.type, s.special);
+            }
         });
         dropCandies();
-    }, 300);
+    }, 250);
 
     return true;
 }
@@ -343,6 +614,234 @@ function dropCandies() {
         }
     }
     setTimeout(() => { checkAndRefill(); }, 400);
+}
+
+// --- VISUAL CRYSTALLINE SHATTER FX ---
+function generateShatterSparks(candyEl, color, amount) {
+    const rect = candyEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < amount; i++) {
+        const p = document.createElement('div');
+        p.className = 'sparkle-particle';
+        const size = Math.random() * 7 + 4;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.background = color;
+        p.style.boxShadow = `0 0 8px ${color}, 0 0 15px #fff`;
+        p.style.left = `${centerX}px`;
+        p.style.top = `${centerY}px`;
+        
+        if(Math.random() > 0.5) p.style.borderRadius = '0%'; 
+
+        gameContainer.appendChild(p);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 8 + 4;
+        let vx = Math.cos(angle) * speed;
+        let vy = Math.sin(angle) * speed;
+        let opacity = 1;
+        let scale = 1;
+
+        const loop = setInterval(() => {
+            const currentLeft = parseFloat(p.style.left);
+            const currentTop = parseFloat(p.style.top);
+            p.style.left = `${currentLeft + vx}px`;
+            p.style.top = `${currentTop + vy}px`;
+            
+            vy += 0.25; 
+            opacity -= 0.03;
+            scale -= 0.02;
+            p.style.opacity = opacity;
+            p.style.transform = `scale(${scale})`;
+
+            if (opacity <= 0 || scale <= 0) {
+                clearInterval(loop);
+                p.remove();
+            }
+        }, 16);
+    }
+}
+
+// --- ROYAL MILESTONE TRACKING AND COUNTER FLIGHT SYSTEM ---
+function checkMilestones() {
+    let expectedBombs = Math.floor(score / 1000);
+    if (expectedBombs > lastMilestoneEarned) {
+        lastMilestoneEarned = expectedBombs;
+        triggerRoyalBombSequence();
+    }
+}
+
+function triggerRoyalBombSequence() {
+    SoundManager.playRoyalBannerSound();
+    
+    bombBanner.classList.remove('animate-banner');
+    void bombBanner.offsetWidth; 
+    bombBanner.classList.add('animate-banner');
+    
+    let sparkleInterval = setInterval(() => {
+        createRoyalSpark();
+    }, 40);
+
+    setTimeout(() => {
+        clearInterval(sparkleInterval);
+        shatterBannerIntoSuckingParticles();
+    }, 1300);
+}
+
+function createRoyalSpark() {
+    const p = document.createElement('div');
+    p.className = 'sparkle-particle';
+    const size = Math.random() * 6 + 4;
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    
+    const colors = ['#f1c40f', '#fff', '#e94057', '#e74c3c'];
+    const col = colors[Math.floor(Math.random() * colors.length)];
+    p.style.background = col;
+    p.style.boxShadow = `0 0 10px ${col}`;
+    
+    p.style.left = (window.innerWidth / 2 + (Math.random() * 200 - 100)) + 'px';
+    p.style.top = (window.innerHeight * 0.45 + (Math.random() * 60 - 30)) + 'px';
+    
+    gameContainer.appendChild(p);
+
+    let op = 1;
+    let vy = Math.random() * -2 - 1;
+    let vx = (Math.random() - 0.5) * 3;
+
+    let subLoop = setInterval(() => {
+        p.style.top = (parseFloat(p.style.top) + vy) + 'px';
+        p.style.left = (parseFloat(p.style.left) + vx) + 'px';
+        op -= 0.04;
+        p.style.opacity = op;
+        if(op <= 0) {
+            clearInterval(subLoop);
+            p.remove();
+        }
+    }, 20);
+}
+
+function shatterBannerIntoSuckingParticles() {
+    const startX = window.innerWidth / 2;
+    const startY = window.innerHeight * 0.45;
+    
+    const targetRect = bombCounterBtn.getBoundingClientRect();
+    const destX = targetRect.left + targetRect.width / 2;
+    const destY = targetRect.top + targetRect.height / 2;
+    
+    const totalSparks = 35;
+    let arrivedCount = 0;
+
+    SoundManager.playSparkSuckSound();
+
+    for(let i = 0; i < totalSparks; i++) {
+        const p = document.createElement('div');
+        p.className = 'sparkle-particle';
+        const size = Math.random() * 8 + 5;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        
+        const colors = ['#f1c40f', '#fff', '#8a2387', '#f27121'];
+        const col = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = col;
+        p.style.boxShadow = `0 0 12px ${col}, 0 0 20px ${col}`;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * 40 + 10;
+        let curX = startX + Math.cos(angle) * radius;
+        let curY = startY + Math.sin(angle) * radius;
+        
+        p.style.left = `${curX}px`;
+        p.style.top = `${curY}px`;
+        gameContainer.appendChild(p);
+
+        let t = 0;
+        const duration = 35 + Math.floor(Math.random() * 20); 
+
+        let suckLoop = setInterval(() => {
+            t++;
+            let pct = t / duration;
+            let easePct = pct * pct * pct; 
+
+            let frameX = curX + (destX - curX) * easePct;
+            let frameY = curY + (destY - curY) * easePct;
+
+            p.style.left = `${frameX}px`;
+            p.style.top = `${frameY}px`;
+            
+            if (pct >= 1) {
+                clearInterval(suckLoop);
+                p.remove();
+                arrivedCount++;
+                
+                if(arrivedCount === totalSparks) {
+                    bombsAvailable++;
+                    bombCountEl.innerText = bombsAvailable;
+                    bombBanner.classList.remove('animate-banner');
+                }
+            }
+        }, 16);
+    }
+}
+
+function activateCandyBomb() {
+    if (isProcessing) return;
+    if (bombsAvailable <= 0) {
+        SoundManager.playError();
+        alert("Score 1000 points first to earn a Candy Bomb!");
+        return;
+    }
+    
+    bombModeActive = !bombModeActive;
+    if (bombModeActive) {
+        bombCounterBtn.classList.add('active-bomb-mode');
+    } else {
+        bombCounterBtn.classList.remove('active-bomb-mode');
+    }
+}
+
+function handleBombDeployment(clickedCandy) {
+    bombModeActive = false;
+    bombCounterBtn.classList.remove('active-bomb-mode');
+    
+    const targetType = clickedCandy.dataset.type;
+    if (targetType === undefined || targetType === null) return;
+    
+    isProcessing = true;
+    bombsAvailable--;
+    bombCountEl.innerText = bombsAvailable;
+    
+    let toRemove = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (board[r][c] && board[r][c].dataset.type === targetType) {
+                toRemove.push(board[r][c]);
+            }
+        }
+    }
+    
+    SoundManager.playBombMultiBurst(toRemove.length);
+    
+    score += toRemove.length * 10;
+    scoreVal.innerText = score;
+    checkMilestones();
+
+    toRemove.forEach((candy, idx) => {
+        setTimeout(() => {
+            generateShatterSparks(candy, candyTypes[candy.dataset.type].color, 16);
+            candy.classList.add('popping');
+            if(board[candy.dataset.r][candy.dataset.c] === candy) {
+                board[candy.dataset.r][candy.dataset.c] = null;
+            }
+            setTimeout(() => candy.remove(), 250);
+        }, idx * 15); 
+    });
+
+    setTimeout(() => {
+        dropCandies();
+    }, (toRemove.length * 15) + 200);
 }
 
 window.onload = initGame;

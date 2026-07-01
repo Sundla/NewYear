@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metallic Tools Navigation</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            /* Brushed dark industrial metal gradient background */
+            background: radial-gradient(circle at center, #1b1d22 0%, #050607 100%);
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Background Canvas */
+        #toolsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: pointer;
+            touch-action: none; 
+        }
+
+        /* Parallax Container */
+        .parallax-container {
+            position: relative;
+            z-index: 2;
+            height: 180vh; 
+            pointer-events: none; 
+        }
+
+        /* Stacked Button Container Centered on Screen */
+        .button-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column; 
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            pointer-events: auto; 
+        }
+
+        /* Transparent Metallic Line Button Styling */
+        .metal-line-btn {
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 15px 50px;
+            border-radius: 50px; /* Kept the sleek rounded profile */
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            width: 100%; 
+            display: block;
+            background: transparent; /* Totally transparent body */
+            position: relative;
+        }
+
+        /* --- SILVER METALLIC (P Maker) --- */
+        .btn-silver {
+            border: 2px solid #b0b7bd;
+            color: #e2e5e7;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            box-shadow: 
+                inset 0 0 8px rgba(176, 183, 189, 0.2),
+                0 2px 6px rgba(0,0,0,0.3);
+        }
+        .btn-silver:hover {
+            color: #ffffff;
+            border-color: #ffffff;
+            background: rgba(176, 183, 189, 0.15);
+            box-shadow: 
+                inset 0 0 15px rgba(255, 255, 255, 0.3),
+                0 4px 12px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* --- COPPER METALLIC (V Maker) --- */
+        .btn-copper {
+            border: 2px solid #d35400;
+            color: #f39c12;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            box-shadow: 
+                inset 0 0 8px rgba(211, 84, 0, 0.2),
+                0 2px 6px rgba(0,0,0,0.3);
+        }
+        .btn-copper:hover {
+            color: #ffbe76;
+            border-color: #ffaa66;
+            background: rgba(211, 84, 0, 0.15);
+            box-shadow: 
+                inset 0 0 15px rgba(243, 156, 18, 0.3),
+                0 4px 12px rgba(211, 84, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- BLUE METALLIC (A Maker) --- */
+        .btn-blue-metal {
+            border: 2px solid #2980b9;
+            color: #3498db;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+            box-shadow: 
+                inset 0 0 8px rgba(41, 128, 185, 0.2),
+                0 2px 6px rgba(0,0,0,0.3);
+        }
+        .btn-blue-metal:hover {
+            color: #70a1ff;
+            border-color: #54a0ff;
+            background: rgba(41, 128, 185, 0.15);
+            box-shadow: 
+                inset 0 0 15px rgba(52, 152, 219, 0.3),
+                0 4px 12px rgba(41, 128, 185, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .metal-line-btn:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="toolsCanvas"></canvas>
+
+    <div class="parallax-container">
+        <div class="button-overlay">
+            <a href="ProjectMaker.html" class="metal-line-btn btn-silver">P Maker</a>
+            <a href="VideoMaker.html" class="metal-line-btn btn-copper">V Maker</a>
+            <a href="ArtMaker.html" class="metal-line-btn btn-blue-metal">A Maker</a>
+        </div>
+    </div>
+
+    <script>
+        // --- Web Audio API Synth Sound Manager (Distinct Metallic Clinks) ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playMetallicClink(frequency, decay, pitchDropRatio = 0.7, overtoneRatio = 2.41) {
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            
+            // Primary metal impact body
+            const osc1 = audioCtx.createOscillator();
+            // Complex inharmonic ring overtone unique to metallic structures
+            const osc2 = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(frequency, now);
+            osc1.frequency.exponentialRampToValueAtTime(frequency * pitchDropRatio, now + decay);
+
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(frequency * overtoneRatio, now); 
+
+            gainNode.gain.setValueAtTime(0.25, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + decay);
+            osc2.stop(now + decay);
+        }
+
+
+        // --- Canvas Graphics Engine ---
+        const canvas = document.getElementById('toolsCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let tools = [];
+        let particles = [];
+        const toolDensity = 18; 
+        let waterExcitement = 0; 
+
+        const toolTypes = ['gear', 'screwdriver', 'wrench', 'hexkey'];
+
+        function createTool(initiallyOnScreen = false) {
+            let x, y;
+            if (initiallyOnScreen) {
+                x = Math.random() * canvas.width;
+                y = Math.random() * canvas.height;
+            } else {
+                const edge = Math.floor(Math.random() * 4);
+                const offset = 60;
+                switch (edge) {
+                    case 0: x = Math.random() * canvas.width; y = -offset; break;
+                    case 1: x = canvas.width + offset; y = Math.random() * canvas.height; break;
+                    case 2: x = Math.random() * canvas.width; y = canvas.height + offset; break;
+                    case 3: x = -offset; y = Math.random() * canvas.height; break;
+                }
+            }
+
+            return {
+                type: toolTypes[Math.floor(Math.random() * toolTypes.length)],
+                x: x,
+                y: y,
+                size: Math.random() * 15 + 22, 
+                angle: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.03,
+                vx: (Math.random() - 0.5) * 1.2,
+                vy: (Math.random() - 0.5) * 1.2
+            };
+        }
+
+        function populateTools() {
+            while (tools.length < toolDensity) {
+                tools.push(createTool(true));
+            }
+        }
+        populateTools();
+
+        // Shimmering chrome/silver metallic shader mapping function
+        function getMetallicGradient(ctx, x, y, size) {
+            let grad = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
+            grad.addColorStop(0, '#7f8c8d');
+            grad.addColorStop(0.2, '#eeeeee');
+            grad.addColorStop(0.4, '#555555');
+            grad.addColorStop(0.6, '#ffffff');
+            grad.addColorStop(0.8, '#7f8c8d');
+            grad.addColorStop(1, '#333333');
+            return grad;
+        }
+
+        // Object Geometry Parsers
+        function drawGear(ctx, radius, teeth, angle) {
+            ctx.rotate(angle);
+            ctx.beginPath();
+            for (let i = 0; i < teeth; i++) {
+                let a = (Math.PI * 2 / teeth) * i;
+                ctx.lineTo(Math.cos(a) * radius, Math.sin(a) * radius);
+                ctx.lineTo(Math.cos(a + 0.1) * (radius * 1.2), Math.sin(a + 0.1) * (radius * 1.2));
+                ctx.lineTo(Math.cos(a + 0.2) * (radius * 1.2), Math.sin(a + 0.2) * (radius * 1.2));
+                ctx.lineTo(Math.cos(a + 0.3) * radius, Math.sin(a + 0.3) * radius);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawScrewdriver(ctx, size, angle) {
+            ctx.rotate(angle);
+            ctx.fillRect(-size * 0.25, -size * 0.8, size * 0.5, size * 0.7);
+            ctx.fillRect(-size * 0.12, -size * 0.1, size * 0.24, size * 0.1);
+            ctx.fillRect(-size * 0.06, 0, size * 0.12, size * 0.8);
+            ctx.fillRect(-size * 0.1, size * 0.8, size * 0.2, size * 0.08);
+        }
+
+        function drawWrench(ctx, size, angle) {
+            ctx.rotate(angle);
+            ctx.fillRect(-size * 0.1, -size * 0.7, size * 0.2, size * 1.4);
+            
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.7, size * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(0, size * 0.7, size * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.save();
+            ctx.translate(0, -size * 0.7);
+            ctx.rotate(-Math.PI / 4);
+            ctx.fillRect(-size * 0.14, -size * 0.3, size * 0.28, size * 0.4);
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(0, size * 0.7, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawHexKey(ctx, size, angle) {
+            ctx.rotate(angle);
+            ctx.fillRect(-size * 0.08, -size * 0.6, size * 0.16, size * 1.2);
+            ctx.fillRect(-size * 0.08, -size * 0.6, size * 0.6, size * 0.16);
+        }
+
+        function burstTool(tool) {
+            // Distinct Audio parameters per tool type
+            if (tool.type === 'gear') {
+                playMetallicClink(1200, 0.18, 0.7, 2.41); // Shimmering Gear clink
+            } else if (tool.type === 'wrench') {
+                playMetallicClink(650, 0.28, 0.8, 1.95);  // Heavier, lower wrench echo
+            } else if (tool.type === 'screwdriver') {
+                playMetallicClink(1600, 0.09, 0.5, 3.12); // High tight snap click
+            } else if (tool.type === 'hexkey') {
+                playMetallicClink(2100, 0.12, 0.9, 2.76); // High pitch rod resonance
+            }
+            
+            const pCount = 12; 
+            for(let i = 0; i < pCount; i++) {
+                const pAngle = Math.random() * Math.PI * 2;
+                const pSpeed = Math.random() * 4 + 2;
+                particles.push({
+                    x: tool.x,
+                    y: tool.y,
+                    vx: Math.cos(pAngle) * pSpeed,
+                    vy: Math.sin(pAngle) * pSpeed,
+                    alpha: 1,
+                    decay: Math.random() * 0.04 + 0.02, 
+                    size: Math.random() * 2.5 + 1.5
+                });
+            }
+        }
+
+        function handleInteraction(clientX, clientY) {
+            initAudio();
+            let burstOccurred = false;
+
+            for (let i = tools.length - 1; i >= 0; i--) {
+                const tool = tools[i];
+                const distance = Math.hypot(clientX - tool.x, clientY - tool.y);
+                
+                if (distance < tool.size + 20) { 
+                    burstTool(tool);
+                    tools.splice(i, 1); 
+                    burstOccurred = true;
+                    break; 
+                }
+            }
+
+            if (burstOccurred) {
+                populateTools();
+            } else {
+                waterExcitement = 1.0;
+                playMetallicClink(280, 0.06, 0.9, 1.5); // Ambient background tap tone
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => handleInteraction(e.clientX, e.clientY));
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if(e.touches.length > 0) {
+                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        function animateTools() {
+            ctx.fillStyle = 'rgba(5, 6, 7, 0.35)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (waterExcitement > 0) {
+                waterExcitement -= 0.015; 
+                if (waterExcitement < 0) waterExcitement = 0;
+            }
+
+            tools.forEach(tool => {
+                const dynamicSpin = tool.rotationSpeed * (1 + waterExcitement * 6);
+                const dynamicSpeed = 1.2 * (1 + waterExcitement * 4);
+
+                tool.angle += dynamicSpin;
+                tool.x += tool.vx * dynamicSpeed;
+                tool.y += tool.vy * dynamicSpeed;
+
+                const offset = tool.size * 2;
+                if (tool.x < -offset) tool.x = canvas.width + offset;
+                if (tool.x > canvas.width + offset) tool.x = -offset;
+                if (tool.y < -offset) tool.y = canvas.height + offset;
+                if (tool.y > canvas.height + offset) tool.y = -offset;
+
+                ctx.save();
+                ctx.translate(tool.x, tool.y);
+                
+                ctx.fillStyle = getMetallicGradient(ctx, 0, 0, tool.size);
+                
+                if (tool.type === 'gear') {
+                    drawGear(ctx, tool.size, 8, tool.angle);
+                } else if (tool.type === 'screwdriver') {
+                    drawScrewdriver(ctx, tool.size, tool.angle);
+                } else if (tool.type === 'wrench') {
+                    drawWrench(ctx, tool.size, tool.angle);
+                } else if (tool.type === 'hexkey') {
+                    drawHexKey(ctx, tool.size, tool.angle);
+                }
+                ctx.restore();
+            });
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = `rgba(215, 220, 225, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(animateTools);
+        }
+        animateTools();
+
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const scrollDelta = currentScrollY - lastScrollY;
+            lastScrollY = currentScrollY;
+
+            tools.forEach(tool => { tool.y -= scrollDelta * 0.15; });
+            particles.forEach(p => { p.y -= scrollDelta * 0.15; });
+        });
+    </script>
+</body>
+</html>

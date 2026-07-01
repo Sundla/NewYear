@@ -293,6 +293,37 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .music-panel.open{ transform:translateX(0); }
 .panel-header{ display:flex; justify-content:center; align-items:center; margin-bottom:1.5rem; padding-bottom:10px; min-height:50px; border-bottom:2px solid rgba(0,0,0,0.06); }
 
+/* --- METALLIC SHINE METALS FOR THE D. BUTTON --- */
+.metallic-d-btn {
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.6);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.metallic-d-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.8);
+}
+.metallic-d-btn::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -60%; width: 30%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  transform: rotate(25deg);
+  animation: metalShine 3.5s linear infinite;
+}
+@keyframes metalShine {
+  0% { left: -60%; }
+  30% { left: 140%; }
+  100% { left: 140%; }
+}
+
 /* --- LEFT PANEL THEME 1: FOREIGN (PURPLE) --- */
 .music-panel.open.theme-purple {
   background: rgba(245, 238, 255, 0.98);
@@ -329,10 +360,17 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .theme-coral .version-btn { background: #9c3514; color: white; }
 .theme-coral .panel-close { color: #cc5229; background: #ffeae0; }
 
-/* --- RIGHT PANEL THEME: ECO GREEN --- */
+/* --- RIGHT PANEL THEMES --- */
+/* Green Panel View -> Gold Button */
 .panel-right.theme-green {
   background: rgba(238, 255, 243, 0.98);
   border-left: 6px solid #4dff88;
+}
+.theme-green .metallic-d-btn {
+  background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+  color: #4a3304;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+  border-color: #aa771c;
 }
 .theme-green .song-card { background: white; border: 1px solid #d5fddb; box-shadow: 0 6px 14px rgba(44,198,72,.06); }
 .theme-green .song-title-bar { background: #e4ffea; color: #149c3a; }
@@ -343,6 +381,27 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .theme-green .folder-content { background: #f2fff5; }
 .theme-green .version-btn { background: #149c3a; color: white; }
 .theme-green .panel-close { color: #29cc52; background: #e0ffe6; }
+
+/* Blue Panel View -> Silver Button */
+.panel-right.theme-blue {
+  background: rgba(238, 247, 255, 0.98);
+  border-left: 6px solid #4daeff;
+}
+.theme-blue .metallic-d-btn {
+  background: linear-gradient(135deg, #bdbdbd, #ffffff, #9e9e9e, #e0e0e0, #757575);
+  color: #212121;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+  border-color: #9e9e9e;
+}
+.theme-blue .song-card { background: white; border: 1px solid #d5eaff; box-shadow: 0 6px 14px rgba(44,130,198,.06); }
+.theme-blue .song-title-bar { background: #e4f2ff; color: #14599c; }
+.theme-blue .song-title-bar:hover { background: #c2e2ff; }
+.theme-blue .song-num { background: #4daeff; color: white; }
+.theme-blue .folder-card { background: #d5e9ff; }
+.theme-blue .folder-title { background: #9eccff; }
+.theme-blue .folder-content { background: #f2f8ff; }
+.theme-blue .version-btn { background: #14599c; color: white; }
+.theme-blue .panel-close { color: #297acc; background: #e0f0ff; }
 
 /* SHARED SIDE PANEL BASICS */
 .change-btn{ border:none; padding:10px 24px; border-radius:30px; font-weight:700; font-size:1.1rem; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1); transition:all 0.2s; }
@@ -355,11 +414,29 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .yt-link{ display:block; background:#e63946; color:white; text-align:center; padding:8px; margin-top:10px; border-radius:40px; text-decoration:none; font-weight:600; font-size:.85rem; }
 .yt-link:hover{ background:#c1121f; }
 .folder-content{ display:none; padding:12px; }
-.multi-btns{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
-.version-btn{ flex:1; min-width:100px; border:none; padding:10px; border-radius:40px; font-weight:700; cursor:pointer; font-size:.9rem; }
+.multi-btns{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+.version-btn{ flex:1; min-width:100px; border:none; padding:10px; border-radius:40px; font-weight:700; cursor:pointer; font-size:.9rem; transition: background 0.3s, color 0.3s; }
 .panel-close{ position:absolute; top:16px; right:20px; font-size:32px; cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; z-index:10; }
 .overlay-music{ position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:1999; display:none; backdrop-filter:blur(2px); }
 .overlay-music.active{ display:block; }
+
+/* LONG PRESS NOTE POPUP */
+.longpress-note{
+  display: none;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #b77a57;
+  border-radius: 20px;
+  padding: 20px;
+  max-width: min(90vw, 450px);
+  margin: 15px auto;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  font-family: 'Quicksand', sans-serif;
+  color: #000000;
+}
+.longpress-note h4{ font-family: 'Quicksand', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #000000; }
+.longpress-note p{ font-family: 'Quicksand', sans-serif; color: #000000; margin: 0; }
+
 @media(max-width:550px){ .music-panel{ width:100%; } }
 </style>
 </head>
@@ -385,7 +462,7 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
     <div class="ig-heart" id="igHeart">❤️</div>
   </div>
 
-  <a href="GiftMaker.html" class="gift-card-btn">🎁 Gift Card</a>
+  <a href="GiftMaker.html" class="gift-card-btn">🎁 Gift Maker</a>
 </div>
 
 <div class="flow-card">
@@ -438,7 +515,7 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 <h1 class="games-title">Games</h1>
 
 <div class="games-triangle">
-  <a href="game1.html" class="game-btn">Play X</a>
+  <a href="game1.html" class="game-btn">Board</a>
   <div class="bottom-row">
     <a href="game2.html" class="game-btn">Casino</a>
     <a href="game3.html" class="game-btn">GTA</a>
@@ -458,10 +535,15 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 
 <br>
 <div style="text-align:center; margin:20px 0;">
-  <a href="https://youtu.be/6D7rWLzloOI?si=XK04HtNRvrcBtAVp" target="_blank">
+  <a href="https://youtu.be/6D7rWLzloOI?si=XK04HtNRvrcBtAVp" target="_blank" id="swipeLink">
     <img src="swipe.gif" alt="Swipe" style="width:min(90vw,200px); height:auto; display:block; margin:auto; object-fit:contain; cursor:pointer;">
   </a>
   <div style="font-size:18px; font-weight:700; color: white; margin-top:10px; font-family:'Quicksand',sans-serif;">Swipe Right or Left</div>
+</div>
+
+<div id="longPressBox" class="longpress-note">
+  
+  <p>Osho's comment on The Gay Science's two concepts: "God Is Dead" and AmorFati(lover of fate) "Now that God is dead, one should love one's F. fate."</p>
 </div>
 
 <div class="qr-wrap">
@@ -514,7 +596,9 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 
 <div id="rightPanel" class="music-panel panel-right theme-green">
   <div class="panel-close" onclick="closePanel('right')">&times;</div>
-  <div class="panel-header"></div>
+  <div class="panel-header">
+    <button class="metallic-d-btn" onclick="toggleRightPanelContent()">D.</button>
+  </div>
   <div class="song-list" id="rightPanelFoldersList"></div>
 </div>
 
@@ -526,19 +610,29 @@ const englishSongs = [
   {title:"Song 3", artist:"Sad Machine", url:"https://youtu.be/HAIDqt2aUek", videoId:"HAIDqt2aUek"},
   {title:"Song 4", artist:"A Million Dreams", url:"https://youtu.be/fCElqWdviUI", videoId:"fCElqWdviUI"},
   {title:"Song 5", artist:"UAE Anthem", url:"https://youtu.be/A59le56aluA", videoId:"A59le56aluA"},
-  {title:"Song 6", artist:"Indila", url:"https://youtu.be/qUO1_B9odo8", videoId:"qUO1_B9odo8"}
+  {title:"Song 6", artist:"Indila", url:"https://youtu.be/qUO1_B9odo8", videoId:"qUO1_B9odo8"},
+  {title:"Song 7", artist:"Lucid", url:"https://youtu.be/mzB1VGEGcSU?si=4Zx646KYXREII0lM", videoId:"mzB1VGEGcSU"}
 ];
 
 const folders = [
+  { name:"K Pop", songs:[
+    {title:"Fifty Fifty", videoId:"Qc7_zRjH808", url:"https://youtu.be/Qc7_zRjH808?si=nmQJVt0EdvXxhttJ"},
+    {title:"bts", embed:"https://www.youtube.com/embed/hmE9f-TEutc?start=53", url:"https://youtu.be/hmE9f-TEutc?t=53&si=KtPJyvXDpxnNnxYw"},
+    {title:"jenny", embed:"https://www.youtube.com/embed/JSFG-IE8n_c?start=38", url:"https://youtu.be/JSFG-IE8n_c?t=38&si=KKXS3nAYiO07jskR"},
+    {title:"thumkebaaz", videoId:"NOiyDlWl534", url:"https://youtu.be/NOiyDlWl534?si=xcib-9Dkvy5Eljaw"}
+  ]},
   { name:"Japani", songs:[
     {title:"Odoriko", videoId:"7HgJIAUtICU", url:"https://youtu.be/7HgJIAUtICU?si=vhmKsTAKqUWxdfDH"},
     {title:"Sekai no Owari", videoId:"PnFxzx9PXEM", url:"https://youtu.be/PnFxzx9PXEM?si=utyCNuTahJAdnn22"},
     {title:"Four Seasons", multi:true, buttons:[
       {name:"Version 1", videoId:"PMHeOPGlmZ4", url:"https://youtu.be/PMHeOPGlmZ4?si=1vog7ALOyXEPGqdP"},
       {name:"Version 2", videoId:"QHR20uW28jo", url:"https://youtu.be/QHR20uW28jo"}
-    ]}
+    ]},
+    {title:"Miki", videoId:"QNYT9wVwQ8A", url:"https://youtu.be/QNYT9wVwQ8A?si=qXK8xrF1VLIENlq8"},
+    {title:"Miku", videoId:"swqbfMh467A", url:"https://youtu.be/swqbfMh467A?si=tR7ygYXRabWsXNWu"},
+    {title:"ano's first take", videoId:"r5nIHDZw9gI", url:"https://youtu.be/r5nIHDZw9gI?si=tAyS42G_KNJcU50V"}
   ]},
-  { name:"Light Music", songs:[
+  { name:"Old Songs", songs:[
     {title:"Beatles", embed:"https://www.youtube.com/embed/wXTJBr9tt8Q?start=23"}, 
     {title:"Pink Floyd", videoId:"eU5GhARsu_Y", url:"https://youtu.be/eU5GhARsu_Y?si=xiypF_GyKXhAXOpR"}, 
     {title:"Shounen Ki", videoId:"tD0F5CiuHek", url:"https://youtu.be/tD0F5CiuHek?si=FIb7UqPuEkt86iQ_"}
@@ -549,8 +643,10 @@ const folders = [
     {title:"Jhonny 3 Tears", videoId:"qGSb8eSm42k", url:"https://youtu.be/qGSb8eSm42k?si=LSit6MvbJl48hj22"}
   ]},
   { name:"Anime", songs:[
-    {title:"Tokyo Marble Chocolate", videoId:"IvDTkTKi5pA", url:"https://youtu.be/IvDTkTKi5pA?si=vHZcbQLDeNPB3JFG"}, 
-    {title:"Gankutsuou Eng-Dub op", videoId:"zaVhC9ziJQ0", url:"https://youtu.be/zaVhC9ziJQ0?si=CC5XCycQ-e-zp7C6"}, 
+    {title:"One Please", videoId:"hQ8UUpxjrNk", url:"https://youtu.be/hQ8UUpxjrNk?si=p0gEaEa2MhPuzbbO"},
+    {title:"Zenryoku Shounen", videoId:"IvDTkTKi5pA", url:"https://youtu.be/IvDTkTKi5pA?si=vHZcbQLDeNPB3JFG"}, 
+    {title:"Demon Slayer", videoId:"Jb6Zlg30rgk", url:"https://youtu.be/Jb6Zlg30rgk?si=fgY5fq0VLxTXY65W"},
+    {title:"Gankutsuou Op", videoId:"zaVhC9ziJQ0", url:"https://youtu.be/zaVhC9ziJQ0?si=CC5XCycQ-e-zp7C6"}, 
     {title:"Seasons die one after one", videoId:"wtJcLWeY114", url:"https://youtu.be/wtJcLWeY114?si=19o1lPRWy7F9OrT1"}
   ]}
 ];
@@ -561,9 +657,11 @@ const hindiSongs = [
   {title:"गीत 3", artist:"Binte Dil", url:"https://youtu.be/9aoUpCXY7uk", videoId:"9aoUpCXY7uk"},
   {title:"गीत 4", artist:"Hanuman Fast Ver", url:"https://youtu.be/khyV7P5rJ14", videoId:"khyV7P5rJ14"},
   {title:"गीत 5", artist:"Kai Po Che", url:"https://youtu.be/YKcmMmJlKNk", videoId:"YKcmMmJlKNk"},
-  {title:"गीत 6", artist:"Karma", url:"https://youtu.be/rja5OuQGpAg", videoId:"rja5OuQGpAg"},
+  {title:"गीत 6", artist:"Karma", url:"https://youtu.be/rja5OuGpAg", videoId:"rja5OuGpAg"},
   {title:"गीत 7", artist:"Dheera", url:"https://youtu.be/oMwyxM9MZ50", videoId:"oMwyxM9MZ50"},
-  {title:"गीत 8", artist:"Challa", url:"https://youtu.be/1GWyCJHuNms?si=7uYXH9Yh4c0RCUSW", videoId:"1GWyCJHuNms"}
+  {title:"गीत 8", artist:"Challa", url:"https://youtu.be/1GWyCJHuNms?si=7uYXH9Yh4c0RCUSW", videoId:"1GWyCJHuNms"},
+  {title:"गीत 9", artist:"bhool bhulaiya", url:"https://youtu.be/BYJmcXkI8a4?si=LQA9Pv_OEpPgp7EK", videoId:"BYJmcXkI8a4"},
+  {title:"गीत 10", artist:"mera mann", url:"https://youtu.be/KLa8rS0Kts0?si=ogM1FoyNDTC-FXRd", videoId:"KLa8rS0Kts0"}
 ];
 
 const hindiFolders = [
@@ -584,11 +682,82 @@ const hindiFolders = [
 
 const rightPanelFolders = [
   { name: "Science", songs: [ {title: "The Mind", videoId: "z1PSbDmV8Gw", url: "https://youtu.be/z1PSbDmV8Gw?si=nOHFj9oecnodxN_u"}, {title: "Feynman's Charm", videoId: "nYg6jzotiAc", url: "https://youtu.be/nYg6jzotiAc?si=YjRkRzfCprYhbw96"}, {title: "Humility", videoId: "o8GA2w-qrcg", url: "https://youtu.be/o8GA2w-qrcg?si=h46YXegkbBYy8EQY"} ] },
-  { name: "Art", songs: [ {title: "Kim Jung Gi", videoId: "aoqu5SEFqRI", url: "https://youtu.be/aoqu5SEFqRI?si=vQ1XuBlzJsOoLyRk"}, {title: "Sam Does Farts", videoId: "M33PO9rEg2I", url: "https://youtu.be/M33PO9rEg2I?si=zsjzryJE3eSkuFQu"}, {title: "Jazza", videoId: "Rpj2J4tn4YI", url: "https://youtu.be/Rpj2J4tn4YI?si=P4qaWzgLPwJlSk9K"} ] },
-  { name: "Classics", songs: [ {title: "Thomas Grey (poem)", videoId: "rB8YnaDHWiw", url: "https://youtu.be/rB8YnaDHWiw?si=Bi9AhXxlMRDavSN9"}, {title: "Francis Beacon (essay)", videoId: "RCobgQpPFqA", url: "https://youtu.be/RCobgQpPFqA?si=vgcQ1rfqlIN948Ej"}, {title: "Dostoevsky (novel)", multi: true, buttons: [ {name: "Hindi", videoId: "gDVVrK1L38Q", url: "https://youtu.be/gDVVrK1L38Q?si=Lc0fCzYrKBWup_wI"}, {name: "English", videoId: "8a8xw4YO6AA", url: "https://youtu.be/8a8xw4YO6AA?si=we9Pjj5IPCU61zJa"} ]} ] },
-  { name: "Hustle", songs: [ {title: "Simonster", multi: true, buttons: [ {name: "Gravitas", videoId: "FHBtLAvNGo4", url: "https://youtu.be/FHBtLAvNGo4?si=H8NjiVx1TnZCzC_g"}, {name: "Tribute", videoId: "I8gi7QagCrc", url: "https://youtu.be/I8gi7QagCrc?si=g5wPOPFjG5NHoIjd"} ]}, {title: "Mike Shake", videoId: "HKuTSYF5Wlc", url: "https://youtu.be/HKuTSYF5Wlc?si=rPh3wzMa_Yi0BdVT"}, {title: "Madkilla", videoId: "ZewGON5hJPk", url: "https://youtu.be/ZewGON5hJPk?si=5bzaFhH3R_lsPjzf"} ] },
+  { name: "Art", songs: [ 
+      {title: "Kim Jung Gi", videoId: "aoqu5SEFqRI", url: "https://youtu.be/aoqu5SEFqRI?si=vQ1XuBlzJsOoLyRk"}, 
+      {title: "Artistic", multi: true, buttons: [
+          {name: "Farts", videoId: "M33PO9rEg2I", url: "https://youtu.be/M33PO9rEg2I?si=zsjzryJE3eSkuFQu"},
+          {name: "Jazza", videoId: "Rpj2J4tn4YI", url: "https://youtu.be/Rpj2J4tn4YI?si=P4qaWzgLPwJlSk9K"}
+      ]}, 
+      {title: "Secret", multi: true, buttons: [
+          {name: "Assassin", videoId: "jJL0XoNBaac", url: "https://youtu.be/jJL0XoNBaac?si=2k_f0teBZOG08SK4"},
+          {name: "MDMA", videoId: "onaKmEUtNbc", url: "https://youtu.be/onaKmEUtNbc?si=R6f4TR5rFWIq5ADN"}
+      ]} 
+  ] },
+  { name: "Classics", songs: [ 
+      {title: "Thomas Grey (poem)", videoId: "rB8YnaDHWiw", url: "https://youtu.be/rB8YnaDHWiw?si=Bi9AhXxlMRDavSN9"}, 
+      {title: "Francis Beacon (essay)", multi: true, buttons: [
+          {name: "Marriage", videoId: "RCobgQpPFqA", url: "https://youtu.be/RCobgQpPFqA?si=vgcQ1rfqlIN948Ej"},
+          {name: "Studies", videoId: "eEOrTXfefGs", url: "https://youtu.be/eEOrTXfefGs?si=9Lt7Np8SC7BEdca2"},
+          {name: "About Beacon", isAboutToggle: true}
+      ]},
+      {title: "Dostoevsky (novel)", multi: true, buttons: [ {name: "Hindi", videoId: "gDVVrK1L38Q", url: "https://youtu.be/gDVVrK1L38Q?si=Lc0fCzYrKBWup_wI"}, {name: "English", videoId: "8a8xw4YO6AA", url: "https://youtu.be/8a8xw4YO6AA?si=we9Pjj5IPCU61zJa"} ]} 
+  ] },
+  { name: "Hustle", songs: [ {title: "Simonster", multi: true, buttons: [ {name: "Gravitas", videoId: "FHBtLAvNGo4", url: "https://youtu.be/FHBtLAvNGo4?si=H8NjiVx1TnZCzC_g"}, {name: "Tribute", videoId: "I8gi7QagCrc", url: "https://youtu.be/I8gi7QagCrc?si=g5wPOPFjG5NHoIjd"} ]}, {title: "Mike Shake", videoId: "HKuTSYYF5Wlc", url: "https://youtu.be/HKuTSYYF5Wlc?si=rPh3wzMa_Yi0BdVT"}, {title: "Madkilla", videoId: "ZewGON5hJPk", url: "https://youtu.be/ZewGON5hJPk?si=5bzaFhH3R_lsPjzf"} ] },
   { name: "Intresting", songs: [ {title: "Humans", multi: true, buttons: [ {name: "Research", videoId: "LuCans9euxY", url: "https://youtu.be/LuCans9euxY?si=_PIFJHBt-v5vrlYb"}, {name: "Evolving", videoId: "_XYNsTvnU7E", url: "https://youtu.be/_XYNsTvnU7E?si=CAWpN7bqTWDImhtX"} ]}, {title: "Money", multi: true, buttons: [ {name: "Part 1", videoId: "eDa1U9qJKxo", url: "https://youtu.be/eDa1U9qJKxo?si=AAAS7F2BJ209M-CE"}, {name: "Part 2", videoId: "Qxc_uS7R1CY", url: "https://youtu.be/Qxc_uS7R1CY?si=BeM-WVTay8Sp5Z4K"} ]}, {title: "History", videoId: "KnviRvdmFTc", url: "https://youtu.be/KnviRvdmFTc?si=m7tro87GS-YMW1dE"} ] },
-  { name: "Neo Gen", songs: [ {title: "Criticism", multi: true, buttons: [ {name: "Religious", videoId: "S6w7w706g2I", url: "https://youtu.be/S6w7w706g2I?si=pj30-65tVPsLSmZ4"}, {name: "Political", videoId: "bzbsJGMVHxQ", url: "https://youtu.be/bzbsJGMVHxQ?si=nTZsJWCVG6h-DmPS"} ]}, {title: "Spiritual", videoId: "PYfyrsFu88E", url: "https://youtu.be/PYfyrsFu88E?si=3zf5aAXbte2OLhRg"}, {title: "Random", videoId: "-MrD4O2mcNc", url: "https://youtu.be/-MrD4O2mcNc?si=sXjvaSaDGjRCM0dQ"} ] }
+  { name: "Neo Gen", songs: [ {title: "Criticism", multi: true, buttons: [ {name: "Religious", videoId: "S6w7w706g2I", url: "https://youtu.be/S6w7w706g2I?si=pj30-65tVPsLSmZ4"}, {name: "Political", videoId: "bzbsJGMVHxQ", url: "https://youtu.be/bzbsJGMVHxQ?si=nTZsJWCVG6h-DmPS"} ]}, {title: "Spiritual", videoId: "PYfyrsFu88E", url: "https://youtu.be/PYfyrsFu88E?si=3zf5aAXbte2OLhRg"}, {title: "Random", videoId: "Vhlwk1HcFdI", url: "https://youtu.be/Vhlwk1HcFdI?si=HRhW1ByECloyKYKK"} ] }
+];
+
+const dPanelFolders = [
+  { name: "Timeless", songs: [
+      {title: "Theory", multi: true, buttons: [
+          {name: "Strings", videoId: "Da-2h2B4faU", url: "https://youtu.be/Da-2h2B4faU?si=GEiGWHjcCj7BKTPz"},
+          {name: "Entropy", videoId: "DxL2HoqLbyA", url: "https://youtu.be/DxL2HoqLbyA?si=GZ5JS-RJ_Q7G7q82"}
+      ]},
+      {title: "Tradition", videoId: "7J1lD9yPTRE", url: "https://youtu.be/7J1lD9yPTRE?si=NR3UvRlvWcAaJw8B"},
+      {title: "Talent", videoId: "2grlyPbchBs", url: "https://youtu.be/2grlyPbchBs?si=dZ384ScqHVZlwf_w"}
+  ]},
+  { name: "Original", songs: [
+      {title: "Osho", multi: true, buttons: [
+          {name: "1", videoId: "XYIMzNJr7Vw", url: "https://youtu.be/XYIMzNJr7Vw?si=fzB5X8qZHV2xYRgL", style: "background:#E4003A;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "2", videoId: "hln8lxOOo8I", url: "https://youtu.be/hln8lxOOo8I?si=JqCNBDZg5XKI0-p2", style: "background:#FF7F00;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "3", videoId: "Rz1FMF6sCDc", url: "https://youtu.be/Rz1FMF6sCDc?si=Y9pxR5oDd9nLatF_", style: "background:#FFD300;color:black;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "4", videoId: "v0vUe0vHAoY", url: "https://youtu.be/v0vUe0vHAoY?si=v9GgFQ4zOHkCGZQc", style: "background:#008751;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "5", videoId: "1pEjefQdJ6E", url: "https://youtu.be/1pEjefQdJ6E?si=Or4g4P9gf3RFBTp8", style: "background:#004B87;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "6", videoId: "hcytARE3S1U", url: "https://youtu.be/hcytARE3S1U?si=ilPyTnpSYJf4lwrX", style: "background:#461B7E;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"},
+          {name: "7", videoId: "s_XgKrDLC00", url: "https://youtu.be/s_XgKrDLC00?si=WM221VgLN8m_pJ3j", style: "background:#B57EDC;color:white;border-radius:0;min-width:0;flex:1;padding:10px 0;aspect-ratio:1/1;"}
+      ]},
+      {title: "Occult", videoId: "0mb0atnuBBw", url: "https://youtu.be/0mb0atnuBBw?si=589fg3h5736gdNK-"},
+      {title: "Outgrow", multi: true, buttons: [
+          {name: "company", videoId: "6Afpey7Eldo", url: "https://youtu.be/6Afpey7Eldo?si=v7Xhf6VIsQaLI1yG"},
+          {name: "country", videoId: "0JDoll8OEFE", url: "https://youtu.be/0JDoll8OEFE?si=LNBA2jar1eLupIdh"},
+          {name: "biology", videoId: "u8mmn9lOIyw", url: "https://youtu.be/u8mmn9lOIyw?si=KdHu0osKyb6bU7_6"}
+      ]}
+  ]},
+  { name: "Maths", songs: [
+      {title: "My Master", multi: true, buttons: [
+          {name: "he", videoId: "xL_sMXfzzyA", url: "https://youtu.be/xL_sMXfzzyA?si=GfBFmdjWVw1YvpOE"},
+          {name: "His Book", videoId: "xRdiG8sKOBw", url: "https://youtu.be/xRdiG8sKOBw?si=Te4BTKXHhFP52Vzl"},
+          {name: "His Essay", videoId: "lizVoNJBFTI", url: "https://youtu.be/lizVoNJBFTI?si=x_vqaBfnbXkV9r2p"}
+      ]},
+      {title: "Methods", videoId: "m6WY6VtPYrk", url: "https://youtu.be/m6WY6VtPYrk?si=GGP1AMpEyjArGc7i"},
+      {title: "Mystery", videoId: "ymGt7I4Yn3k", url: "https://youtu.be/ymGt7I4Yn3k?si=Eane_1IWmEvNBFSD"}
+  ]},
+  { name: "Ai", songs: [
+      {title: "Animation", videoId: "CCI6NtodWJs", url: "https://youtu.be/CCI6NtodWJs?si=WoIBfEjaDqqF2zLo"},
+      {title: "Algorithm", videoId: "SmyPTnlqhlk", url: "https://youtu.be/SmyPTnlqhlk?si=Lnm7Ww_3RzVteJ-A"},
+      {title: "Automation", videoId: "iUks4wuYkUU", url: "https://youtu.be/iUks4wuYkUU?si=LXzuUH3buMipV2XW"}
+  ]},
+  { name: "Revolution", songs: [
+      {title: "Religious", multi: true, buttons: [
+          {name: "jesus", videoId: "NI4XGTathLA", url: "https://youtube.com/shorts/NI4XGTathLA?si=51DZvuAu4Hjo_aZt", customText: "rebel against orthadox religion"},
+          {name: "jain", videoId: "UvNNCdSHZ_A", url: "https://youtu.be/UvNNCdSHZ_A?si=gxTlbENOwSiS8wfa", customText: "revolt against animalistic nature"}
+      ]},
+      {title: "Renaissance", multi: true, buttons: [
+          {name: "voltaire", videoId: "LAzKGkTIKpg", url: "https://youtu.be/LAzKGkTIKpg?si=kTj28Wxv1fv9ckyv"},
+          {name: "marx", videoId: "fSQgCy_iIcc", url: "https://youtu.be/fSQgCy_iIcc?si=0k-8Lz4HKK8FafdR"}
+      ]},
+      {title: "Resurrection", videoId: "FwgMxjhXkKo", url: "https://youtu.be/FwgMxjhXkKo?si=je1lhwjDU2CCosVS", customText: "future rebellion"}
+  ]}
 ];
 
 /* COMPONENT BUILDERS */
@@ -612,15 +781,38 @@ function buildSongCard(song, idx){
 function buildFolder(folder, idx){
   const card = document.createElement('div');
   card.className = 'song-card folder-card';
-  let songsHTML = folder.songs.map((song, sIdx) => `
+  let songsHTML = folder.songs.map((song, sIdx) => {
+    const isOsho = song.title === "Osho";
+    const isBacon = song.title === "Francis Beacon (essay)";
+    
+    // Filter version buttons to exclude 'About Beacon' if it's Francis Bacon
+    const filteredButtons = isBacon 
+      ? song.buttons.filter(b => !b.isAboutToggle) 
+      : (song.buttons || []);
+
+    return `
     <div class="song-card" style="margin-top:12px;">
       <div class="song-title-bar folder-song-btn"><div><span class="song-num">${sIdx+1}</span> ${song.title}</div><span>▶️</span></div>
       <div class="song-player">
         <iframe allowfullscreen src=""></iframe>
-        ${song.multi ? `<div class="multi-btns">${song.buttons.map(b => `<button class="version-btn" data-video="${b.videoId}" data-url="${b.url}">${b.name}</button>`).join('')}</div>` : `<a href="${song.url}" target="_blank" class="yt-link">🔴 Open on YouTube</a>`}
+        <div class="custom-notice-text" style="display:none; text-align:center; font-weight:700; margin: 8px 0; color:#ba4623;"></div>
+        ${song.multi ? `<div class="multi-btns" style="${isOsho ? 'display:flex; flex-wrap:nowrap; gap:4px;' : ''}">${filteredButtons.map(b => `<button class="version-btn" data-video="${b.videoId}" data-url="${b.url}" data-text="${b.customText || ''}" style="${b.style || ''}">${b.name}</button>`).join('')}</div>` : `<a href="${song.url}" target="_blank" class="yt-link">🔴 Open on YouTube</a>`}
         ${song.multi ? `<a href="#" target="_blank" class="yt-link dynamic-yt" style="display:none;">🔴 Open on YouTube</a>` : ''}
+        
+        ${isBacon ? `<div class="multi-btns" style="margin-top:10px;"><button class="version-btn about-toggle-btn" style="flex:1;">About Beacon</button></div>` : ''}
+        
+        ${isBacon ? `
+        <div class="bacon-info-box" style="display:none; margin-top:15px; font-size:0.95rem; line-height:1.6; text-align:left; border-top:1px dashed rgba(0,0,0,0.15); padding-top:12px; color:#365a61;">
+          At the age of 45, he married Alice Barnham, who was 14yr old and the daughter of a rich London <span class="alderman-btn" style="color:#ba4623; text-decoration:underline; cursor:pointer; font-weight:700;">alderman</span> and merchant.Though he had no children, he is known as Father of Empiricism,
+          Father of Scientific Method & 
+          Father of Eng Essays.
+          <div class="alderman-desc" style="display:none; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-left:3px solid #ba4623; font-size:0.85rem; border-radius:4px;">
+            An alderman was a member of a city's governing council or municipal government.
+          </div>
+        </div>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   
   card.innerHTML = `<div class="song-title-bar folder-title"><div><span class="song-num">${idx+1}</span> ${folder.name}</div><span>📂</span></div><div class="folder-content">${songsHTML}</div>`;
   
@@ -639,11 +831,27 @@ function buildFolder(folder, idx){
       player.style.display = "block";
       const songData = folder.songs[i];
       
+      const notice = player.querySelector('.custom-notice-text');
+      if(notice) {
+        if(songData.customText) {
+          notice.textContent = songData.customText;
+          notice.style.display = "block";
+        } else {
+          notice.style.display = "none";
+        }
+      }
+
       if(songData.multi && songData.buttons && songData.buttons.length > 0) {
-        player.querySelector('iframe').src = `https://www.youtube.com/embed/${songData.buttons[0].videoId}?autoplay=1`;
-        const dynLink = player.querySelector('.dynamic-yt');
-        dynLink.href = songData.buttons[0].url;
-        dynLink.style.display = 'block';
+        if(!songData.buttons[0].isAboutToggle) {
+          player.querySelector('iframe').src = `https://www.youtube.com/embed/${songData.buttons[0].videoId}?autoplay=1`;
+          const dynLink = player.querySelector('.dynamic-yt');
+          dynLink.href = songData.buttons[0].url;
+          dynLink.style.display = 'block';
+          if(songData.buttons[0].customText && notice) {
+            notice.textContent = songData.buttons[0].customText;
+            notice.style.display = "block";
+          }
+        }
       } else {
         player.querySelector('iframe').src = songData.embed ? songData.embed + "&autoplay=1" : `https://www.youtube.com/embed/${songData.videoId}?autoplay=1`;
       }
@@ -654,19 +862,57 @@ function buildFolder(folder, idx){
     btn.onclick = (e) => {
       e.stopPropagation();
       const player = btn.closest('.song-player');
+      
+      if(btn.classList.contains('about-toggle-btn')) {
+        const infoBox = player.querySelector('.bacon-info-box');
+        if(infoBox.style.display === "none" || !infoBox.style.display) {
+          infoBox.style.display = "block";
+          btn.textContent = "Close";
+          btn.style.background = "red";
+          btn.style.color = "white";
+        } else {
+          infoBox.style.display = "none";
+          btn.textContent = "About Beacon";
+          btn.style.background = "";
+          btn.style.color = "";
+          player.querySelector('.alderman-desc').style.display = "none";
+        }
+        return;
+      }
+
       player.style.display = "block";
       player.querySelector('iframe').src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1`;
       const dynLink = player.querySelector('.dynamic-yt');
       dynLink.href = btn.dataset.url;
       dynLink.style.display = 'block';
+
+      const notice = player.querySelector('.custom-notice-text');
+      if(notice) {
+        if(btn.dataset.text) {
+          notice.textContent = btn.dataset.text;
+          notice.style.display = "block";
+        } else {
+          notice.style.display = "none";
+        }
+      }
     };
   });
+
+  card.querySelectorAll('.alderman-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const desc = btn.parentElement.querySelector('.alderman-desc');
+      desc.style.display = (desc.style.display === "none" || !desc.style.display) ? "block" : "none";
+    };
+  });
+
   return card;
 }
 
 function closeAllPlayers(){
   document.querySelectorAll('.song-player').forEach(p => { p.style.display = "none"; p.querySelector('iframe').src = ""; });
   document.querySelectorAll('.dynamic-yt').forEach(d => d.style.display = "none");
+  document.querySelectorAll('.custom-notice-text').forEach(n => n.style.display = "none");
 }
 
 /* LEFT PANEL STATE & RENDER LOGIC WITH THEME TRANSITIONS */
@@ -679,14 +925,12 @@ function renderLeftPanel() {
   closeAllPlayers();
   
   if (currentLeftView === "foreign") {
-    // Apply Deep Purple layout
     leftPanelEl.classList.remove('theme-coral');
     leftPanelEl.classList.add('theme-purple');
 
     englishSongs.forEach((s, i) => leftContainer.appendChild(buildSongCard(s, i)));
     folders.forEach((f, i) => leftContainer.appendChild(buildFolder(f, i + englishSongs.length)));
   } else {
-    // Apply Sunset Coral layout
     leftPanelEl.classList.remove('theme-purple');
     leftPanelEl.classList.add('theme-coral');
 
@@ -700,11 +944,34 @@ function toggleLeftPanelContent() {
   renderLeftPanel();
 }
 
+/* RIGHT PANEL ALTERNATE CONTENT LOGIC */
+let currentRightView = "science";
+const rightContainer = document.getElementById('rightPanelFoldersList');
+const rightPanelEl = document.getElementById('rightPanel');
+
+function renderRightPanel() {
+  rightContainer.innerHTML = "";
+  closeAllPlayers();
+
+  if (currentRightView === "science") {
+    rightPanelEl.classList.remove('theme-blue');
+    rightPanelEl.classList.add('theme-green');
+    rightPanelFolders.forEach((f, i) => rightContainer.appendChild(buildFolder(f, i)));
+  } else {
+    rightPanelEl.classList.remove('theme-green');
+    rightPanelEl.classList.add('theme-blue');
+    dPanelFolders.forEach((f, i) => rightContainer.appendChild(buildFolder(f, i)));
+  }
+}
+
+function toggleRightPanelContent() {
+  currentRightView = (currentRightView === "science") ? "dmode" : "science";
+  renderRightPanel();
+}
+
 /* INITIALIZATION */
 renderLeftPanel();
-
-const rightContainer = document.getElementById('rightPanelFoldersList');
-rightPanelFolders.forEach((f, i) => rightContainer.appendChild(buildFolder(f, i)));
+renderRightPanel();
 
 /* PANEL VISIBILITY CONTROLS */
 const leftPanel = document.getElementById('leftPanel');
@@ -736,6 +1003,43 @@ document.addEventListener("touchend", e => {
     if(diff > 70) openPanel('left');
     else if(diff < -70) openPanel('right');
   } else if(Math.abs(diff) > 70) closeAllPanels();
+});
+
+/* SWIPE GIF LONG PRESS DETECTION & OUTSIDE TAP CLOSURE */
+const swipeLink = document.getElementById('swipeLink');
+const longPressBox = document.getElementById('longPressBox');
+let swipeTimer;
+
+swipeLink.addEventListener('touchstart', (e) => {
+  swipeTimer = setTimeout(() => {
+    e.preventDefault();
+    longPressBox.style.display = (longPressBox.style.display === "block") ? "none" : "block";
+  }, 700);
+});
+
+swipeLink.addEventListener('touchend', () => clearTimeout(swipeTimer));
+swipeLink.addEventListener('mousedown', () => {
+  swipeTimer = setTimeout(() => {
+    longPressBox.style.display = (longPressBox.style.display === "block") ? "none" : "block";
+  }, 700);
+});
+swipeLink.addEventListener('mouseup', () => clearTimeout(swipeTimer));
+
+// Close longPressBox when clicking outside of it and swipeLink
+document.addEventListener('click', (e) => {
+  if (longPressBox.style.display === "block") {
+    if (!longPressBox.contains(e.target) && !swipeLink.contains(e.target)) {
+      longPressBox.style.display = "none";
+    }
+  }
+});
+
+document.addEventListener('touchstart', (e) => {
+  if (longPressBox.style.display === "block") {
+    if (!longPressBox.contains(e.target) && !swipeLink.contains(e.target)) {
+      longPressBox.style.display = "none";
+    }
+  }
 });
 
 /* CORE WEB DECORATIVE INTERACTIONS */

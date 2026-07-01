@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Go Strategy</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #1a1c23;
+            --bg-panel: #242731;
+            --bg-board: #e2b27a;
+            --border-board: #3c3f4c;
+            --text-main: #f5f6f7;
+            --accent-blue: #61afef;
+            --accent-red: #e06c75;
+            --accent-green: #98c379;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 { margin: 10px 0; font-size: 1.8rem; }
+
+        #game-container {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-board);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: bold;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border-board);
+            padding-bottom: 10px;
+        }
+
+        #phaseBanner {
+            width: 100%;
+            background: #2c313c;
+            border: 1px solid var(--border-board);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        #phaseBanner.active { display: block; background: #2e3f30; border-color: var(--accent-green); }
+
+        .board-view-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--bg-board);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .action-controls {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            background: var(--border-board);
+            color: var(--text-main);
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
+        .btn-primary { background: var(--accent-blue); color: #111; }
+        .btn-danger { background: var(--accent-red); color: #111; }
+        .btn-success { background: var(--accent-green); color: #111; }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: var(--bg-panel);
+            border: 2px solid var(--border-board);
+            border-radius: 8px;
+            padding: 20px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
+        .modal-options { display: flex; gap: 12px; }
+        .modal-opt-btn {
+            background: var(--accent-blue); color: #111;
+            padding: 12px; font-weight: bold; border-radius: 6px; flex: 1; cursor: pointer;
+        }
+        .results-text {
+            text-align: left;
+            font-family: monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Go Strategy</h1>
+
+    <div id="game-container">
+        <div class="info-bar">
+            <span id="turnDisplay">Turn: Black</span>
+            <span id="capturesDisplay">B Caps: 0 | W Caps: 0</span>
+        </div>
+
+        <div id="phaseBanner">Phase Tracker</div>
+
+        <div class="board-view-frame">
+            <canvas id="goCanvas" width="600" height="600"></canvas>
+            
+            <div class="modal-overlay active" id="sizeModal">
+                <div class="modal-card">
+                    <div class="modal-title">Select Go Board Size<br>(碁盤サイズ選択)</div>
+                    <div class="modal-options">
+                        <div class="modal-opt-btn" id="sizeOpt9">9 x 9</div>
+                        <div class="modal-opt-btn" id="sizeOpt19">19 x 19</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="resultsModal">
+                <div class="modal-card">
+                    <div class="modal-title" id="winnerHeader">Match Complete</div>
+                    <div class="results-text" id="resultsDetails"></div>
+                    <button class="btn btn-primary" style="width:100%" onclick="location.reload()">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-controls">
+            <button class="btn btn-primary" id="newGameBtn">New Game</button>
+            <button class="btn" id="passBtn">Pass</button>
+            <button class="btn btn-danger" id="resignBtn">Resign</button>
+            <button class="btn btn-success" id="confirmDeadBtn" style="display: none;">Confirm Dead Stones</button>
+        </div>
+    </div>
+
+    <script>
+        var gGameState;
+        var JAPANESE_KOMI = 6.5; 
+        var CHINESE_KOMI = 7.5;
+        var Constants = {
+            Color: { BLACK: "black", WHITE: "white" },
+            PointState: { EMPTY: ".", BLACK: "X", WHITE: "O" }
+        };
+
+        function Player(color, pointState) {
+            this.color = color;
+            this.pointState = pointState;
+            this.capturedCount = 0; 
+            this.deadStonesMarked = 0;
+            this.stoneCount = 0;
+            this.territoryCount = 0;
+        }
+
+        function Point(row, column) {
+            this.row = row;
+            this.column = column;
+        }
+
+        function GameState(size) {
+            this.boardWidth = size;
+            this.boardHeight = size;
+            this.board = Array(size).fill(null).map(() => Array(size).fill(Constants.PointState.EMPTY));
+            this.deadPositions = Array(size).fill(null).map(() => Array(size).fill(false));
+            this.previousBoard = $.extend(true, [], this.board);
+            // We now explicitly maintain the layout *before* the current move to handle immediate Ko
+            this.preMoveBoardString = null; 
+            this.player1 = new Player(Constants.Color.BLACK, Constants.PointState.BLACK);
+            this.player2 = new Player(Constants.Color.WHITE, Constants.PointState.WHITE);
+            this.currentPlayer = this.player1;
+            this.consecutivePasses = 0;
+            this.isGameOver = false;
+            this.isMarkingDeadPhase = false;
+            
+            this.getPointStateAt = function(p) { return this.board[p.row][p.column]; };
+            this.setPointStateAt = function(p, s) { this.board[p.row][p.column] = s; };
+            this.getBoardCopy = function() { return $.extend(true, [], this.board); };
+            
+            // Replaced total history Superko logic with localized traditional 1-turn Ko check
+            this.isKoViolation = function(nextBoardLayout) {
+                if (!this.preMoveBoardString) return false;
+                return JSON.stringify(nextBoardLayout) === this.preMoveBoardString;
+            };
+        }
+
+        var GoLogic = {
+            isPointInBounds: function(p) {
+                return p && p.row < gGameState.boardHeight && p.row >= 0 && p.column < gGameState.boardWidth && p.column >= 0;
+            },
+            getAdjacentPoints: function(p) {
+                var adj = [];
+                if (this.isPointInBounds(new Point(p.row - 1, p.column))) adj.push(new Point(p.row - 1, p.column));
+                if (this.isPointInBounds(new Point(p.row + 1, p.column))) adj.push(new Point(p.row + 1, p.column));
+                if (this.isPointInBounds(new Point(p.row, p.column - 1))) adj.push(new Point(p.row, p.column - 1));
+                if (this.isPointInBounds(new Point(p.row, p.column + 1))) adj.push(new Point(p.row, p.column + 1));
+                return adj;
+            },
+            // Fixed direct recursion to an iterative structure using a stack to safe-proof against Stack Overflows
+            getChainPoints: function(startPoint) {
+                var chainPoints = [];
+                var pState = gGameState.getPointStateAt(startPoint);
+                var stack = [startPoint];
+                var seen = Array(gGameState.boardHeight).fill(null).map(() => Array(gGameState.boardWidth).fill(false));
+                
+                seen[startPoint.row][startPoint.column] = true;
+
+                while (stack.length > 0) {
+                    var curr = stack.pop();
+                    chainPoints.push(curr);
+                    var adj = this.getAdjacentPoints(curr);
+                    
+                    for (var i = 0; i < adj.length; i++) {
+                        var neighbor = adj[i];
+                        if (gGameState.getPointStateAt(neighbor) === pState && !seen[neighbor.row][neighbor.column]) {
+                            seen[neighbor.row][neighbor.column] = true;
+                            stack.push(neighbor);
+                        }
+                    }
+                }
+                return chainPoints;
+            },
+            getLiberties: function(chainPoints) {
+                var liberties = [];
+                var seen = Array(gGameState.boardHeight).fill(null).map(() => Array(gGameState.boardWidth).fill(false));
+                
+                for (var i = 0; i < chainPoints.length; i++) {
+                    var adj = this.getAdjacentPoints(chainPoints[i]);
+                    for (var j = 0; j < adj.length; j++) {
+                        var neighbor = adj[j];
+                        if (gGameState.getPointStateAt(neighbor) == Constants.PointState.EMPTY) {
+                            if (!seen[neighbor.row][neighbor.column]) {
+                                seen[neighbor.row][neighbor.column] = true;
+                                liberties.push(neighbor);
+                            }
+                        }
+                    }
+                }
+                return liberties;
+            },
+            placePiece: function(point) {
+                if (gGameState.isGameOver || gGameState.getPointStateAt(point) !== Constants.PointState.EMPTY) return false;
+
+                var originalBoard = gGameState.getBoardCopy();
+                
+                // Simulate placement
+                gGameState.setPointStateAt(point, gGameState.currentPlayer.pointState);
+                
+                var opponentState = (gGameState.currentPlayer == gGameState.player1) ? Constants.PointState.WHITE : Constants.PointState.BLACK;
+                var adj = this.getAdjacentPoints(point);
+                var capturedStones = [];
+
+                for (var i = 0; i < adj.length; i++) {
+                    if (gGameState.getPointStateAt(adj[i]) == opponentState) {
+                        var enemyChain = this.getChainPoints(adj[i]);
+                        if (this.getLiberties(enemyChain).length === 0) {
+                            capturedStones = capturedStones.concat(enemyChain);
+                        }
+                    }
+                }
+
+                var distinctCaptured = [];
+                var seenSet = new Set();
+                for (var i = 0; i < capturedStones.length; i++) {
+                    var key = capturedStones[i].row + "," + capturedStones[i].column;
+                    if (!seenSet.has(key)) {
+                        seenSet.add(key);
+                        distinctCaptured.push(capturedStones[i]);
+                    }
+                }
+
+                for (var i = 0; i < distinctCaptured.length; i++) {
+                    gGameState.setPointStateAt(distinctCaptured[i], Constants.PointState.EMPTY);
+                }
+
+                var selfChain = this.getChainPoints(point);
+                if (this.getLiberties(selfChain).length === 0) {
+                    gGameState.board = originalBoard;
+                    return false;
+                }
+
+                // Check traditional Ko rule (immediate layout duplication comparison)
+                if (gGameState.isKoViolation(gGameState.board)) {
+                    gGameState.board = originalBoard;
+                    return false;
+                }
+
+                gGameState.currentPlayer.capturedCount += distinctCaptured.length;
+                gGameState.preMoveBoardString = JSON.stringify(originalBoard);
+                gGameState.previousBoard = originalBoard;
+                gGameState.consecutivePasses = 0; 
+                gGameState.currentPlayer = (gGameState.currentPlayer === gGameState.player1) ? gGameState.player2 : gGameState.player1;
+                return true;
+            },
+
+            calculateScoresAndTerritory: function() {
+                var size = gGameState.boardWidth;
+                var scoringBoard = gGameState.getBoardCopy();
+                gGameState.player1.deadStonesMarked = 0;
+                gGameState.player2.deadStonesMarked = 0;
+
+                for (var r = 0; r < size; r++) {
+                    for (var c = 0; c < size; c++) {
+                        if (gGameState.deadPositions[r][c]) {
+                            if (scoringBoard[r][c] === Constants.PointState.BLACK) gGameState.player2.deadStonesMarked++;
+                            if (scoringBoard[r][c] === Constants.PointState.WHITE) gGameState.player1.deadStonesMarked++;
+                            scoringBoard[r][c] = Constants.PointState.EMPTY; 
+                        }
+                    }
+                }
+
+                var visited = Array(size).fill(null).map(() => Array(size).fill(false));
+                gGameState.player1.stoneCount = 0;
+                gGameState.player2.stoneCount = 0;
+                gGameState.player1.territoryCount = 0;
+                gGameState.player2.territoryCount = 0;
+
+                for (var r = 0; r < size; r++) {
+                    for (var c = 0; c < size; c++) {
+                        if (scoringBoard[r][c] === Constants.PointState.BLACK) gGameState.player1.stoneCount++;
+                        if (scoringBoard[r][c] === Constants.PointState.WHITE) gGameState.player2.stoneCount++;
+                    }
+                }
+
+                for (var r = 0; r < size; r++) {
+                    for (var c = 0; c < size; c++) {
+                        if (scoringBoard[r][c] === Constants.PointState.EMPTY && !visited[r][c]) {
+                            var queue = [new Point(r, c)];
+                            var territoryPoints = [new Point(r, c)];
+                            visited[r][c] = true;
+                            var borders = new Set();
+
+                            while (queue.length > 0) {
+                                var curr = queue.shift();
+                                var neighbors = this.getAdjacentPoints(curr);
+                                
+                                for (var i = 0; i < neighbors.length; i++) {
+                                    var n = neighbors[i];
+                                    var state = scoringBoard[n.row][n.column];
+                                    if (state === Constants.PointState.EMPTY) {
+                                        if (!visited[n.row][n.column]) {
+                                            visited[n.row][n.column] = true;
+                                            queue.push(n);
+                                            territoryPoints.push(n);
+                                        }
+                                    } else {
+                                        borders.add(state);
+                                    }
+                                }
+                            }
+
+                            if (borders.size === 1) {
+                                if (borders.has(Constants.PointState.BLACK)) gGameState.player1.territoryCount += territoryPoints.length;
+                                if (borders.has(Constants.PointState.WHITE)) gGameState.player2.territoryCount += territoryPoints.length;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        class GoCandyUI {
+            constructor() {
+                this.canvas = document.getElementById("goCanvas");
+                this.ctx = this.canvas.getContext("2d");
+                this.size = 19;
+                this.setupDOM();
+            }
+
+            setupDOM() {
+                document.getElementById("sizeOpt9").addEventListener("click", () => this.startNewGame(9));
+                document.getElementById("sizeOpt19").addEventListener("click", () => this.startNewGame(19));
+                document.getElementById("newGameBtn").addEventListener("click", () => {
+                    document.getElementById("sizeModal").classList.add("active");
+                });
+                
+                document.getElementById("passBtn").addEventListener("click", () => this.handlePassMove());
+                document.getElementById("resignBtn").addEventListener("click", () => this.handleResignation());
+                document.getElementById("confirmDeadBtn").addEventListener("click", () => this.declareFinalScores());
+
+                const handleInput = (clientX, clientY) => {
+                    if (gGameState.isGameOver && !gGameState.isMarkingDeadPhase) return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    const x = (clientX - rect.left) * scaleX;
+                    const y = (clientY - rect.top) * scaleY;
+                    
+                    const padding = this.canvas.width / (this.size + 1);
+                    const spacing = (this.canvas.width - padding * 2) / (this.size - 1);
+
+                    const col = Math.round((x - padding) / spacing);
+                    const row = Math.round((y - padding) / spacing);
+
+                    if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
+                        if (gGameState.isMarkingDeadPhase) {
+                            if (gGameState.board[row][col] !== Constants.PointState.EMPTY) {
+                                var chain = GoLogic.getChainPoints(new Point(row, col));
+                                var nextState = !gGameState.deadPositions[row][col];
+                                for (var i = 0; i < chain.length; i++) {
+                                    gGameState.deadPositions[chain[i].row][chain[i].column] = nextState;
+                                }
+                                this.drawBoard();
+                            }
+                        } else {
+                            if (GoLogic.placePiece(new Point(row, col))) {
+                                this.updateUI();
+                            }
+                        }
+                    }
+                };
+
+                this.canvas.addEventListener("click", (e) => handleInput(e.clientX, e.clientY));
+                this.canvas.addEventListener("touchstart", (e) => {
+                    e.preventDefault();
+                    handleInput(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: false });
+            }
+
+            startNewGame(size) {
+                this.size = size;
+                gGameState = new GameState(size);
+                document.getElementById("sizeModal").classList.remove("active");
+                document.getElementById("resultsModal").classList.remove("active");
+                document.getElementById("confirmDeadBtn").style.display = "none";
+                document.getElementById("passBtn").style.display = "block";
+                document.getElementById("resignBtn").style.display = "block";
+                
+                var banner = document.getElementById("phaseBanner");
+                banner.style.display = "none";
+                banner.classList.remove("active");
+
+                this.updateUI();
+            }
+
+            handlePassMove() {
+                if (gGameState.isGameOver) return;
+                gGameState.consecutivePasses++;
+                
+                if (gGameState.consecutivePasses >= 2) {
+                    this.enterDeadStonesPhase();
+                } else {
+                    gGameState.preMoveBoardString = null; // A pass allows the next player to break common board layouts
+                    gGameState.currentPlayer = (gGameState.currentPlayer === gGameState.player1) ? gGameState.player2 : gGameState.player1;
+                    this.updateUI();
+                }
+            }
+
+            enterDeadStonesPhase() {
+                gGameState.isMarkingDeadPhase = true;
+                gGameState.isGameOver = true;
+                
+                document.getElementById("passBtn").style.display = "none";
+                document.getElementById("resignBtn").style.display = "none";
+                document.getElementById("confirmDeadBtn").style.display = "block";
+                
+                var banner = document.getElementById("phaseBanner");
+                banner.textContent = "Click any stone in a dead group to mark or unmark the entire group, then press Confirm.";
+                banner.className = "active";
+                banner.style.display = "block";
+                
+                this.drawBoard();
+            }
+
+            handleResignation() {
+                if (gGameState.isGameOver) return;
+                gGameState.isGameOver = true;
+                var winner = (gGameState.currentPlayer === gGameState.player1) ? "White" : "Black";
+                
+                document.getElementById("winnerHeader").textContent = `${winner} Wins!`;
+                document.getElementById("resultsDetails").innerHTML = `Match ended by Resignation.<br>Opponent conceded the match layout.`;
+                document.getElementById("resultsModal").classList.add("active");
+            }
+
+            declareFinalScores() {
+                gGameState.isMarkingDeadPhase = false;
+                GoLogic.calculateScoresAndTerritory();
+
+                var jpBlack = gGameState.player1.territoryCount + gGameState.player1.capturedCount + gGameState.player1.deadStonesMarked;
+                var jpWhite = gGameState.player2.territoryCount + gGameState.player2.capturedCount + gGameState.player2.deadStonesMarked + JAPANESE_KOMI;
+
+                var cnBlack = gGameState.player1.territoryCount + gGameState.player1.stoneCount;
+                var cnWhite = gGameState.player2.territoryCount + gGameState.player2.stoneCount + CHINESE_KOMI;
+
+                var winnerResult = "Draw (Jigo)";
+                if (jpBlack > jpWhite) winnerResult = "Black Wins";
+                if (jpWhite > jpBlack) winnerResult = "White Wins";
+
+                document.getElementById("winnerHeader").textContent = (winnerResult === "Draw (Jigo)") ? winnerResult : `${winnerResult}!`;
+                document.getElementById("resultsDetails").innerHTML = 
+                    `<b>Japanese Scoring:</b><br>` +
+                    `Black: ${jpBlack} (Territory: ${gGameState.player1.territoryCount} + Captures/Dead: ${gGameState.player1.capturedCount + gGameState.player1.deadStonesMarked})<br>` +
+                    `White: ${jpWhite} (Territory: ${gGameState.player2.territoryCount} + Captures/Dead: ${gGameState.player2.capturedCount + gGameState.player2.deadStonesMarked} + Komi: ${JAPANESE_KOMI})<br><br>` +
+                    `<b>Chinese Scoring:</b><br>` +
+                    `Black: ${cnBlack} (Territory: ${gGameState.player1.territoryCount} + Stones: ${gGameState.player1.stoneCount})<br>` +
+                    `White: ${cnWhite} (Territory: ${gGameState.player2.territoryCount} + Stones: ${gGameState.player2.stoneCount} + Komi: ${CHINESE_KOMI})`;
+
+                document.getElementById("resultsModal").classList.add("active");
+            }
+
+            updateUI() {
+                document.getElementById("turnDisplay").textContent = gGameState.isGameOver ? "Game Over" : `Turn: ${gGameState.currentPlayer.color === "black" ? "Black" : "White"}`;
+                document.getElementById("capturesDisplay").textContent = `B Caps: ${gGameState.player1.capturedCount} | W Caps: ${gGameState.player2.capturedCount}`;
+                this.drawBoard();
+            }
+
+            drawBoard() {
+                const cSize = this.canvas.width;
+                this.ctx.clearRect(0, 0, cSize, cSize);
+
+                this.ctx.fillStyle = "#e2b27a";
+                this.ctx.fillRect(0, 0, cSize, cSize);
+
+                const padding = cSize / (this.size + 1);
+                const spacing = (cSize - padding * 2) / (this.size - 1);
+
+                this.ctx.strokeStyle = "#3c3f4c";
+                this.ctx.lineWidth = 1.5;
+
+                for (let i = 0; i < this.size; i++) {
+                    const offset = padding + i * spacing;
+                    this.ctx.beginPath(); this.ctx.moveTo(offset, padding); this.ctx.lineTo(offset, cSize - padding); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(padding, offset); this.ctx.lineTo(cSize - padding, offset); this.ctx.stroke();
+                }
+
+                this.ctx.fillStyle = "#3c3f4c";
+                if (this.size === 19) {
+                    var starPositions = [
+                        [3,3], [3,9], [3,15],
+                        [9,3], [9,9], [9,15],
+                        [15,3], [15,9], [15,15]
+                    ];
+                    starPositions.forEach(p => {
+                        this.ctx.beginPath();
+                        this.ctx.arc(padding + p[1] * spacing, padding + p[0] * spacing, 5, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                    });
+                } else if (this.size === 9) {
+                    var starPositions = [
+                        [2,2], [2,6], [4,4], [6,2], [6,6]
+                    ];
+                    starPositions.forEach(p => {
+                        this.ctx.beginPath();
+                        this.ctx.arc(padding + p[1] * spacing, padding + p[0] * spacing, 5, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                    });
+                }
+
+                const stoneRadius = spacing * 0.45;
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        const state = gGameState.board[r][c];
+                        if (state !== Constants.PointState.EMPTY) {
+                            const isDead = gGameState.deadPositions[r][c];
+                            this.drawCandyStone(padding + c * spacing, padding + r * spacing, stoneRadius, state === Constants.PointState.BLACK ? "black" : "white", isDead);
+                        }
+                    }
+                }
+            }
+
+            drawCandyStone(cx, cy, radius, type, isDead) {
+                this.ctx.save();
+                this.ctx.globalAlpha = isDead ? 0.35 : 1.0;
+
+                this.ctx.shadowColor = isDead ? "transparent" : "rgba(0, 0, 0, 0.4)";
+                this.ctx.shadowBlur = 6;
+                this.ctx.shadowOffsetX = 2;
+                this.ctx.shadowOffsetY = 4;
+
+                const gradient = this.ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, radius * 0.05, cx, cy, radius);
+                if (type === "white") {
+                    gradient.addColorStop(0, isDead ? "rgba(255,255,255,0.4)" : "#ffffff");
+                    gradient.addColorStop(0.6, isDead ? "rgba(226,230,234,0.3)" : "#e2e6ea");
+                    gradient.addColorStop(1, isDead ? "rgba(157,163,170,0.2)" : "#9da3aa");
+                } else {
+                    gradient.addColorStop(0, isDead ? "rgba(85,89,100,0.4)" : "#555964");
+                    gradient.addColorStop(0.35, isDead ? "rgba(33,35,43,0.3)" : "#21232b");
+                    gradient.addColorStop(1, isDead ? "rgba(9,10,13,0.2)" : "#090a0d");
+                }
+
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath(); this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI); this.ctx.fill();
+                this.ctx.shadowColor = "transparent";
+
+                if (!isDead) {
+                    const shineGrad = this.ctx.createLinearGradient(cx - radius * 0.4, cy - radius * 0.5, cx + radius * 0.2, cy + radius * 0.2);
+                    shineGrad.addColorStop(0, "rgba(255, 255, 255, 0.75)");
+                    shineGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+                    this.ctx.fillStyle = shineGrad;
+                    this.ctx.translate(cx - radius * 0.15, cy - radius * 0.3);
+                    this.ctx.rotate(-22 * Math.PI / 180);
+                    this.ctx.beginPath(); this.ctx.ellipse(0, 0, radius * 0.45, radius * 0.22, 0, 0, 2 * Math.PI); this.ctx.fill();
+                }
+                this.ctx.globalAlpha = 1.0;
+                this.ctx.restore();
+            }
+        }
+
+        window.onload = () => { new GoCandyUI(); };
+    </script>
+</body>
+</html>

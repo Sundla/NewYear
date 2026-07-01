@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran</title>
+    <style>
+        :root {
+            --bg-color: #0f1411;
+            --card-bg: #161f1a;
+            --accent-color: #2ec4b6;
+            --text-color: #ffffff;
+            --text-secondary: #90a4ae;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .player-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .book-info h1 {
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
+        .book-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0 0 15px 0;
+        }
+
+        .current-track-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #0b100d;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-color);
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #23332a;
+        }
+
+        iframe {
+            display: block;
+            width: 100%;
+            border: none;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            background-color: #0b100d;
+            border: 1px solid #23332a;
+            border-radius: 6px;
+            color: #fff;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 8px;
+            background-color: #0b100d;
+            border-radius: 6px;
+            border: 1px solid #23332a;
+            margin-bottom: 24px;
+        }
+
+        .chapter-btn {
+            background-color: #1f2c25;
+            color: var(--text-color);
+            border: 1px solid #2d3f35;
+            padding: 10px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-align: left;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chapter-btn:hover {
+            background-color: #293a31;
+            border-color: var(--accent-color);
+        }
+
+        .chapter-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent-color);
+        }
+
+        .notes-section {
+            text-align: left;
+            border-top: 1px solid #23332a;
+            padding-top: 20px;
+        }
+
+        .notes-section h3 {
+            font-size: 1rem;
+            margin: 0 0 10px 0;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background-color: #1f2c25;
+            border: 1px solid #2d3f35;
+            border-radius: 6px;
+            color: var(--text-color);
+            padding: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: #4caf50;
+            margin-top: 5px;
+            height: 15px;
+            font-style: italic;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: #1b5e20;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #0d3c12;
+        }
+
+        .download-btn:active {
+            transform: scale(0.99);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="book-info">
+            <h1>Quran Seekho</h1>
+            <p>English Translation & Audio via internet archive</p>
+            
+            <div id="track-display" class="current-track-title">001 - Al-Fatihah ( The Opening ) - سورة الفاتحة</div>
+        </div>
+
+        <div class="iframe-wrapper">
+            <iframe id="archive-player" src="https://archive.org/embed/translation-of-the-noble-quran-in-modern-english-language-audio-mp3-hq/001+-+Al-Fatihah+(+The+Opening+)+-+%D8%B3%D9%88%D8%B1%D8%A9+%D8%A7%D9%84%D9%81%D8%A7%D8%AA%D8%AD%D8%A9.mp3" height="30" frameborder="0" allowfullscreen=""></iframe>
+        </div>
+
+        <input type="text" id="search-input" class="search-box" placeholder="🔍 Search Surah by name or number..." oninput="filterSurahs()">
+
+        <div class="chapter-grid" id="chapter-grid-container">
+            </div>
+
+        <div class="notes-section">
+            <h3>Your Reflection Notes</h3>
+            <textarea id="notebook" placeholder="Jot down Ayah numbers, translation notes, or personal reflections here..."></textarea>
+            <div id="status" class="status-msg"></div>
+            
+            <button class="download-btn" onclick="downloadNotesAsImage()">📸 Download Notes as Photo</button>
+        </div>
+    </div>
+
+    <script>
+        // Directly maps your raw copy-pasted list text to absolute accuracy
+        const rawSurahList = [
+            "001 - Al-Fatihah ( The Opening ) - سورة الفاتحة",
+            "002 - Al-Baqarah ( The Cow ) - سورة البقرة",
+            "003 - Al-Imran ( The Family of Imran ) - سورة آل عمران",
+            "004 - An-Nisa ( The Women ) - سورة النساء",
+            "005 - Al-Maidah ( The Table spread with Food ) - سورة المائدة",
+            "006 - Al-An'am ( The Cattle ) - سورة الأنعام",
+            "007 - Al-A'raf (The Heights ) - سورة الأعراف",
+            "008 - Al-Anfal ( The Spoils of War ) - سورة الأنفال",
+            "009 - At-Taubah ( The Repentance ) - سورة التوبة",
+            "010 - Yunus ( Jonah ) - سورة يونس",
+            "011 - Hud - سورة هود",
+            "012 - Yusuf (Joseph ) - سورة يوسف",
+            "013 - Ar-Ra'd ( The Thunder ) - سورة الرعد",
+            "014 - Ibrahim ( Abraham ) - سورة إبراهيم",
+            "015 - Al-Hijr ( The Rocky Tract ) - سورة الحجر",
+            "016 - An-Nahl ( The Bees ) - سورة النحل",
+            "017 - Al-Isra ( The Night Journey ) - سورة الإسراء",
+            "018 - Al-Kahf ( The Cave ) - سورة الكهف",
+            "019 - Maryam ( Mary ) - سورة مريم",
+            "020 - Taha - سورة طه",
+            "021 - Al-Anbiya ( The Prophets ) - سورة الأنبياء",
+            "022 - Al-Hajj ( The Pilgrimage ) - سورة الحج",
+            "023 - Al-Mu'minoon ( The Believers ) - سورة المؤمنون",
+            "024 - An-Noor ( The Light ) - سورة النور",
+            "025 - Al-Furqan (The Criterion ) - سورة الفرقان",
+            "026 - Ash-Shuara ( The Poets ) - سورة الشعراء",
+            "027 - An-Naml (The Ants ) - سورة النمل",
+            "028 - Al-Qasas ( The Stories ) - سورة القصص",
+            "029 - Al-Ankaboot ( The Spider ) - سورة العنكبوت",
+            "030 - Ar-Room ( The Romans ) - سورة الروم",
+            "031 - Luqman - سورة لقمان",
+            "032 - As-Sajdah ( The Prostration ) - سورة السجدة",
+            "033 - Al-Ahzab ( The Combined Forces ) - سورة الأحزاب",
+            "034 - Saba ( Sheba ) - سورة سبأ",
+            "035 - Fatir ( The Orignator ) - سورة فاطر",
+            "036 - Ya-seen - سورة يس",
+            "037 - As-Saaffat ( Those Ranges in Ranks ) - سورة الصافات",
+            "038 - Sad ( The Letter Sad ) - سورة ص",
+            "039 - Az-Zumar ( The Groups ) - سورة الزمر",
+            "040 - Ghafir ( The Forgiver God ) - سورة غافر",
+            "041 - Fussilat ( Explained in Detail ) - سورة فصلت",
+            "042 - Ash-Shura (Consultation ) - سورة الشورى",
+            "043 - Az-Zukhruf ( The Gold Adornment ) - سورة الزخرف",
+            "044 - Ad-Dukhan ( The Smoke ) - سورة الدخان",
+            "045 - Al-Jathiya ( Crouching ) - سورة الجاثية",
+            "046 - Al-Ahqaf ( The Curved Sand-hills ) - سورة الأحقاف",
+            "047 - Muhammad - سورة محمد",
+            "048 - Al-Fath ( The Victory ) - سورة الفتح",
+            "049 - Al-Hujurat ( The Dwellings ) - سورة الحجرات",
+            "050 - Qaf ( The Letter Qaf ) - سورة ق",
+            "051 - Adh-Dhariyat ( The Wind that Scatter ) - سورة الذاريات",
+            "052 - At-Tur ( The Mount ) - سورة الطور",
+            "053 - An-Najm ( The Star ) - سورة النجم",
+            "054 - Al-Qamar ( The Moon ) - سورة القمر",
+            "055 - Ar-Rahman ( The Most Graciouse ) - سورة الرحمن",
+            "056 - Al-Waqi'ah ( The Event ) - سورة الواقعة",
+            "057 - Al-Hadid ( The Iron ) - سورة الحديد",
+            "058 - Al-Mujadilah ( She That Disputeth ) - سورة المجادلة",
+            "059 - Al-Hashr ( The Gathering ) - سورة الحشر",
+            "060 - Al-Mumtahanah ( The Woman to be examined ) - سورة الممتحنة",
+            "061 - As-Saff ( The Row ) - سورة الصف",
+            "062 - Al-Jumu'ah ( Friday ) - سورة الجمعة",
+            "063 - Al-Munafiqoon ( The Hypocrites ) - سورة المنافقون",
+            "064 - At-Taghabun ( Mutual Loss & Gain ) - سورة التغابن",
+            "065 - At-Talaq ( The Divorce ) - سورة الطلاق",
+            "066 - At-Tahrim ( The Prohibition ) - سورة التحريم",
+            "067 - Al-Mulk ( Dominion ) - سورة الملك",
+            "068 - Al-Qalam ( The Pen ) - سورة القلم",
+            "069 - Al-Haaqqah ( The Inevitable ) - سورة الحاقة",
+            "070 - Al-Ma'arij (The Ways of Ascent ) - سورة المعارج",
+            "071 - Nooh - سورة نوح",
+            "072 - Al-Jinn ( The Jinn ) - سورة الجن",
+            "073 - Al-Muzzammil (The One wrapped in Garments) - سورة المزمل",
+            "074 - Al-Muddaththir ( The One Enveloped ) - سورة المدثر",
+            "075 - Al-Qiyamah ( The Resurrection ) - سورة القيامة",
+            "076 - Al-Insan ( Man ) - سورة الإنسان",
+            "077 - Al-Mursalat ( Those sent forth ) - سورة المرسلات",
+            "078 - An-Naba' ( The Great News ) - سورة النبأ",
+            "079 - An-Nazi'at ( Those who Pull Out ) - سورة النازعات",
+            "080 - Abasa ( He frowned ) - سورة عبس",
+            "081 - At-Takwir ( The Overthrowing ) - سورة التكوير",
+            "082 - Al-Infitar ( The Cleaving ) - سورة الانفطار",
+            "083 - Al-Mutaffifin (Those Who Deal in Fraud) - سورة المطففين",
+            "084 - Al-Inshiqaq (The Splitting Asunder) - سورة الانشقاق",
+            "085 - Al-Burooj ( The Big Stars ) - سورة البروج",
+            "086 - At-Tariq ( The Night-Comer ) - سورة الطارق",
+            "087 - Al-A'la ( The Most High ) - سورة الأعلى",
+            "088 - Al-Ghashiya ( The Overwhelming ) - سورة الغاشية",
+            "089 - Al-Fajr ( The Dawn ) - سورة الفجر",
+            "090 - Al-Balad ( The City ) - سورة البلد",
+            "091 - Ash-Shams ( The Sun ) - سورة الشمس",
+            "092 - Al-Layl ( The Night ) - سورة الليل",
+            "093 - Ad-Dhuha ( The Forenoon ) - سورة الضحى",
+            "094 - As-Sharh ( The Opening Forth) - سورة الشرح",
+            "095 - At-Tin ( The Fig ) - سورة التين",
+            "096 - Al-'alaq ( The Clot ) - سورة العلق",
+            "097 - Al-Qadr ( The Night of Decree ) - سورة القدر",
+            "098 - Al-Bayyinah ( The Clear Evidence ) - سورة البينة",
+            "099 - Az-Zalzalah ( The Earthquake ) - سورة الزلزلة",
+            "100 - Al-'adiyat ( Those That Run ) - سورة العاديات",
+            "101 - Al-Qari'ah ( The Striking Hour ) - سورة القارعة",
+            "102 - At-Takathur ( The piling Up ) - سورة التكاثر",
+            "103 - Al-Asr ( The Time ) - سورة العصر",
+            "104 - Al-Humazah ( The Slanderer ) - سورة الهمزة",
+            "105 - Al-Fil ( The Elephant ) - سورة الفيل",
+            "106 - Quraish - سورة قريش",
+            "107 - Al-Ma'un ( Small Kindnesses ) - سورة الماعون",
+            "108 - Al-Kauthor ( A River in Paradise) - سورة الكوثر",
+            "109 - Al-Kafiroon ( The Disbelievers ) - سورة الكافرون",
+            "110 - An-Nasr ( The Help ) - سورة النصر",
+            "111 - Al-Masad ( The Palm Fibre ) - سورة المسد",
+            "112 - Al-Ikhlas ( Sincerity ) - سورة الإخلاص",
+            "113 - Al-Falaq ( The Daybreak ) - سورة الفلق",
+            "114 - An-Nas ( Mankind ) - سورة الناس"
+        ];
+
+        // This converts the clean text title into the exact URL encoding required by the Archive server.
+        // It converts spaces into '+' and encodes Arabic characters precisely.
+        function generateFileString(fullName) {
+            let spacedString = fullName.replace(/ /g, '+');
+            return encodeURIComponent(spacedString)
+                .replace(/%2B/g, '+')
+                .replace(/%28/g, '(')
+                .replace(/%29/g, ')') + ".mp3";
+        }
+
+        // Map data array automatically
+        const playlist = rawSurahList.map((fullName, index) => {
+            return {
+                id: index + 1,
+                name: fullName,
+                file: generateFileString(fullName)
+            };
+        });
+
+        const trackDisplay = document.getElementById('track-display');
+        const iframe = document.getElementById('archive-player');
+        const gridContainer = document.getElementById('chapter-grid-container');
+        const searchInput = document.getElementById('search-input');
+
+        function renderGrid(data) {
+            gridContainer.innerHTML = '';
+            data.forEach((track) => {
+                const btn = document.createElement('button');
+                let cleanLabel = track.name.split(' - ')[1] || track.name;
+                
+                btn.className = `chapter-btn`;
+                btn.id = `surah-btn-${track.id}`;
+                btn.textContent = `${track.id}. ${cleanLabel.split(' (')[0]}`;
+                btn.title = track.name;
+                btn.onclick = () => changeSurah(track.id, track.name, track.file);
+                gridContainer.appendChild(btn);
+            });
+            
+            const activeId = trackDisplay.getAttribute('data-active-id') || 1;
+            const currentActive = document.getElementById(`surah-btn-${activeId}`);
+            if (currentActive) currentActive.classList.add('active');
+        }
+
+        function changeSurah(trackId, titleText, urlPath) {
+            trackDisplay.textContent = titleText;
+            trackDisplay.setAttribute('data-active-id', trackId);
+            
+            const buttons = document.querySelectorAll('.chapter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const selectedBtn = document.getElementById(`surah-btn-${trackId}`);
+            if (selectedBtn) selectedBtn.classList.add('active');
+            
+            iframe.src = `https://archive.org/embed/translation-of-the-noble-quran-in-modern-english-language-audio-mp3-hq/${urlPath}`;
+        }
+
+        function filterSurahs() {
+            const query = searchInput.value.toLowerCase().trim();
+            const filtered = playlist.filter(track => 
+                track.name.toLowerCase().includes(query) || track.id.toString() === query
+            );
+            renderGrid(filtered);
+        }
+
+        trackDisplay.setAttribute('data-active-id', 1);
+        renderGrid(playlist);
+
+        // --- LocalStorage Logic ---
+        const notebook = document.getElementById('notebook');
+        const status = document.getElementById('status');
+        let timeout = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedNotes = localStorage.getItem('quran_audiobook_notes');
+            if (savedNotes) notebook.value = savedNotes;
+        });
+
+        notebook.addEventListener('input', () => {
+            status.textContent = "Typing...";
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                localStorage.setItem('quran_audiobook_notes', notebook.value);
+                status.textContent = "Notes saved automatically.";
+                setTimeout(() => { status.textContent = ""; }, 2000);
+            }, 1000);
+        });
+
+        // --- Canvas Rendering Engine for Image Downloads ---
+        function downloadNotesAsImage() {
+            const text = notebook.value.trim();
+            if (!text) {
+                alert("Please write something in your reflections before downloading an image.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const padding = 40;
+            const logicalWidth = 600;
+            const currentTrack = trackDisplay.textContent;
+            
+            ctx.font = '16px "Segoe UI", sans-serif';
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            const maxWidth = logicalWidth - (padding * 2);
+
+            words.forEach(word => {
+                const testLine = currentLine + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            lines.push(currentLine.trim());
+
+            const lineHeight = 26;
+            const headerHeight = 100;
+            const logicalHeight = headerHeight + (lines.length * lineHeight) + padding + 40;
+
+            const scaleFactor = 2; 
+            canvas.width = logicalWidth * scaleFactor;
+            canvas.height = logicalHeight * scaleFactor;
+            
+            ctx.scale(scaleFactor, scaleFactor);
+
+            ctx.fillStyle = '#161f1a';
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+            ctx.fillStyle = '#2ec4b6';
+            ctx.font = 'bold 22px "Segoe UI", sans-serif';
+            ctx.fillText("Quran Reflections", padding, 45);
+
+            ctx.fillStyle = '#90a4ae';
+            ctx.font = '14px "Segoe UI", sans-serif';
+            ctx.fillText(`Surah Reference: ${currentTrack}`, padding, 75);
+
+            ctx.strokeStyle = '#23332a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, 90);
+            ctx.lineTo(logicalWidth - padding, 90);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px "Segoe UI", sans-serif';
+            let currentY = headerHeight + 20;
+            
+            lines.forEach(line => {
+                ctx.fillText(line, padding, currentY);
+                currentY += lineHeight;
+            });
+
+            ctx.fillStyle = '#ff5252';
+            ctx.font = 'bold 13px "Segoe UI", sans-serif';
+            
+            const timeString = `Saved on: ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            ctx.fillText(timeString, padding, logicalHeight - 20);
+
+            const imageURI = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = `Quran_Seekho_Notes_Surah_${trackDisplay.getAttribute('data-active-id')}.png`;
+            downloadLink.href = imageURI;
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shogi Arts</title>
+    <style>
+        :root {
+            --bg-main: #1a1c23;
+            --bg-panel: #242731;
+            --bg-board: #e2b27a;
+            --border-board: #3c3f4c;
+            --text-main: #f5f6f7;
+            --text-muted: #9aa0a6;
+            --accent-blue: #61afef;
+            --accent-green: #98c379;
+            --accent-purple: #c678dd;
+            --accent-red: #e06c75;
+            --accent-orange: #d19a66;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1 { color: var(--accent-orange); margin: 2px 0 6px 0; font-size: 1.6rem; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        #statusDisplay { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; text-align: center; height: 1.2rem; }
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            width: 100%;
+            max-width: 960px;
+            justify-content: center;
+            align-items: stretch;
+        }
+        .main-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            max-width: 520px;
+            width: 100%;
+        }
+        .side-column {
+            display: flex;
+            flex-direction: column;
+            width: 260px;
+            background: var(--bg-panel);
+            border-radius: 8px;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-board);
+        }
+        .controls-row {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        button {
+            flex: 1;
+            padding: 8px 10px;
+            background-color: #3e4451;
+            color: var(--text-main);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+        button:hover { background-color: #4b5263; }
+        button.primary { background-color: var(--accent-green); color: #1a1c23; }
+        button.primary:hover { background-color: #87b369; }
+        button.danger { background-color: var(--accent-red); color: var(--text-main); }
+        button.danger:hover { background-color: #cb5862; }
+        
+        .timer-container {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px solid #2c313c;
+        }
+        .timer-slot { display: flex; flex-direction: column; width: 48%; }
+        .timer-slot.active { color: var(--accent-blue); font-weight: bold; }
+        
+        .hand-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background: var(--bg-panel);
+            border-radius: 6px;
+            padding: 6px 10px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-board);
+            margin: 4px 0;
+        }
+        .hand-label { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 4px; }
+        .hand-items { display: flex; gap: 6px; flex-wrap: wrap; min-height: 32px; align-items: center; }
+        .hand-piece-node {
+            background: #dca86c;
+            color: #111;
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .hand-piece-node.selected { border-color: var(--accent-red); background: #f0bd84; }
+        .hand-piece-node .count-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #333;
+            color: #fff;
+            font-size: 0.65rem;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cancel-drop-btn {
+            background: var(--accent-red);
+            color: #fff;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: auto;
+            display: none;
+        }
+        
+        .board-view-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-board);
+        }
+        canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+        
+        .history-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .history-title { font-size: 0.8rem; font-weight: bold; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .history-list {
+            flex-grow: 1;
+            background: rgba(0,0,0,0.15);
+            border-radius: 4px;
+            padding: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            border: 1px solid #2c313c;
+            max-height: 220px;
+        }
+        .history-entry { display: flex; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .history-entry .num { width: 35px; color: var(--text-muted); }
+        .history-entry .move-s { width: 90px; color: var(--accent-blue); }
+        .history-entry .move-g { width: 90px; color: var(--accent-orange); }
+        
+        /* Modal Promotion & Language Menu Overlay */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: var(--bg-panel);
+            border: 2px solid var(--border-board);
+            border-radius: 8px;
+            padding: 16px;
+            width: 80%;
+            max-width: 280px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .modal-title { font-size: 1rem; font-weight: bold; margin-bottom: 12px; }
+        .modal-options { display: flex; gap: 10px; justify-content: center; }
+        .modal-opt-btn {
+            padding: 12px;
+            background: #dca86c;
+            color: #111;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 6px;
+            flex: 1;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .modal-opt-btn.demoted { background: #dca86c; }
+        .modal-opt-btn.promoted { background: #b070c0; color: #fff; }
+        .modal-opt-btn:hover { border-color: #fff; }
+        .modal-opt-btn.lang-btn { background: #61afef; color: #111; font-size: 1rem; }
+        .modal-opt-btn.lang-btn:hover { border-color: #fff; }
+
+        .config-section {
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            border: 1px solid #2c313c;
+        }
+        .config-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .config-row select { background: #2c313c; color: #fff; border: 1px solid #4b5263; padding: 2px 4px; border-radius: 3px; font-size: 0.8rem;}
+
+        @media(max-width: 768px) {
+            .game-container { flex-direction: column; align-items: center; }
+            .side-column { width: 100%; max-width: 520px; }
+            .history-list { max-height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Shogi Arts</h1>
+    <div id="statusDisplay">Initializing application modules...</div>
+
+    <div class="game-container">
+        <div class="main-column">
+            <div class="hand-wrapper" id="goteHandWrapper">
+                <div style="display:flex; align-items: center; width:100%;">
+                    <div class="hand-label">Gote Hand (Top ▼)</div>
+                    <div class="cancel-drop-btn" id="goteCancelDrop">Cancel</div>
+                </div>
+                <div class="hand-items" id="goteHandItems"></div>
+            </div>
+
+            <div class="board-view-frame">
+                <canvas id="shogiCanvas"></canvas>
+                
+                <div class="modal-overlay" id="promotionModal">
+                    <div class="modal-card">
+                        <div class="modal-title">Select Piece State (成駒選択)</div>
+                        <div class="modal-options">
+                            <div class="modal-opt-btn demoted" id="promoOptDemoted">歩</div>
+                            <div class="modal-opt-btn promoted" id="promoOptPromoted">と</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-overlay" id="languageModal">
+                    <div class="modal-card">
+                        <div class="modal-title">Select Game Language<br>(言語選択)</div>
+                        <div class="modal-options">
+                            <div class="modal-opt-btn lang-btn" id="langOptEN">English</div>
+                            <div class="modal-opt-btn lang-btn" id="langOptJA">日本語</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hand-wrapper" id="senteHandWrapper">
+                <div style="display:flex; align-items: center; width:100%;">
+                    <div class="hand-label">Sente Hand (Bottom ▲)</div>
+                    <div class="cancel-drop-btn" id="senteCancelDrop">Cancel</div>
+                </div>
+                <div class="hand-items" id="senteHandItems"></div>
+            </div>
+        </div>
+
+        <div class="side-column">
+            <div class="controls-row">
+                <button class="primary" id="startBtn">New Game</button>
+                <button id="undoBtn">Undo</button>
+            </div>
+            <div class="controls-row">
+                <button id="jishogiBtn">Jishogi</button>
+                <button class="danger" id="resignBtn">Resign</button>
+            </div>
+
+            <div class="config-section">
+                <div class="config-row">
+                    <label for="timeCtrlSelect">Time Controls:</label>
+                    <select id="timeCtrlSelect">
+                        <option value="none">Casual (No Timer)</option>
+                        <option value="10_30">10m + 30s Byo-yomi</option>
+                        <option value="5_10">5m + 10s Byo-yomi</option>
+                        <option value="1_5">1m + 5s Lightning</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer-slot" id="goteTimerSlot">
+                    <span>GOTE (▼)</span>
+                    <span id="goteTimeStr">--:--</span>
+                </div>
+                <div class="timer-slot" id="senteTimerSlot">
+                    <span>SENTE (▲)</span>
+                    <span id="senteTimeStr">--:--</span>
+                </div>
+            </div>
+
+            <div class="history-panel">
+                <div class="history-title">Move History</div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /***********************************************************************
+         * MODULE 1: AUDIO SYNTHESIZER (No external assets required)
+         ***********************************************************************/
+        const ShogiAudio = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            play(type) {
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    switch (type) {
+                        case 'move':
+                            this.tone(600, 0.04, 0.02, 'triangle');
+                            break;
+                        case 'capture':
+                            this.tone(450, 0.05, 0.04, 'sawtooth', 0.2);
+                            this.tone(200, 0.06, 0.02, 'triangle', 0.4);
+                            break;
+                        case 'check':
+                            this.tone(880, 0.08, 0.05, 'sine');
+                            setTimeout(() => this.tone(1200, 0.12, 0.05, 'sine'), 60);
+                            break;
+                        case 'promote':
+                            this.tone(523.25, 0.06, 0.04, 'sine');
+                            setTimeout(() => this.tone(659.25, 0.06, 0.04, 'sine'), 50);
+                            setTimeout(() => this.tone(783.99, 0.12, 0.04, 'sine'), 100);
+                            break;
+                        case 'gameover':
+                            this.tone(220, 0.15, 0.1, 'sawtooth');
+                            setTimeout(() => this.tone(180, 0.2, 0.1, 'sawtooth'), 140);
+                            setTimeout(() => this.tone(130, 0.4, 0.2, 'sawtooth'), 320);
+                            break;
+                    }
+                } catch (e) { console.warn("Audio context failed to play tone:", e); }
+            },
+            tone(freq, duration, ramp, type = 'sine', gainVal = 0.5) {
+                const osc = this.ctx.createOscillator();
+                const gainNode = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gainNode.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                osc.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+        };
+
+        /***********************************************************************
+         * MODULE 2: GAME CONSTANTS & PIECE METADATA
+         ***********************************************************************/
+        const COLS = 9, ROWS = 9;
+        const SENTE = 0, GOTE = 1;
+
+        const BasePieces = {
+            king:          { label: "玉", pLabel: "竜王", val: 0, prom: false, enLabel: "K", enPLabel: "K" },
+            rook:          { label: "飛", pLabel: "竜", val: 5, prom: true, enLabel: "R", enPLabel: "+R" },
+            bishop:        { label: "角", pLabel: "馬", val: 5, prom: true, enLabel: "B", enPLabel: "+B" },
+            goldgeneral:   { label: "金", pLabel: "金", val: 1, prom: false, enLabel: "G", enPLabel: "G" },
+            silvergeneral: { label: "銀", pLabel: "全", val: 1, prom: true, enLabel: "S", enPLabel: "+S" },
+            knight:        { label: "桂", pLabel: "圭", val: 1, prom: true, enLabel: "N", enPLabel: "+N" },
+            lance:         { label: "香", pLabel: "杏", val: 1, prom: true, enLabel: "L", enPLabel: "+L" },
+            pawn:          { label: "歩", pLabel: "と", val: 1, prom: true, enLabel: "P", enPLabel: "+P" }
+        };
+
+        const NotationLabels = {
+            king: "玉", rook: "飛", bishop: "角", goldgeneral: "金",
+            silvergeneral: "銀", knight: "桂", lance: "香", pawn: "歩"
+        };
+
+        const EnNotationLabels = {
+            king: "K", rook: "R", bishop: "B", goldgeneral: "G",
+            silvergeneral: "S", knight: "N", lance: "L", pawn: "P"
+        };
+
+        /***********************************************************************
+         * MODULE 3: ENGINE CORE (RULES, ATTACK MAPS, VERIFICATIONS)
+         ***********************************************************************/
+        class ShogiEngine {
+            constructor() {
+                this.board = Array(COLS).fill(null).map(() => Array(ROWS).fill(null));
+                this.hands = [[], []];
+                this.turn = SENTE;
+                this.active = false;
+                this.lang = "JA"; // "JA" or "EN"
+                
+                this.attackMap = [
+                    Array(COLS).fill(null).map(() => Array(ROWS).fill(0)),
+                    Array(COLS).fill(null).map(() => Array(ROWS).fill(0))
+                ];
+                
+                this.positionRegistry = new Map();
+                this.historyStack = [];
+                this.checkingPieces = [];
+            }
+
+            setupInitialPosition() {
+                this.board = Array(COLS).fill(null).map(() => Array(ROWS).fill(null));
+                this.hands = [[], []];
+                this.turn = SENTE;
+                this.positionRegistry.clear();
+                this.historyStack = [];
+
+                // Kings
+                this.board[4][8] = { type: "king", belong: SENTE, upgraded: false };
+                this.board[4][0] = { type: "king", belong: GOTE, upgraded: false };
+
+                // Sliders
+                this.board[7][7] = { type: "rook", belong: SENTE, upgraded: false };
+                this.board[1][1] = { type: "rook", belong: GOTE, upgraded: false };
+                this.board[1][7] = { type: "bishop", belong: SENTE, upgraded: false };
+                this.board[7][1] = { type: "bishop", belong: GOTE, upgraded: false };
+
+                // Generals and minors
+                const outerRow = ["lance", "knight", "silvergeneral", "goldgeneral", "king", "goldgeneral", "silvergeneral", "knight", "lance"];
+                for (let x = 0; x < COLS; x++) {
+                    if (x !== 4) {
+                        this.board[x][8] = { type: outerRow[x], belong: SENTE, upgraded: false };
+                        this.board[x][0] = { type: outerRow[x], belong: GOTE, upgraded: false };
+                    }
+                    this.board[x][6] = { type: "pawn", belong: SENTE, upgraded: false };
+                    this.board[x][2] = { type: "pawn", belong: GOTE, upgraded: false };
+                }
+                this.refreshAttackMaps();
+                this.registerPositionFingerprint();
+            }
+
+            refreshAttackMaps() {
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        this.attackMap[SENTE][x][y] = 0;
+                        this.attackMap[GOTE][x][y] = 0;
+                    }
+                }
+
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        const piece = this.board[x][y];
+                        if (!piece) continue;
+                        
+                        const targets = this.computeRawMoves(x, y, piece, true);
+                        const map = this.attackMap[piece.belong];
+                        for (const t of targets) {
+                            map[t.x][t.y]++;
+                        }
+                    }
+                }
+
+                this.checkingPieces = [];
+                const kingPos = this.locateKing(this.turn);
+                if (kingPos) {
+                    const opponent = this.turn === SENTE ? GOTE : SENTE;
+                    for (let x = 0; x < COLS; x++) {
+                        for (let y = 0; y < ROWS; y++) {
+                            const piece = this.board[x][y];
+                            if (piece && piece.belong === opponent) {
+                                const moves = this.computeRawMoves(x, y, piece, false);
+                                if (moves.some(m => m.x === kingPos.x && m.y === kingPos.y)) {
+                                    this.checkingPieces.push({ x, y, piece });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            locateKing(player) {
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        if (this.board[x][y] && this.board[x][y].type === "king" && this.board[x][y].belong === player) {
+                            return { x, y };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            isKingInCheck(player) {
+                const kingPos = this.locateKing(player);
+                if (!kingPos) return false;
+                const opp = player === SENTE ? GOTE : SENTE;
+                return this.attackMap[opp][kingPos.x][kingPos.y] > 0;
+            }
+
+            isDoubleCheck(player) {
+                if (this.turn !== player) {
+                    let kingPos = this.locateKing(player);
+                    if (!kingPos) return false;
+                    let opp = player === SENTE ? GOTE : SENTE;
+                    let count = 0;
+                    for (let x = 0; x < COLS; x++) {
+                        for (let y = 0; y < ROWS; y++) {
+                            const p = this.board[x][y];
+                            if (p && p.belong === opp) {
+                                if (this.computeRawMoves(x, y, p, false).some(m => m.x === kingPos.x && m.y === kingPos.y)) {
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+                    return count >= 2;
+                }
+                return this.checkingPieces.length >= 2;
+            }
+
+            computeRawMoves(x, y, piece, isAttackMapping = false) {
+                const moves = [];
+                const vectors = [];
+                const fwd = (piece.belong === SENTE) ? -1 : 1;
+
+                if (piece.type === "pawn" && !piece.upgraded) {
+                    vectors.push({ x: 0, y: fwd, slide: false });
+                } 
+                else if (piece.type === "king") {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            if (dx !== 0 || dy !== 0) vectors.push({ x: dx, y: dy, slide: false });
+                        }
+                    }
+                } 
+                else if (piece.type === "rook") {
+                    vectors.push({ x: 1, y: 0, slide: true }, { x: -1, y: 0, slide: true }, { x: 0, y: 1, slide: true }, { x: 0, y: -1, slide: true });
+                    if (piece.upgraded) {
+                        vectors.push({ x: -1, y: -1, slide: false }, { x: 1, y: -1, slide: false }, { x: -1, y: 1, slide: false }, { x: 1, y: 1, slide: false });
+                    }
+                } 
+                else if (piece.type === "bishop") {
+                    vectors.push({ x: 1, y: 1, slide: true }, { x: -1, y: -1, slide: true }, { x: 1, y: -1, slide: true }, { x: -1, y: 1, slide: true });
+                    if (piece.upgraded) {
+                        vectors.push({ x: 1, y: 0, slide: false }, { x: -1, y: 0, slide: false }, { x: 0, y: 1, slide: false }, { x: 0, y: -1, slide: false });
+                    }
+                } 
+                else if (piece.type === "goldgeneral" || piece.upgraded) {
+                    vectors.push(
+                        { x: 0, y: fwd, slide: false }, { x: -1, y: fwd, slide: false }, { x: 1, y: fwd, slide: false },
+                        { x: -1, y: 0, slide: false }, { x: 1, y: 0, slide: false }, { x: 0, y: -fwd, slide: false }
+                    );
+                } 
+                else if (piece.type === "silvergeneral" && !piece.upgraded) {
+                    vectors.push(
+                        { x: 0, y: fwd, slide: false }, { x: -1, y: fwd, slide: false }, { x: 1, y: fwd, slide: false },
+                        { x: -1, y: -fwd, slide: false }, { x: 1, y: -fwd, slide: false }
+                    );
+                } 
+                else if (piece.type === "lance" && !piece.upgraded) {
+                    vectors.push({ x: 0, y: fwd, slide: true });
+                } 
+                else if (piece.type === "knight" && !piece.upgraded) {
+                    vectors.push({ x: -1, y: fwd * 2, slide: false }, { x: 1, y: fwd * 2, slide: false });
+                }
+
+                for (const v of vectors) {
+                    let tx = x + v.x;
+                    let ty = y + v.y;
+                    while (tx >= 0 && tx < COLS && ty >= 0 && ty < ROWS) {
+                        const destPiece = this.board[tx][ty];
+                        if (!destPiece) {
+                            moves.push({ x: tx, y: ty });
+                        } else {
+                            if (isAttackMapping) {
+                                moves.push({ x: tx, y: ty });
+                            } else if (destPiece.belong !== piece.belong) {
+                                moves.push({ x: tx, y: ty });
+                            }
+                            break;
+                        }
+                        if (!v.slide) break;
+                        tx += v.x;
+                        ty += v.y;
+                    }
+                }
+                return moves;
+            }
+
+            getLegalBoardMoves(x, y) {
+                const piece = this.board[x][y];
+                if (!piece || piece.belong !== this.turn) return [];
+
+                const rawMoves = this.computeRawMoves(x, y, piece, false);
+                const legalMoves = [];
+
+                for (const m of rawMoves) {
+                    const cacheDest = this.board[m.x][m.y];
+                    this.board[m.x][m.y] = piece;
+                    this.board[x][y] = null;
+                    
+                    this.refreshAttackMaps();
+                    if (!this.isKingInCheck(this.turn)) {
+                        legalMoves.push(m);
+                    }
+
+                    this.board[x][y] = piece;
+                    this.board[m.x][m.y] = cacheDest;
+                }
+                
+                this.refreshAttackMaps();
+                return legalMoves;
+            }
+
+            getLegalDropMoves(type) {
+                if (!this.active) return [];
+                const legalDrops = [];
+
+                if (type === "pawn") {
+                    for (let x = 0; x < COLS; x++) {
+                        let colHasPawn = false;
+                        for (let y = 0; y < ROWS; y++) {
+                            const p = this.board[x][y];
+                            if (p && p.type === "pawn" && !p.upgraded && p.belong === this.turn) {
+                                colHasPawn = true;
+                                break;
+                            }
+                        }
+                        if (colHasPawn) continue;
+
+                        for (let y = 0; y < ROWS; y++) {
+                            if (this.board[x][y] !== null) continue;
+                            if ((this.turn === SENTE && y === 0) || (this.turn === GOTE && y === 8)) continue;
+
+                            if (this.isPawnDropMateCheck(x, y, this.turn)) continue;
+
+                            if (this.dropMaintainsKingSafety(x, y, type)) {
+                                legalDrops.push({ x, y });
+                            }
+                        }
+                    }
+                    return legalDrops;
+                }
+
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        if (this.board[x][y] !== null) continue;
+
+                        if (type === "lance" && ((this.turn === SENTE && y === 0) || (this.turn === GOTE && y === 8))) continue;
+                        if (type === "knight" && ((this.turn === SENTE && y <= 1) || (this.turn === GOTE && y >= 7))) continue;
+
+                        if (this.dropMaintainsKingSafety(x, y, type)) {
+                            legalDrops.push({ x, y });
+                        }
+                    }
+                }
+                return legalDrops;
+            }
+
+            dropMaintainsKingSafety(x, y, type) {
+                this.board[x][y] = { type, belong: this.turn, upgraded: false };
+                this.refreshAttackMaps();
+                const safe = !this.isKingInCheck(this.turn);
+                this.board[x][y] = null;
+                this.refreshAttackMaps();
+                return safe;
+            }
+
+            isPawnDropMateCheck(x, y, player) {
+                const opp = player === SENTE ? GOTE : SENTE;
+                const oppKingPos = this.locateKing(opp);
+                if (!oppKingPos) return false;
+
+                const relativeStep = player === SENTE ? -1 : 1;
+                if (oppKingPos.x !== x || oppKingPos.y !== y + relativeStep) return false;
+
+                this.board[x][y] = { type: "pawn", belong: player, upgraded: false };
+                this.refreshAttackMaps();
+
+                let isMate = false;
+                if (this.isKingInCheck(opp)) {
+                    const savedTurn = this.turn;
+                    this.turn = opp;
+                    if (this.hasNoLegalMovesAvailable()) {
+                        isMate = true;
+                    }
+                    this.turn = savedTurn;
+                }
+
+                this.board[x][y] = null;
+                this.refreshAttackMaps();
+                return isMate;
+            }
+
+            hasNoLegalMovesAvailable() {
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        if (this.board[x][y] && this.board[x][y].belong === this.turn) {
+                            if (this.getLegalBoardMoves(x, y).length > 0) return false;
+                        }
+                    }
+                }
+                const uniqueTypes = [...new Set(this.hands[this.turn])];
+                for (const t of uniqueTypes) {
+                    if (this.getLegalDropMoves(t).length > 0) return false;
+                }
+                return true;
+            }
+
+            checkTerminalStates() {
+                if (this.hasNoLegalMovesAvailable()) {
+                    this.active = false;
+                    if (this.isKingInCheck(this.turn)) {
+                        return { status: "CHECKMATE", winner: this.turn === SENTE ? GOTE : SENTE };
+                    } else {
+                        return { status: "STALEMATE", winner: this.turn === SENTE ? GOTE : SENTE };
+                    }
+                }
+                return null;
+            }
+
+            registerPositionFingerprint() {
+                const serialized = JSON.stringify({
+                    b: this.board,
+                    h: this.hands,
+                    t: this.turn
+                });
+                const count = (this.positionRegistry.get(serialized) || 0) + 1;
+                this.positionRegistry.set(serialized, count);
+
+                if (count >= 4) {
+                    this.active = false;
+                    if (this.isLoopPerpetualCheck()) {
+                        return { status: "SENNICHITE_FOUL", loser: this.turn };
+                    }
+                    return { status: "SENNICHITE_DRAW" };
+                }
+                return null;
+            }
+
+            isLoopPerpetualCheck() {
+                let checkStreak = 0;
+                for (let i = this.historyStack.length - 1; i >= 0; i--) {
+                    if (this.historyStack[i].deliveredCheck) {
+                        checkStreak++;
+                    } else {
+                        break;
+                    }
+                }
+                return checkStreak >= 12; 
+            }
+
+            executeBoardMove(fx, fy, tx, ty, promoteChoice = null) {
+                const movingPiece = this.board[fx][fy];
+                const capturedPiece = this.board[tx][ty];
+                
+                const snapBoard = JSON.parse(JSON.stringify(this.board));
+                const snapHands = JSON.parse(JSON.stringify(this.hands));
+                const oldTurn = this.turn;
+
+                if (capturedPiece) {
+                    this.hands[this.turn].push(capturedPiece.type);
+                    this.board[tx][ty] = null;
+                }
+
+                let finalPromotedState = movingPiece.upgraded;
+                if (promoteChoice === "PROMOTE") finalPromotedState = true;
+                if (promoteChoice === "FORCE") finalPromotedState = true;
+
+                this.board[tx][ty] = { 
+                    type: movingPiece.type, 
+                    belong: movingPiece.belong, 
+                    upgraded: finalPromotedState 
+                };
+                this.board[fx][fy] = null;
+
+                const notation = this.generateNotation(movingPiece.type, fx, fy, tx, ty, !!capturedPiece, finalPromotedState && !movingPiece.upgraded, false);
+
+                this.turn = oldTurn === SENTE ? GOTE : SENTE;
+                this.refreshAttackMaps();
+                const isCheck = this.isKingInCheck(this.turn);
+
+                this.historyStack.push({
+                    type: "MOVE",
+                    prevBoard: snapBoard,
+                    prevHands: snapHands,
+                    prevTurn: oldTurn,
+                    notation: notation + (isCheck ? "+" : ""),
+                    deliveredCheck: isCheck
+                });
+
+                const repStatus = this.registerPositionFingerprint();
+                if (repStatus) return repStatus;
+
+                const terminal = this.checkTerminalStates();
+                if (terminal) return terminal;
+
+                return { status: "SUCCESS", check: isCheck, captured: !!capturedPiece, promoted: (finalPromotedState && !movingPiece.upgraded) };
+            }
+
+            executeDropMove(tx, ty, type) {
+                const snapBoard = JSON.parse(JSON.stringify(this.board));
+                const snapHands = JSON.parse(JSON.stringify(this.hands));
+                const oldTurn = this.turn;
+
+                const index = this.hands[this.turn].indexOf(type);
+                if (index > -1) this.hands[this.turn].splice(index, 1);
+
+                this.board[tx][ty] = { type, belong: this.turn, upgraded: false };
+                
+                const notation = this.generateNotation(type, null, null, tx, ty, false, false, true);
+
+                this.turn = oldTurn === SENTE ? GOTE : SENTE;
+                this.refreshAttackMaps();
+                const isCheck = this.isKingInCheck(this.turn);
+
+                this.historyStack.push({
+                    type: "DROP",
+                    prevBoard: snapBoard,
+                    prevHands: snapHands,
+                    prevTurn: oldTurn,
+                    notation: notation + (isCheck ? "+" : ""),
+                    deliveredCheck: isCheck
+                });
+
+                const repStatus = this.registerPositionFingerprint();
+                if (repStatus) return repStatus;
+
+                const terminal = this.checkTerminalStates();
+                if (terminal) return terminal;
+
+                return { status: "SUCCESS", check: isCheck, captured: false, promoted: false };
+            }
+
+            undo() {
+                if (this.historyStack.length === 0) return false;
+                
+                const contemporaryStr = JSON.stringify({ b: this.board, h: this.hands, t: this.turn });
+                const curCount = this.positionRegistry.get(contemporaryStr) || 1;
+                if (curCount <= 1) this.positionRegistry.delete(contemporaryStr);
+                else this.positionRegistry.set(contemporaryStr, curCount - 1);
+
+                const pastState = this.historyStack.pop();
+                this.board = pastState.prevBoard;
+                this.hands = pastState.prevHands;
+                this.turn = pastState.prevTurn;
+                
+                this.refreshAttackMaps();
+                this.active = true;
+                return true;
+            }
+
+            evaluateJishogi() {
+                const countPoints = (player) => {
+                    let total = 0;
+                    for (let x = 0; x < COLS; x++) {
+                        for (let y = 0; y < ROWS; y++) {
+                            const p = this.board[x][y];
+                            if (p && p.belong === player && p.type !== "king") {
+                                total += (p.type === "rook" || p.type === "bishop") ? 5 : 1;
+                            }
+                        }
+                    }
+                    this.hands[player].forEach(t => {
+                        total += (t === "rook" || t === "bishop") ? 5 : 1;
+                    });
+                    return total;
+                };
+
+                const sentePts = countPoints(SENTE);
+                const gotePts = countPoints(GOTE);
+                this.active = false;
+
+                return { sentePts, gotePts };
+            }
+
+            generateNotation(type, fx, fy, tx, ty, isCap, isProm, isDrop) {
+                const fileX = 9 - tx;
+                const rankY = ty + 1;
+                
+                if (this.lang === "EN") {
+                    const pName = EnNotationLabels[type] || "";
+                    if (isDrop) return `${pName}*${fileX}${rankY}`;
+                    const srcStr = `${9 - fx}${fy + 1}`;
+                    const actStr = isCap ? "x" : "-";
+                    const promStr = isProm ? "+" : "";
+                    return `${pName}${srcStr}${actStr}${fileX}${rankY}${promStr}`;
+                } else {
+                    const pName = NotationLabels[type] || "";
+                    if (isDrop) return `${fileX}${rankY}${pName}打`;
+                    const srcStr = `(${9 - fx}${fy + 1})`;
+                    const actStr = isCap ? "捕" : "";
+                    const promStr = isProm ? "成" : "";
+                    return `${fileX}${rankY}${pName}${actStr}${promStr}${srcStr}`;
+                }
+            }
+        }
+
+        /***********************************************************************
+         * MODULE 4: CANVAS VIEW & UI SYSTEM MANAGERS
+         ***********************************************************************/
+        class ShogiUI {
+            constructor(engine) {
+                this.engine = engine;
+                this.canvas = document.getElementById("shogiCanvas");
+                this.ctx = this.canvas.getContext("2d");
+                
+                this.selectedPiece = null;
+                this.validMoves = [];
+                this.pendingPromoMove = null; 
+
+                this.timeControl = "none";
+                this.timers = [0, 0];
+                this.byoYomi = [0, 0];
+                this.timerIntervalId = null;
+
+                this.setupDOMEvents();
+                this.resizeViewPort();
+            }
+
+            setupDOMEvents() {
+                window.addEventListener("resize", () => this.resizeViewPort());
+                
+                this.canvas.addEventListener("click", (e) => this.handleGridInteraction(e.clientX, e.clientY));
+                this.canvas.addEventListener("touchstart", (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.handleGridInteraction(touch.clientX, touch.clientY);
+                }, { passive: false });
+
+                document.getElementById("startBtn").addEventListener("click", () => this.triggerLanguageModalUI());
+                document.getElementById("undoBtn").addEventListener("click", () => this.actionUndo());
+                document.getElementById("jishogiBtn").addEventListener("click", () => this.actionJishogi());
+                document.getElementById("resignBtn").addEventListener("click", () => this.actionResign());
+
+                document.getElementById("senteCancelDrop").addEventListener("click", (e) => { e.stopPropagation(); this.resetSelectionState(); });
+                document.getElementById("goteCancelDrop").addEventListener("click", (e) => { e.stopPropagation(); this.resetSelectionState(); });
+
+                document.getElementById("promoOptDemoted").addEventListener("click", () => this.confirmPromotionDecision("DECLINE"));
+                document.getElementById("promoOptPromoted").addEventListener("click", () => this.confirmPromotionDecision("PROMOTE"));
+
+                document.getElementById("langOptEN").addEventListener("click", () => this.confirmLanguageDecision("EN"));
+                document.getElementById("langOptJA").addEventListener("click", () => this.confirmLanguageDecision("JA"));
+            }
+
+            resizeViewPort() {
+                const parent = this.canvas.parentNode;
+                const bounding = parent.getBoundingClientRect();
+                this.canvas.width = bounding.width;
+                this.canvas.height = bounding.width;
+                this.cellSize = this.canvas.width / COLS;
+                this.render();
+            }
+
+            triggerLanguageModalUI() {
+                ShogiAudio.init();
+                const overlay = document.getElementById("languageModal");
+                overlay.className = "modal-overlay active";
+            }
+
+            confirmLanguageDecision(lang) {
+                document.getElementById("languageModal").className = "modal-overlay";
+                this.engine.lang = lang;
+                this.actionStartGame();
+            }
+
+            actionStartGame() {
+                this.timeControl = document.getElementById("timeCtrlSelect").value;
+                this.engine.setupInitialPosition();
+                this.resetSelectionState();
+                this.configureTimers();
+                this.engine.active = true;
+                this.syncStateDisplays();
+                this.render();
+                ShogiAudio.play('move');
+            }
+
+            configureTimers() {
+                clearInterval(this.timerIntervalId);
+                if (this.timeControl === "none") {
+                    document.getElementById("senteTimeStr").textContent = "Inf";
+                    document.getElementById("goteTimeStr").textContent = "Inf";
+                    return;
+                }
+                
+                let baseSecs = 600;
+                let byoSecs = 30;
+                if (this.timeControl === "5_10") { baseSecs = 300; byoSecs = 10; }
+                if (this.timeControl === "1_5") { baseSecs = 60; byoSecs = 5; }
+
+                this.timers = [baseSecs, baseSecs];
+                this.byoYomi = [byoSecs, byoSecs];
+
+                this.formatTimerStrings();
+
+                this.timerIntervalId = setInterval(() => {
+                    if (!this.engine.active) return;
+                    const turn = this.engine.turn;
+                    if (this.timers[turn] > 0) {
+                        this.timers[turn]--;
+                    } else {
+                        if (this.byoYomi[turn] > 0) {
+                            this.byoYomi[turn]--;
+                        } else {
+                            this.engine.active = false;
+                            clearInterval(this.timerIntervalId);
+                            const winnerText = turn === SENTE ? "Gote (Top ▼)" : "Sente (Bottom ▲)";
+                            document.getElementById("statusDisplay").textContent = `Time Expired! ${winnerText} wins.`;
+                            document.getElementById("statusDisplay").style.color = "#e06c75";
+                            ShogiAudio.play('gameover');
+                        }
+                    }
+                    this.formatTimerStrings();
+                }, 1000);
+            }
+
+            formatTimerStrings() {
+                const pad = (v) => String(v).padStart(2, '0');
+                const compile = (sec, byo) => {
+                    if (sec > 0) return `${Math.floor(sec/60)}:${pad(sec%60)}`;
+                    return `BYO: ${byo}s`;
+                };
+                document.getElementById("senteTimeStr").textContent = compile(this.timers[SENTE], this.byoYomi[SENTE]);
+                document.getElementById("goteTimeStr").textContent = compile(this.timers[GOTE], this.byoYomi[GOTE]);
+            }
+
+            actionUndo() {
+                if (this.engine.undo()) {
+                    this.resetSelectionState();
+                    if (this.timeControl !== "none") {
+                        let byoSecs = 30;
+                        if (this.timeControl === "5_10") byoSecs = 10;
+                        if (this.timeControl === "1_5") byoSecs = 5;
+                        this.byoYomi[this.engine.turn] = byoSecs;
+                    }
+                    this.syncStateDisplays();
+                    this.render();
+                    ShogiAudio.play('move');
+                }
+            }
+
+            actionResign() {
+                if (!this.engine.active) return;
+                this.engine.active = false;
+                clearInterval(this.timerIntervalId);
+                const winnerText = this.engine.turn === SENTE ? "Gote (Top ▼)" : "Sente (Bottom ▲)";
+                document.getElementById("statusDisplay").textContent = `Resignation. ${winnerText} wins!`;
+                document.getElementById("statusDisplay").style.color = "#e06c75";
+                ShogiAudio.play('gameover');
+            }
+
+            actionJishogi() {
+                if (!this.engine.active) return;
+                clearInterval(this.timerIntervalId);
+                const { sentePts, gotePts } = this.engine.evaluateJishogi();
+                let output = `Assessment Complete. Sente: ${sentePts} pts, Gote: ${gotePts} pts. `;
+                
+                if (sentePts < 24) {
+                    output += "Sente has less than 24 points. Gote wins!";
+                } else if (gotePts < 24) {
+                    output += "Gote has less than 24 points. Sente wins!";
+                } else {
+                    output += "Draw by declaration mutual score match!";
+                }
+                document.getElementById("statusDisplay").textContent = output;
+                document.getElementById("statusDisplay").style.color = "#98c379";
+                ShogiAudio.play('gameover');
+            }
+
+            resetSelectionState() {
+                this.selectedPiece = null;
+                this.validMoves = [];
+                document.getElementById("senteCancelDrop").style.display = "none";
+                document.getElementById("goteCancelDrop").style.display = "none";
+            }
+
+            syncStateDisplays() {
+                const statusNode = document.getElementById("statusDisplay");
+                if (!this.engine.active) {
+                    statusNode.style.color = "#9aa0a6";
+                    return;
+                }
+
+                const checkState = this.engine.isKingInCheck(this.engine.turn);
+                const doubleCheck = this.engine.isDoubleCheck(this.engine.turn);
+                
+                let suffix = "";
+                if (doubleCheck) suffix = " [DOUBLE CHECK!!]";
+                else if (checkState) suffix = " [IN CHECK!]";
+
+                if (this.engine.turn === SENTE) {
+                    statusNode.textContent = `Sente's Turn (Bottom ▲)${suffix}`;
+                    statusNode.style.color = checkState ? "#e06c75" : "#61afef";
+                    document.getElementById("senteTimerSlot").className = "timer-slot active";
+                    document.getElementById("goteTimerSlot").className = "timer-slot";
+                } else {
+                    statusNode.textContent = `Gote's Turn (Top ▼)${suffix}`;
+                    statusNode.style.color = checkState ? "#e06c75" : "#d19a66";
+                    document.getElementById("goteTimerSlot").className = "timer-slot active";
+                    document.getElementById("senteTimerSlot").className = "timer-slot";
+                }
+
+                this.renderHandSubsystem("senteHandItems", SENTE);
+                this.renderHandSubsystem("goteHandItems", GOTE);
+
+                const histBox = document.getElementById("historyList");
+                histBox.innerHTML = "";
+                let currentEntryRow = null;
+
+                this.engine.historyStack.forEach((h, idx) => {
+                    if (idx % 2 === 0) {
+                        currentEntryRow = document.createElement("div");
+                        currentEntryRow.className = "history-entry";
+                        const indexLabel = document.createElement("span");
+                        indexLabel.className = "num";
+                        indexLabel.textContent = `${Math.floor(idx/2) + 1}.`;
+                        currentEntryRow.appendChild(indexLabel);
+
+                        const moveSente = document.createElement("span");
+                        moveSente.className = "move-s";
+                        moveSente.textContent = h.notation;
+                        currentEntryRow.appendChild(moveSente);
+                        histBox.appendChild(currentEntryRow);
+                    } else {
+                        if (currentEntryRow) {
+                            const moveGote = document.createElement("span");
+                            moveGote.className = "move-g";
+                            moveGote.textContent = h.notation;
+                            currentEntryRow.appendChild(moveGote);
+                        }
+                    }
+                });
+                histBox.scrollTop = histBox.scrollHeight;
+            }
+
+            renderHandSubsystem(containerId, player) {
+                const block = document.getElementById(containerId);
+                block.innerHTML = "";
+                
+                const list = this.engine.hands[player];
+                const counts = {};
+                list.forEach(t => counts[t] = (counts[t] || 0) + 1);
+
+                for (const type in counts) {
+                    const node = document.createElement("div");
+                    node.className = "hand-piece-node";
+                    
+                    if (this.selectedPiece && this.selectedPiece.fromHand && this.selectedPiece.player === player && this.selectedPiece.type === type) {
+                        node.className += " selected";
+                    }
+
+                    node.textContent = this.engine.lang === "EN" ? BasePieces[type].enLabel : BasePieces[type].label;
+                    
+                    if (counts[type] > 1) {
+                        const badge = document.createElement("div");
+                        badge.className = "count-badge";
+                        badge.textContent = counts[type];
+                        node.appendChild(badge);
+                    }
+
+                    node.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        this.handleHandClickInteraction(player, type);
+                    });
+                    block.appendChild(node);
+                }
+            }
+
+            handleHandClickInteraction(player, type) {
+                if (!this.engine.active || this.engine.turn !== player) return;
+                ShogiAudio.init();
+
+                if (this.selectedPiece && this.selectedPiece.fromHand && this.selectedPiece.type === type) {
+                    this.resetSelectionState();
+                    this.syncStateDisplays();
+                    this.render();
+                    return;
+                }
+
+                this.selectedPiece = { fromHand: true, player, type };
+                this.validMoves = this.engine.getLegalDropMoves(type);
+                
+                document.getElementById(player === SENTE ? "senteCancelDrop" : "goteCancelDrop").style.display = "block";
+                this.render();
+            }
+
+            handleGridInteraction(clientX, clientY) {
+                if (!this.engine.active) return;
+                ShogiAudio.init();
+
+                const bounds = this.canvas.getBoundingClientRect();
+                const gridX = Math.floor((clientX - bounds.left) / this.cellSize);
+                const gridY = Math.floor((clientY - bounds.top) / this.cellSize);
+
+                if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) return;
+
+                const executedDestination = this.validMoves.find(m => m.x === gridX && m.y === gridY);
+
+                if (executedDestination) {
+                    if (this.selectedPiece.fromHand) {
+                        const res = this.engine.executeDropMove(gridX, gridY, this.selectedPiece.type);
+                        this.processEngineResponse(res);
+                    } else {
+                        const piece = this.engine.board[this.selectedPiece.x][this.selectedPiece.y];
+                        const insideZone = (piece.belong === SENTE && (gridY <= 2 || this.selectedPiece.y <= 2)) ||
+                                           (piece.belong === GOTE && (gridY >= 6 || this.selectedPiece.y >= 6));
+                        
+                        let mustPromote = false;
+                        if (!piece.upgraded) {
+                            if ((piece.type === "pawn" || piece.type === "lance") && ((piece.belong === SENTE && gridY === 0) || (piece.belong === GOTE && gridY === 8))) mustPromote = true;
+                            if (piece.type === "knight" && ((piece.belong === SENTE && gridY <= 1) || (piece.belong === GOTE && gridY >= 7))) mustPromote = true;
+                        }
+
+                        if (insideZone && !piece.upgraded && BasePieces[piece.type].prom) {
+                            if (mustPromote) {
+                                const res = this.engine.executeBoardMove(this.selectedPiece.x, this.selectedPiece.y, gridX, gridY, "FORCE");
+                                this.processEngineResponse(res);
+                            } else {
+                                this.pendingPromoMove = { fx: this.selectedPiece.x, fy: this.selectedPiece.y, tx: gridX, ty: gridY };
+                                this.triggerPromotionModalUI(piece.type);
+                                return;
+                            }
+                        } else {
+                            const res = this.engine.executeBoardMove(this.selectedPiece.x, this.selectedPiece.y, gridX, gridY, "DECLINE");
+                            this.processEngineResponse(res);
+                        }
+                    }
+                } else {
+                    const targetPiece = this.engine.board[gridX][gridY];
+                    if (targetPiece && targetPiece.belong === this.engine.turn) {
+                        this.selectedPiece = { fromHand: false, x: gridX, y: gridY };
+                        this.validMoves = this.engine.getLegalBoardMoves(gridX, gridY);
+                    } else {
+                        this.resetSelectionState();
+                    }
+                    this.syncStateDisplays();
+                    this.render();
+                }
+            }
+
+            triggerPromotionModalUI(type) {
+                const overlay = document.getElementById("promotionModal");
+                const optDemoted = document.getElementById("promoOptDemoted");
+                const optPromoted = document.getElementById("promoOptPromoted");
+
+                if (this.engine.lang === "EN") {
+                    optDemoted.textContent = BasePieces[type].enLabel;
+                    optPromoted.textContent = BasePieces[type].enPLabel;
+                } else {
+                    optDemoted.textContent = BasePieces[type].label;
+                    optPromoted.textContent = BasePieces[type].pLabel;
+                }
+
+                overlay.className = "modal-overlay active";
+            }
+
+            confirmPromotionDecision(decision) {
+                document.getElementById("promotionModal").className = "modal-overlay";
+                if (!this.pendingPromoMove) return;
+                
+                const p = this.pendingPromoMove;
+                this.pendingPromoMove = null;
+
+                const res = this.engine.executeBoardMove(p.fx, p.fy, p.tx, p.ty, decision);
+                this.processEngineResponse(res);
+            }
+
+            processEngineResponse(res) {
+                this.resetSelectionState();
+
+                if (this.timeControl !== "none") {
+                    let byoSecs = 30;
+                    if (this.timeControl === "5_10") byoSecs = 10;
+                    if (this.timeControl === "1_5") byoSecs = 5;
+                    this.byoYomi[this.engine.turn] = byoSecs;
+                    this.formatTimerStrings();
+                }
+
+                if (res.status === "SUCCESS") {
+                    if (res.check) ShogiAudio.play('check');
+                    else if (res.promoted) ShogiAudio.play('promote');
+                    else if (res.captured) ShogiAudio.play('capture');
+                    else ShogiAudio.play('move');
+                } 
+                else if (res.status === "CHECKMATE") {
+                    this.syncStateDisplays();
+                    this.render();
+                    const winnerText = res.winner === SENTE ? "Sente (▲) Wins!" : "Gote (▼) Wins!";
+                    document.getElementById("statusDisplay").textContent = `CHECKMATE! ${winnerText}`;
+                    document.getElementById("statusDisplay").style.color = "#98c379";
+                    ShogiAudio.play('gameover');
+                    return;
+                } 
+                else if (res.status === "STALEMATE") {
+                    this.syncStateDisplays();
+                    this.render();
+                    document.getElementById("statusDisplay").textContent = "Game Drawn via Stalemate configuration.";
+                    document.getElementById("statusDisplay").style.color = "#9aa0a6";
+                    ShogiAudio.play('gameover');
+                    return;
+                }
+                else if (res.status === "SENNICHITE_DRAW") {
+                    this.syncStateDisplays();
+                    this.render();
+                    document.getElementById("statusDisplay").textContent = "Draw via Repetition (千日手).";
+                    document.getElementById("statusDisplay").style.color = "#9aa0a6";
+                    ShogiAudio.play('gameover');
+                    return;
+                }
+                else if (res.status === "SENNICHITE_FOUL") {
+                    this.syncStateDisplays();
+                    this.render();
+                    const foulLoser = res.loser === SENTE ? "Sente (▲)" : "Gote (▼)";
+                    document.getElementById("statusDisplay").textContent = `Foul! Perpetual check loop. ${foulLoser} loses.`;
+                    document.getElementById("statusDisplay").style.color = "#e06c75";
+                    ShogiAudio.play('gameover');
+                    return;
+                }
+
+                this.syncStateDisplays();
+                this.render();
+            }
+
+            render() {
+                const cs = this.cellSize;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.strokeStyle = "#2b2b2b";
+                this.ctx.lineWidth = 1.2;
+                for (let i = 0; i <= COLS; i++) {
+                    this.ctx.beginPath(); this.ctx.moveTo(i * cs, 0); this.ctx.lineTo(i * cs, this.canvas.height); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(0, i * cs); this.ctx.lineTo(this.canvas.width, i * cs); this.ctx.stroke();
+                }
+
+                this.ctx.fillStyle = "#2b2b2b";
+                const starPoints = [{ x: 3, y: 3 }, { x: 6, y: 3 }, { x: 3, y: 6 }, { x: 6, y: 6 }];
+                starPoints.forEach(pt => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(pt.x * cs, pt.y * cs, cs * 0.07, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+
+                const currentKingInCheck = this.engine.isKingInCheck(this.engine.turn);
+                if (currentKingInCheck) {
+                    const kingPos = this.engine.locateKing(this.engine.turn);
+                    if (kingPos) {
+                        this.ctx.fillStyle = "rgba(224, 108, 117, 0.45)";
+                        this.ctx.fillRect(kingPos.x * cs, kingPos.y * cs, cs, cs);
+                    }
+                    this.ctx.fillStyle = "rgba(209, 154, 102, 0.4)";
+                    this.engine.checkingPieces.forEach(p => {
+                        this.ctx.fillRect(p.x * cs, p.y * cs, cs, cs);
+                    });
+                }
+
+                if (this.selectedPiece && !this.selectedPiece.fromHand) {
+                    this.ctx.fillStyle = "rgba(97, 175, 239, 0.3)";
+                    this.ctx.fillRect(this.selectedPiece.x * cs, this.selectedPiece.y * cs, cs, cs);
+                }
+
+                for (const m of this.validMoves) {
+                    const hasTarget = this.engine.board[m.x][m.y];
+                    if (hasTarget) {
+                        this.ctx.fillStyle = "rgba(224, 108, 117, 0.7)";
+                        this.ctx.beginPath();
+                        this.ctx.arc((m.x + 0.5) * cs, (m.y + 0.5) * cs, cs * 0.22, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.fillStyle = "rgba(152, 195, 121, 0.7)";
+                        this.ctx.beginPath();
+                        this.ctx.arc((m.x + 0.5) * cs, (m.y + 0.5) * cs, cs * 0.14, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+
+                this.ctx.textAlign = "center";
+                this.ctx.textBaseline = "middle";
+                this.ctx.font = `bold ${cs * 0.45}px sans-serif`;
+
+                for (let x = 0; x < COLS; x++) {
+                    for (let y = 0; y < ROWS; y++) {
+                        const piece = this.engine.board[x][y];
+                        if (!piece) continue;
+
+                        this.ctx.save();
+                        this.ctx.translate((x + 0.5) * cs, (y + 0.5) * cs);
+                        
+                        if (piece.belong === GOTE) this.ctx.rotate(Math.PI);
+
+                        this.ctx.fillStyle = piece.upgraded ? "#a040b0" : "#111111";
+                        const meta = BasePieces[piece.type];
+                        
+                        let text = "";
+                        if (this.engine.lang === "EN") {
+                            text = piece.upgraded ? meta.enPLabel : meta.enLabel;
+                        } else {
+                            text = piece.upgraded ? meta.pLabel : meta.label;
+                        }
+
+                        this.ctx.fillText(text, 0, 0);
+                        this.ctx.restore();
+                    }
+                }
+            }
+        }
+
+        const engineInstance = new ShogiEngine();
+        const uiInstance = new ShogiUI(engineInstance);
+        document.getElementById("statusDisplay").textContent = "System ready. Click New Game to begin.";
+    </script>
+</body>
+</html>

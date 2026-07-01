@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-color: #2196f3;
+            --text-color: #ffffff;
+            --text-secondary: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .player-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 550px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .book-info h1 {
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
+        .book-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0 0 15px 0;
+        }
+
+        .current-track-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #151515;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .audio-wrapper {
+            background: #151515;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Loading Overlay Indicator Styles */
+        .loading-text {
+            display: none;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            font-weight: 500;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        audio {
+            width: 100%;
+            outline: none;
+        }
+
+        .book-selector {
+            width: 100%;
+            padding: 10px;
+            background-color: #2a2a2a;
+            color: var(--text-color);
+            border: 1px solid #444;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .book-selector:focus {
+            border-color: var(--accent-color);
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 8px;
+            background-color: #151515;
+            border-radius: 6px;
+            border: 1px solid #333;
+            margin-bottom: 24px;
+        }
+
+        .chapter-btn {
+            background-color: #2a2a2a;
+            color: var(--text-color);
+            border: 1px solid #444;
+            padding: 10px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: left;
+            padding-left: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.2s ease;
+        }
+
+        .chapter-btn:hover {
+            background-color: #3a3a3a;
+            border-color: var(--accent-color);
+        }
+
+        .chapter-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent-color);
+        }
+
+        .notes-section {
+            text-align: left;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+
+        .notes-section h3 {
+            font-size: 1rem;
+            margin: 0 0 10px 0;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: var(--text-color);
+            padding: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: #4caf50;
+            margin-top: 5px;
+            height: 15px;
+            font-style: italic;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .download-btn:active {
+            transform: scale(0.99);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="book-info">
+            <h1>Bible Seekho</h1>
+            <p>American Standard Version (ASV)</p>
+            
+            <div id="track-display" class="current-track-title">001 - Genesis 1-14</div>
+        </div>
+
+        <div class="audio-wrapper">
+            <div id="player-loading-text" class="loading-text">⏳ Loading Audio Track...</div>
+            <audio id="native-audio-player" controls src="https://archive.org/download/bible_asv_complete_2112_librivox/bible_001_asv_128kb.mp3"></audio>
+        </div>
+
+        <select id="book-filter" class="book-selector" onchange="filterTracks()">
+            <option value="all">All Books (1-129)</option>
+            <option value="ot-law">Pentateuch (Genesis - Deuteronomy)</option>
+            <option value="ot-history">OT History (Joshua - Esther)</option>
+            <option value="ot-poetry">Wisdom & Poetry (Job - Song of Solomon)</option>
+            <option value="ot-prophets">Prophets (Isaiah - Malachi)</option>
+            <option value="nt-gospels">Gospels & Acts (Matthew - Acts)</option>
+            <option value="nt-epistles">Epistles & Revelation (Romans - Rev)</option>
+        </select>
+
+        <div id="grid-container" class="chapter-grid">
+            </div>
+
+        <div class="notes-section">
+            <h3>Your Listening Notes</h3>
+            <textarea id="notebook" placeholder="Jot down timestamps, chapter numbers, or reflections here..."></textarea>
+            <div id="status" class="status-msg"></div>
+            
+            <button class="download-btn" onclick="downloadNotesAsImage()">Download Notes as Photo</button>
+        </div>
+    </div>
+
+    <script>
+        const tracksData = [
+            { id: 1, title: "001 - Genesis 1-14", file: "bible_001_asv_128kb.mp3", cat: "ot-law" },
+            { id: 2, title: "002 - Genesis 15-25", file: "bible_002_asv_128kb.mp3", cat: "ot-law" },
+            { id: 3, title: "003 - Genesis 26-35", file: "bible_003_asv_128kb.mp3", cat: "ot-law" },
+            { id: 4, title: "004 - Genesis 36-44", file: "bible_004_asv_128kb.mp3", cat: "ot-law" },
+            { id: 5, title: "005 - Genesis 45-50", file: "bible_005_asv_128kb.mp3", cat: "ot-law" },
+            { id: 6, title: "006 - Exodus 1-11", file: "bible_006_asv_128kb.mp3", cat: "ot-law" },
+            { id: 7, title: "007 - Exodus 12-22", file: "bible_007_asv_128kb.mp3", cat: "ot-law" },
+            { id: 8, title: "008 - Exodus 23-32", file: "bible_008_asv_128kb.mp3", cat: "ot-law" },
+            { id: 9, title: "009 - Exodus 33-40", file: "bible_009_asv_128kb.mp3", cat: "ot-law" },
+            { id: 10, title: "010 - Leviticus 1-11", file: "bible_010_asv_128kb.mp3", cat: "ot-law" },
+            { id: 11, title: "011 - Leviticus 12-20", file: "bible_011_asv_128kb.mp3", cat: "ot-law" },
+            { id: 12, title: "012 - Leviticus 21-27", file: "bible_012_asv_128kb.mp3", cat: "ot-law" },
+            { id: 13, title: "013 - Numbers 1-7", file: "bible_013_asv_128kb.mp3", cat: "ot-law" },
+            { id: 14, title: "014 - Numbers 8-16", file: "bible_014_asv_128kb.mp3", cat: "ot-law" },
+            { id: 15, title: "015 - Numbers 17-26", file: "bible_015_asv_128kb.mp3", cat: "ot-law" },
+            { id: 16, title: "016 - Numbers 27-36", file: "bible_016_asv_128kb.mp3", cat: "ot-law" },
+            { id: 17, title: "017 - Deuteronomy 1-09", file: "bible_017_asv_128kb.mp3", cat: "ot-law" },
+            { id: 18, title: "018 - Deuteronomy 10-21", file: "bible_018_asv_128kb.mp3", cat: "ot-law" },
+            { id: 19, title: "019 - Deuteronomy 22-30", file: "bible_019_asv_128kb.mp3", cat: "ot-law" },
+            { id: 20, title: "020 - Deuteronomy 31-34", file: "bible_020_asv_128kb.mp3", cat: "ot-law" },
+            { id: 21, title: "021 - Joshua 1-12", file: "bible_021_asv_128kb.mp3", cat: "ot-history" },
+            { id: 22, title: "022 - Joshua 13-24", file: "bible_022_asv_128kb.mp3", cat: "ot-history" },
+            { id: 23, title: "023 - Judges 1-10", file: "bible_023_asv_128kb.mp3", cat: "ot-history" },
+            { id: 24, title: "024 - Judges 11-21", file: "bible_024_asv_128kb.mp3", cat: "ot-history" },
+            { id: 25, title: "025 - Ruth 1-4", file: "bible_025_asv_128kb.mp3", cat: "ot-history" },
+            { id: 26, title: "026 - 1 Samuel 1-12", file: "bible_026_asv_128kb.mp3", cat: "ot-history" },
+            { id: 27, title: "027 - 1 Samuel 13-21", file: "bible_027_asv_128kb.mp3", cat: "ot-history" },
+            { id: 28, title: "028 - 1 Samuel 22-31", file: "bible_028_asv_128kb.mp3", cat: "ot-history" },
+            { id: 29, title: "029 - 2 Samuel 1-12", file: "bible_029_asv_128kb.mp3", cat: "ot-history" },
+            { id: 30, title: "030 - 2 Samuel 13-20", file: "bible_030_asv_128kb.mp3", cat: "ot-history" },
+            { id: 31, title: "031 - 2 Samuel 21-24", file: "bible_031_asv_128kb.mp3", cat: "ot-history" },
+            { id: 32, title: "032 - 1 Kings 1-7", file: "bible_032_asv_128kb.mp3", cat: "ot-history" },
+            { id: 33, title: "033 - 1 Kings 8-15", file: "bible_033_asv_128kb.mp3", cat: "ot-history" },
+            { id: 34, title: "034 - 1 Kings 16-22", file: "bible_034_asv_128kb.mp3", cat: "ot-history" },
+            { id: 35, title: "035 - 2 Kings 1-9", file: "bible_035_asv_128kb.mp3", cat: "ot-history" },
+            { id: 36, title: "036 - 2 Kings 10-18", file: "bible_036_asv_128kb.mp3", cat: "ot-history" },
+            { id: 37, title: "037 - 2 Kings 19-25", file: "bible_037_asv_128kb.mp3", cat: "ot-history" },
+            { id: 38, title: "038 - 1 Chronicles 1-10", file: "bible_038_asv_128kb.mp3", cat: "ot-history" },
+            { id: 39, title: "039 - 1 Chronicles 11-22", file: "bible_039_asv_128kb.mp3", cat: "ot-history" },
+            { id: 40, title: "040 - 1 Chronicles 23-29", file: "bible_040_asv_128kb.mp3", cat: "ot-history" },
+            { id: 41, title: "041 - 2 Chronicles 1-14", file: "bible_041_asv_128kb.mp3", cat: "ot-history" },
+            { id: 42, title: "042 - 2 Chronicles 15-26", file: "bible_042_asv_128kb.mp3", cat: "ot-history" },
+            { id: 43, title: "043 - 2 Chronicles 27-36", file: "bible_043_asv_128kb.mp3", cat: "ot-history" },
+            { id: 44, title: "044 - Ezra", file: "bible_044_asv_128kb.mp3", cat: "ot-history" },
+            { id: 45, title: "045 - Nehemiah 1-10", file: "bible_045_asv_128kb.mp3", cat: "ot-history" },
+            { id: 46, title: "046 - Nehemiah 11-13", file: "bible_046_asv_128kb.mp3", cat: "ot-history" },
+            { id: 47, title: "047 - Esther 1-10", file: "bible_047_asv_128kb.mp3", cat: "ot-history" },
+            { id: 48, title: "048 - Job 1-20", file: "bible_048_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 49, title: "049 - Job 21-32", file: "bible_049_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 50, title: "050 - Job 33-42", file: "bible_050_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 51, title: "051 - Psalms 1-33", file: "bible_051_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 52, title: "052 - Psalms 34-61", file: "bible_052_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 53, title: "053 - Psalms 62-85", file: "bible_053_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 54, title: "054 - Psalms 86-110", file: "bible_054_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 55, title: "055 - Psalms 111-139", file: "bible_055_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 56, title: "056 - Psalms 140-150", file: "bible_056_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 57, title: "057 - Proverbs 1-18", file: "bible_057_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 58, title: "058 - Proverbs 19-31", file: "bible_058_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 59, title: "059 - Ecclesiastes 1-12", file: "bible_059_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 60, title: "060 - Song of Solomon 1-8", file: "bible_060_asv_128kb.mp3", cat: "ot-poetry" },
+            { id: 61, title: "061 - Isaiah 1-15", file: "bible_061_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 62, title: "062 - Isaiah 16-32", file: "bible_062_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 63, title: "063 - Isaiah 33-45", file: "bible_063_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 64, title: "064 - Isaiah 46-61", file: "bible_064_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 65, title: "065 - Isaiah 62-66", file: "bible_065_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 66, title: "066 - Jeremiah 1-10", file: "bible_066_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 67, title: "067 - Jeremiah 11-22", file: "bible_067_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 68, title: "068 - Jeremiah 23-32", file: "bible_068_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 69, title: "069 - Jeremiah 33-44", file: "bible_069_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 70, title: "070 - Jeremiah 45-52", file: "bible_070_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 71, title: "071 - Lamentations 1-5", file: "bible_071_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 72, title: "072 - Ezekiel 1-14", file: "bible_072_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 73, title: "073 - Ezekiel 15-23", file: "bible_073_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 74, title: "074 - Ezekiel 24-35", file: "bible_074_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 75, title: "075 - Ezekiel 36-44", file: "bible_075_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 76, title: "076 - Ezekiel 45-48", file: "bible_076_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 77, title: "077 - Daniel 1-8", file: "bible_077_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 78, title: "078 - Daniel 9-12", file: "bible_078_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 79, title: "079 - Hosea 1-14", file: "bible_079_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 80, title: "080 - Joel 1-3", file: "bible_080_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 81, title: "081 - Amos 1-9", file: "bible_081_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 82, title: "082 - Obadiah 1", file: "bible_082_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 83, title: "083 - Jonah 1-4", file: "bible_083_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 84, title: "084 - Micah 1-7", file: "bible_084_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 85, title: "085 - Nahum 1-3", file: "bible_085_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 86, title: "086 - Habakkuk 1-3", file: "bible_086_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 87, title: "087 - Zephaniah 1-3", file: "bible_087_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 88, title: "088 - Haggai 1-2", file: "bible_088_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 89, title: "089 - Zechariah 1-14", file: "bible_089_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 90, title: "090 - Malachi 1-4", file: "bible_090_asv_128kb.mp3", cat: "ot-prophets" },
+            { id: 91, title: "091 - Matthew 1-12", file: "bible_091_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 92, title: "092 - Matthew 13-22", file: "bible_092_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 93, title: "093 - Matthew 23-28", file: "bible_093_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 94, title: "094 - Mark 1-10", file: "bible_094_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 95, title: "095 - Mark 11-16", file: "bible_095_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 96, title: "096 - Luke 1-8", file: "bible_096_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 97, title: "097 - Luke 9-17", file: "bible_097_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 98, title: "098 - Luke 18-24", file: "bible_098_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 99, title: "099 - John 1-8", file: "bible_099_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 100, title: "100 - John 9-18", file: "bible_100_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 101, title: "101 - John 19-21", file: "bible_101_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 102, title: "102 - Acts 1-10", file: "bible_102_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 103, title: "103 - Acts 11-20", file: "bible_103_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 104, title: "104 - Acts 21-28", file: "bible_104_asv_128kb.mp3", cat: "nt-gospels" },
+            { id: 105, title: "105 - Romans 1-11", file: "bible_105_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 106, title: "106 - Romans 12-16", file: "bible_106_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 107, title: "107 - 1 Corinthians 1-13", file: "bible_107_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 108, title: "108 - 1 Corinthians 14-16", file: "bible_108_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 109, title: "109 - 2 Corinthians 1-13", file: "bible_109_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 110, title: "110 - Galatians 1-6", file: "bible_110_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 111, title: "111 - Ephesians 1-6", file: "bible_111_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 112, title: "112 - Philippians 1-4", file: "bible_112_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 113, title: "113 - Colossians 1-4", file: "bible_113_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 114, title: "114 - 1 Thessalonians 1-5", file: "bible_114_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 115, title: "115 - 2 Thessalonians 1-3", file: "bible_115_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 116, title: "116 - 1 Timothy 1-6", file: "bible_116_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 117, title: "117 - 2 Timothy 1-4", file: "bible_117_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 118, title: "118 - Titus 1-3", file: "bible_118_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 119, title: "119 - Philemon 1", file: "bible_119_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 120, title: "120 - Hebrews 1-13", file: "bible_120_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 121, title: "121 - James 1-5", file: "bible_121_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 122, title: "122 - 1 Peter 1-5", file: "bible_122_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 123, title: "123 - 2 Peter 1-3", file: "bible_123_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 124, title: "124 - 1 John 1-5", file: "bible_124_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 125, title: "125 - 2 John 1", file: "bible_125_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 126, title: "126 - 3 John 1", file: "bible_126_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 127, title: "127 - Jude 1", file: "bible_127_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 128, title: "128 - Revelation 1-14", file: "bible_128_asv_128kb.mp3", cat: "nt-epistles" },
+            { id: 129, title: "129 - Revelation 15-22", file: "bible_129_asv_128kb.mp3", cat: "nt-epistles" }
+        ];
+
+        const trackDisplay = document.getElementById('track-display');
+        const audioPlayer = document.getElementById('native-audio-player');
+        const loadingText = document.getElementById('player-loading-text');
+        const gridContainer = document.getElementById('grid-container');
+        let activeTrackId = 1;
+
+        // Dynamic Loading Events for Media States
+        audioPlayer.addEventListener('waiting', () => {
+            loadingText.style.display = 'block';
+        });
+
+        audioPlayer.addEventListener('loadstart', () => {
+            loadingText.style.display = 'block';
+        });
+
+        audioPlayer.addEventListener('canplay', () => {
+            loadingText.style.display = 'none';
+        });
+
+        audioPlayer.addEventListener('playing', () => {
+            loadingText.style.display = 'none';
+        });
+
+        function renderGrid(filterValue = "all") {
+            gridContainer.innerHTML = "";
+            tracksData.forEach(track => {
+                if (filterValue !== "all" && track.cat !== filterValue) return;
+
+                const btn = document.createElement('button');
+                btn.className = `chapter-btn ${track.id === activeTrackId ? 'active' : ''}`;
+                btn.id = `btn-${track.id}`;
+                btn.textContent = track.title.substring(6);
+                
+                btn.onclick = () => changeTrack(track.id, track.title, track.file);
+                gridContainer.appendChild(btn);
+            });
+        }
+
+        function filterTracks() {
+            const val = document.getElementById('book-filter').value;
+            renderGrid(val);
+        }
+
+        function changeTrack(trackId, titleText, fileName) {
+            activeTrackId = trackId;
+            trackDisplay.textContent = titleText;
+            
+            document.querySelectorAll('.chapter-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-${trackId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const currentSpeed = audioPlayer.playbackRate;
+
+            // Trigger the visual loading layout cleanly
+            loadingText.style.display = 'block';
+
+            audioPlayer.src = `https://archive.org/download/bible_asv_complete_2112_librivox/${fileName}`;
+            
+            audioPlayer.load();
+            audioPlayer.playbackRate = currentSpeed;
+            audioPlayer.play().catch(error => {
+                console.log("Playback interaction error handles: ", error);
+            });
+        }
+
+        // --- LocalStorage Saving Logic ---
+        const notebook = document.getElementById('notebook');
+        const status = document.getElementById('status');
+        let timeout = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+            const savedNotes = localStorage.getItem('bible_audiobook_notes');
+            if (savedNotes) notebook.value = savedNotes;
+        });
+
+        notebook.addEventListener('input', () => {
+            status.textContent = "Typing...";
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                localStorage.setItem('bible_audiobook_notes', notebook.value);
+                status.textContent = "Notes saved automatically.";
+                setTimeout(() => { status.textContent = ""; }, 2000);
+            }, 1000);
+        });
+
+        // --- Photo Rendering Engine ---
+        function downloadNotesAsImage() {
+            const text = notebook.value.trim();
+            if (!text) {
+                alert("Please write something in your notes before downloading an image.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const padding = 40;
+            const logicalWidth = 600;
+            const currentTrack = trackDisplay.textContent;
+            
+            ctx.font = '16px "Segoe UI", sans-serif';
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            const maxWidth = logicalWidth - (padding * 2);
+
+            words.forEach(word => {
+                const testLine = currentLine + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            lines.push(currentLine.trim());
+
+            const lineHeight = 26;
+            const headerHeight = 100;
+            const logicalHeight = headerHeight + (lines.length * lineHeight) + padding + 40;
+
+            const scaleFactor = 2; 
+            canvas.width = logicalWidth * scaleFactor;
+            canvas.height = logicalHeight * scaleFactor;
+            
+            ctx.scale(scaleFactor, scaleFactor);
+
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+            ctx.fillStyle = '#2196f3';
+            ctx.font = 'bold 22px "Segoe UI", sans-serif';
+            ctx.fillText("Bible Reflections", padding, 45);
+
+            ctx.fillStyle = '#b3b3b3';
+            ctx.font = '14px "Segoe UI", sans-serif';
+            ctx.fillText(`Track Reference: ${currentTrack}`, padding, 75);
+
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, 90);
+            ctx.lineTo(logicalWidth - padding, 90);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px "Segoe UI", sans-serif';
+            let currentY = headerHeight + 20;
+            
+            lines.forEach(line => {
+                ctx.fillText(line, padding, currentY);
+                currentY += lineHeight;
+            });
+
+            ctx.fillStyle = '#ff3333';
+            ctx.font = 'bold 13px "Segoe UI", sans-serif';
+            
+            const timeString = `Saved on: ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            ctx.fillText(timeString, padding, logicalHeight - 20);
+
+            const imageURI = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = `Bible_Seekho_Notes_${currentTrack.replace(/\s+/g, '_')}.png`;
+            downloadLink.href = imageURI;
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>

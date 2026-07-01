@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gita</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-color: #ff9800;
+            --text-color: #ffffff;
+            --text-secondary: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .player-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 550px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .book-info h1 {
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
+        .book-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0 0 15px 0;
+        }
+
+        .current-track-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #151515;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* --- Native Player Layout Styling --- */
+        .native-player-wrapper {
+            background: #151515;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        audio {
+            width: 100%;
+            outline: none;
+        }
+
+        .speed-control-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .speed-select {
+            background-color: #2a2a2a;
+            color: var(--text-color);
+            border: 1px solid #444;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .speed-select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 8px;
+            background-color: #151515;
+            border-radius: 6px;
+            border: 1px solid #333;
+            margin-bottom: 24px;
+        }
+
+        .chapter-btn {
+            background-color: #2a2a2a;
+            color: var(--text-color);
+            border: 1px solid #444;
+            padding: 10px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .chapter-btn:hover {
+            background-color: #3a3a3a;
+            border-color: var(--accent-color);
+        }
+
+        .chapter-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent-color);
+        }
+
+        .notes-section {
+            text-align: left;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+
+        .notes-section h3 {
+            font-size: 1rem;
+            margin: 0 0 10px 0;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: var(--text-color);
+            padding: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: #4caf50;
+            margin-top: 5px;
+            height: 15px;
+            font-style: italic;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .download-btn:active {
+            transform: scale(0.99);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="book-info">
+            <h1>Gita Seekho</h1>
+            <p>Full English Audio Version</p>
+            
+            <div id="track-display" class="current-track-title">01 CHAPTER 1</div>
+        </div>
+
+        <div class="native-player-wrapper">
+            <audio id="native-audio-player" controls src="https://archive.org/download/YatharthGeetaEnglishAudio/01Chapter1.mp3"></audio>
+            
+            <div class="speed-control-container">
+                <label for="speed-dropdown">Playback Speed:</label>
+                <select id="speed-dropdown" class="speed-select" onchange="changeSpeed(this.value)">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>Normal</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="1.75">1.75x</option>
+                    <option value="2">2.0x</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chapter-grid">
+            <button class="chapter-btn active" onclick="changeChapter(1, '01 CHAPTER 1', '/01Chapter1.mp3')">Ch 1</button>
+            <button class="chapter-btn" onclick="changeChapter(2, '02 CHAPTER 2', '/02Chapter2.mp3')">Ch 2</button>
+            <button class="chapter-btn" onclick="changeChapter(3, '03 CHAPTER 3', '/03Chapter3.mp3')">Ch 3</button>
+            <button class="chapter-btn" onclick="changeChapter(4, '04 CHAPTER 4', '/04Chapter4.mp3')">Ch 4</button>
+            <button class="chapter-btn" onclick="changeChapter(5, '05 CHAPTER 5', '/05Chapter5.mp3')">Ch 5</button>
+            <button class="chapter-btn" onclick="changeChapter(6, '06 CHAPTER 6', '/06Chapter6.mp3')">Ch 6</button>
+            <button class="chapter-btn" onclick="changeChapter(7, '07 CHAPTER 7', '/07Chapter7.mp3')">Ch 7</button>
+            <button class="chapter-btn" onclick="changeChapter(8, '08 CHAPTER 8', '/08Chapter8.mp3')">Ch 8</button>
+            <button class="chapter-btn" onclick="changeChapter(9, '09 CHAPTER 9', '/09Chapter9.mp3')">Ch 9</button>
+            <button class="chapter-btn" onclick="changeChapter(10, '10 CHAPTER 10', '/10Chapter10.mp3')">Ch 10</button>
+            <button class="chapter-btn" onclick="changeChapter(11, '11 CHAPTER 11', '/11Chapter11.mp3')">Ch 11</button>
+            <button class="chapter-btn" onclick="changeChapter(12, '12 CHAPTER 12', '/12Chapter12.mp3')">Ch 12</button>
+            <button class="chapter-btn" onclick="changeChapter(13, '13 CHAPTER 13', '/13Chapter13.mp3')">Ch 13</button>
+            <button class="chapter-btn" onclick="changeChapter(14, '14 CHAPTER 14', '/14Chapter14.mp3')">Ch 14</button>
+            <button class="chapter-btn" onclick="changeChapter(15, '15 CHAPTER 15', '/15Chapter15.mp3')">Ch 15</button>
+            <button class="chapter-btn" onclick="changeChapter(16, '16 CHAPTER 16', '/16Chapter16.mp3')">Ch 16</button>
+            <button class="chapter-btn" onclick="changeChapter(17, '17 CHAPTER 17', '/17Chapter17.mp3')">Ch 17</button>
+            <button class="chapter-btn" onclick="changeChapter(18, '18 CHAPTER 18', '/18Chapter18.mp3')">Ch 18</button>
+            <button class="chapter-btn" onclick="changeChapter(19, '19 SUMMARY', '/19Summary.mp3')">Summary</button>
+        </div>
+
+        <div class="notes-section">
+            <h3>Your Listening Notes</h3>
+            <textarea id="notebook" placeholder="Jot down timestamps, chapter numbers, or reflections here..."></textarea>
+            <div id="status" class="status-msg"></div>
+            
+            <button class="download-btn" onclick="downloadNotesAsImage()">Download Notes as Photo</button>
+        </div>
+    </div>
+
+    <script>
+        const trackDisplay = document.getElementById('track-display');
+        const audioPlayer = document.getElementById('native-audio-player');
+        const speedDropdown = document.getElementById('speed-dropdown');
+
+        function changeChapter(chapterNum, titleText, urlPath) {
+            trackDisplay.textContent = titleText;
+            const buttons = document.querySelectorAll('.chapter-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.toggle('active', index === (chapterNum - 1));
+            });
+            
+            // Point directly to the MP3 source on Archive.org instead of embedding an iframe
+            audioPlayer.src = `https://archive.org/download/YatharthGeetaEnglishAudio${urlPath}`;
+            
+            // Maintain the currently selected playback speed across chapter changes
+            audioPlayer.playbackRate = parseFloat(speedDropdown.value);
+            
+            // Auto-play the next selection
+            audioPlayer.play().catch(error => {
+                console.log("Auto-play blocked by browser. User interaction needed to start audio.");
+            });
+        }
+
+        // Handles changing the speed of the native HTML5 audio engine
+        function changeSpeed(rate) {
+            audioPlayer.playbackRate = parseFloat(rate);
+        }
+
+        // --- LocalStorage Logic ---
+        const notebook = document.getElementById('notebook');
+        const status = document.getElementById('status');
+        let timeout = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedNotes = localStorage.getItem('audiobook_notes');
+            if (savedNotes) notebook.value = savedNotes;
+        });
+
+        notebook.addEventListener('input', () => {
+            status.textContent = "Typing...";
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                localStorage.setItem('audiobook_notes', notebook.value);
+                status.textContent = "Notes saved automatically.";
+                setTimeout(() => { status.textContent = ""; }, 2000);
+            }, 1000);
+        });
+
+        // --- High Quality Canvas Rendering Engine ---
+        function downloadNotesAsImage() {
+            const text = notebook.value.trim();
+            if (!text) {
+                alert("Please write something in your notes before downloading an image.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const padding = 40;
+            const logicalWidth = 600;
+            const currentTrack = trackDisplay.textContent;
+            
+            // Layout word wrapping rules
+            ctx.font = '16px "Segoe UI", sans-serif';
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            const maxWidth = logicalWidth - (padding * 2);
+
+            words.forEach(word => {
+                const testLine = currentLine + word + ' ';
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            lines.push(currentLine.trim());
+
+            const lineHeight = 26;
+            const headerHeight = 100;
+            const logicalHeight = headerHeight + (lines.length * lineHeight) + padding + 40;
+
+            // --- BETTER QUALITY FIX: Render at 2x resolution scale ---
+            const scaleFactor = 2; 
+            canvas.width = logicalWidth * scaleFactor;
+            canvas.height = logicalHeight * scaleFactor;
+            
+            // Scale internal context to make fonts beautifully sharp
+            ctx.scale(scaleFactor, scaleFactor);
+
+            // Dark card background fill
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+            // Top Header text
+            ctx.fillStyle = '#ff9800';
+            ctx.font = 'bold 22px "Segoe UI", sans-serif';
+            ctx.fillText("Gita Reflections", padding, 45);
+
+            ctx.fillStyle = '#b3b3b3';
+            ctx.font = '14px "Segoe UI", sans-serif';
+            ctx.fillText(`Track Reference: ${currentTrack}`, padding, 75);
+
+            // Minimalist section divider line
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, 90);
+            ctx.lineTo(logicalWidth - padding, 90);
+            ctx.stroke();
+
+            // Notes body printout
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px "Segoe UI", sans-serif';
+            let currentY = headerHeight + 20;
+            
+            lines.forEach(line => {
+                ctx.fillText(line, padding, currentY);
+                currentY += lineHeight;
+            });
+
+            // --- RED COLOR FIX: Setting explicit bright red typography fill style ---
+            ctx.fillStyle = '#ff3333';
+            ctx.font = 'bold 13px "Segoe UI", sans-serif';
+            
+            const timeString = `Saved on: ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            ctx.fillText(timeString, padding, logicalHeight - 20);
+
+            // Trigger safe clean payload image extraction download
+            const imageURI = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = `Gita_Seekho_Notes_${currentTrack.replace(/\s+/g, '_')}.png`;
+            downloadLink.href = imageURI;
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>

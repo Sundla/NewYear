@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Snake Navigation</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Background Canvas */
+        #snakeCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: pointer;
+            touch-action: none; 
+        }
+
+        /* Parallax Container */
+        .parallax-container {
+            position: relative;
+            z-index: 2;
+            height: 180vh; 
+            pointer-events: none; 
+        }
+
+        /* Stacked Button Container Centered on Screen */
+        .button-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column; 
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            pointer-events: auto; 
+        }
+
+        /* Neon Button Styling with Rounded Corners */
+        .neon-btn {
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 15px 50px;
+            border-radius: 50px; 
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: transparent;
+            text-align: center;
+            width: 100%; 
+        }
+
+        /* Cyan Neon */
+        .btn-cyan {
+            color: #00f3ff;
+            border: 2px solid #00f3ff;
+            text-shadow: 0 0 8px #00f3ff, 0 0 15px #00f3ff;
+            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.4), 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+        .btn-cyan:hover {
+            color: #050505;
+            background: #00f3ff;
+            box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
+            text-shadow: none;
+        }
+
+        /* Saffron Neon */
+        .btn-saffron {
+            color: #FF9933;
+            border: 2px solid #FF9933;
+            text-shadow: 0 0 8px #FF9933, 0 0 15px #FF9933;
+            box-shadow: inset 0 0 15px rgba(255, 153, 51, 0.4), 0 0 20px rgba(255, 153, 51, 0.4);
+        }
+        .btn-saffron:hover {
+            color: #050505;
+            background: #FF9933;
+            box-shadow: 0 0 30px #FF9933, 0 0 60px #FF9933;
+            text-shadow: none;
+        }
+
+        /* Yellow Neon */
+        .btn-yellow {
+            color: #ccff00;
+            border: 2px solid #ccff00;
+            text-shadow: 0 0 8px #ccff00, 0 0 15px #ccff00;
+            box-shadow: inset 0 0 15px rgba(204, 255, 0, 0.4), 0 0 20px rgba(204, 255, 0, 0.4);
+        }
+        .btn-yellow:hover {
+            color: #050505;
+            background: #ccff00;
+            box-shadow: 0 0 30px #ccff00, 0 0 60px #ccff00;
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="snakeCanvas"></canvas>
+
+    <div class="parallax-container">
+        <div class="button-overlay">
+            <a href="Hotline.html" class="neon-btn btn-cyan">Hotline</a>
+            <a href="Spritual.html" class="neon-btn btn-saffron">Spritual Seeker</a>
+            <a href="Cosmotalk.html" class="neon-btn btn-yellow">Cosmotalk</a>
+        </div>
+    </div>
+
+    <script>
+        // --- Web Audio API Synth Sound Manager ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playPopSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+
+            gainNode.gain.setValueAtTime(0.4, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.08);
+        }
+
+
+        // --- Canvas Graphics Engine ---
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let snakes = [];
+        let particles = [];
+        const numSnakes = 10; 
+        const segmentSize = 8;
+
+        // NEW: Handles the temporary water disturbance / speed boost physics
+        let waterExcitement = 0; // Ranges from 0 (calm) to 1 (fully startled)
+
+        function getRandomColor() {
+            const colors = [
+                'rgba(255, 0, 51, ',   
+                'rgba(204, 0, 0, ',    
+                'rgba(255, 64, 64, ',  
+                'rgba(255, 255, 255, ',
+                'rgba(240, 240, 250, ' 
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createSnake(initiallyOnScreen = false) {
+            let x, y, angle;
+
+            if (initiallyOnScreen) {
+                x = Math.random() * canvas.width;
+                y = Math.random() * canvas.height;
+                angle = Math.random() * Math.PI * 2;
+            } else {
+                const edge = Math.floor(Math.random() * 4);
+                const offset = 40;
+
+                switch (edge) {
+                    case 0:
+                        x = Math.random() * canvas.width;
+                        y = -offset;
+                        angle = Math.random() * Math.PI;
+                        break;
+                    case 1:
+                        x = canvas.width + offset;
+                        y = Math.random() * canvas.height;
+                        angle = Math.random() * Math.PI + Math.PI/2;
+                        break;
+                    case 2:
+                        x = Math.random() * canvas.width;
+                        y = canvas.height + offset;
+                        angle = Math.random() * Math.PI + Math.PI;
+                        break;
+                    case 3:
+                        x = -offset;
+                        y = Math.random() * canvas.height;
+                        angle = (Math.random() * Math.PI - Math.PI/2);
+                        break;
+                }
+            }
+
+            return {
+                segments: [],
+                length: Math.floor(Math.random() * 20) + 15, 
+                x: x,
+                y: y,
+                angle: angle,
+                speed: Math.random() * 2 + 1.5,
+                turnSpeed: (Math.random() - 0.5) * 0.2,
+                colorBase: getRandomColor()
+            };
+        }
+
+        for (let i = 0; i < numSnakes; i++) {
+            snakes.push(createSnake(true));
+        }
+
+        function burstSnake(snake) {
+            playPopSound();
+            
+            snake.segments.forEach((seg, index) => {
+                const count = 2; 
+                for(let i = 0; i < count; i++) {
+                    const pAngle = Math.random() * Math.PI * 2;
+                    const pSpeed = Math.random() * 3 + 1.5;
+                    particles.push({
+                        x: seg.x,
+                        y: seg.y,
+                        vx: Math.cos(pAngle) * pSpeed,
+                        vy: Math.sin(pAngle) * pSpeed,
+                        alpha: 1,
+                        decay: Math.random() * 0.03 + 0.02, 
+                        colorBase: snake.colorBase,
+                        size: segmentSize * (1 - (index / snake.length) * 0.5) * 0.5
+                    });
+                }
+            });
+        }
+
+        function handleInteraction(clientX, clientY) {
+            initAudio();
+            let burstOccurred = false;
+
+            for (let i = snakes.length - 1; i >= 0; i--) {
+                const snake = snakes[i];
+                
+                for (let j = 0; j < snake.segments.length; j++) {
+                    const seg = snake.segments[j];
+                    const distance = Math.hypot(clientX - seg.x, clientY - seg.y);
+                    
+                    if (distance < 35) { 
+                        burstSnake(snake);
+                        snakes.splice(i, 1); 
+                        burstOccurred = true;
+                        break; 
+                    }
+                }
+            }
+
+            if (burstOccurred) {
+                while (snakes.length < numSnakes) {
+                    snakes.push(createSnake(false));
+                }
+            } else {
+                // MODIFIED: If no snake was hit, spike water excitement level to trigger the fish scare effect
+                waterExcitement = 1.0;
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => handleInteraction(e.clientX, e.clientY));
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); 
+            if(e.touches.length > 0) {
+                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        function animateSnakes() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Gradually decay the excitement back down to 0 over roughly 2-3 seconds
+            if (waterExcitement > 0) {
+                waterExcitement -= 0.007; 
+                if (waterExcitement < 0) waterExcitement = 0;
+            }
+
+            // Render Snakes
+            snakes.forEach(snake => {
+                // If water is excited, snakes check and alter course much faster/sharper
+                const decisionRate = waterExcitement > 0 ? 0.15 : 0.05;
+                if (Math.random() < decisionRate) {
+                    // Turn limits scale higher when excited to retain beautiful curves during fast movement
+                    const turnFactor = waterExcitement > 0 ? 0.5 : 0.3;
+                    snake.turnSpeed = (Math.random() - 0.5) * turnFactor;
+                }
+                snake.angle += snake.turnSpeed;
+
+                // Dynamic speed calculation: Base speed doubles when waterExcitement is at maximum
+                const dynamicSpeed = snake.speed * (1 + waterExcitement);
+
+                snake.x += Math.cos(snake.angle) * dynamicSpeed;
+                snake.y += Math.sin(snake.angle) * dynamicSpeed;
+
+                if (snake.x < -50) snake.x = canvas.width + 50;
+                if (snake.x > canvas.width + 50) snake.x = -50;
+                if (snake.y < -50) snake.y = canvas.height + 50;
+                if (snake.y > canvas.height + 50) snake.y = -50;
+
+                snake.segments.unshift({ x: snake.x, y: snake.y });
+                if (snake.segments.length > snake.length) {
+                    snake.segments.pop();
+                }
+
+                snake.segments.forEach((seg, index) => {
+                    const opacity = 1 - (index / snake.length);
+                    ctx.fillStyle = `${snake.colorBase}${opacity})`;
+                    
+                    const currentSize = segmentSize * (1 - (index / snake.length) * 0.5);
+                    
+                    ctx.beginPath();
+                    ctx.arc(seg.x, seg.y, currentSize, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+
+            // Render Exploding Pop Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = `${p.colorBase}${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(animateSnakes);
+        }
+        animateSnakes();
+
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const scrollDelta = currentScrollY - lastScrollY;
+            lastScrollY = currentScrollY;
+
+            snakes.forEach(snake => {
+                snake.y -= scrollDelta * 0.3; 
+            });
+            particles.forEach(p => {
+                p.y -= scrollDelta * 0.3;
+            });
+        });
+    </script>
+</body>
+</html>

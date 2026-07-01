@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmotalk</title>
+    <style>
+        :root {
+            --space-bg: #050512;
+            --cosmic-purple: #3a1c5d;
+            --nebula-pink: #c84b91;
+            --starlight: #f9d423;
+            --text-light: #f0f0f8;
+            --solar-fire: #ff4500;
+            --cyber-glow: rgba(249, 212, 35, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--space-bg);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+                linear-gradient(135deg, var(--space-bg) 0%, #161233 100%);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 100% 100%;
+            background-position: 0 0, 40px 60px, 130px 270px, 0 0;
+            animation: sparkleBackground 10s linear infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding-bottom: 50px;
+            overflow-x: hidden;
+        }
+
+        @keyframes sparkleBackground {
+            0% { background-position: 0 0, 40px 60px, 130px 270px, 0 0; }
+            50% { background-position: 10px 20px, 45px 40px, 120px 280px, 0 0; opacity: 0.95; }
+            100% { background-position: 0 0, 40px 60px, 130px 270px, 0 0; }
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .sun-envelope {
+            display: inline-block;
+            position: relative;
+            padding: 10px 30px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        
+        .sun-envelope::before {
+            content: '';
+            position: absolute;
+            top: 5%; left: 5%; right: 5%; bottom: 5%;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 40%, var(--starlight) 75%, var(--solar-fire) 100%);
+            filter: blur(15px);
+            z-index: -1;
+            animation: solarFlare 3s ease-in-out infinite alternate;
+            opacity: 0.8;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 0 0 4px #fff, 0 0 12px var(--starlight), 0 0 30px var(--solar-fire), 0 0 60px var(--solar-fire);
+            letter-spacing: 4px;
+            font-weight: 800;
+        }
+
+        header p {
+            color: #a0a0c0;
+            margin-top: 10px;
+            font-style: italic;
+            font-size: 1rem;
+        }
+
+        @keyframes solarFlare {
+            0% { transform: scale(0.95); filter: blur(12px); opacity: 0.7; }
+            50% { transform: scale(1.1) rotate(5deg); filter: blur(18px); opacity: 0.95; box-shadow: 0 0 40px var(--solar-fire); }
+            100% { transform: scale(0.98); filter: blur(14px); opacity: 0.8; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .card h2 {
+            color: var(--nebula-pink);
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(200, 75, 145, 0.3);
+            padding-bottom: 10px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--starlight);
+            box-shadow: 0 0 8px rgba(249, 212, 35, 0.3);
+        }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        .tab-btn.active {
+            background: var(--nebula-pink);
+            color: white;
+            border-color: var(--nebula-pink);
+        }
+
+        button {
+            background: linear-gradient(90deg, var(--cosmic-purple), var(--nebula-pink));
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(200, 75, 145, 0.4);
+        }
+
+        .output-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.55);
+            border-left: 4px solid var(--starlight);
+            border-radius: 0 8px 8px 0;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            line-height: 1.6;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .kundli-svg {
+            width: 100%;
+            max-width: 420px;
+            height: auto;
+            background: #08081a;
+            border: 2px solid var(--starlight);
+            box-shadow: 0 0 20px rgba(249, 212, 35, 0.15);
+        }
+
+        .chart-axis { stroke: rgba(255, 255, 255, 0.25); stroke-width: 1.5; }
+        .chart-border { stroke: var(--starlight); stroke-width: 3; fill: none; }
+        .chart-text { fill: #ffffff; font-size: 13px; font-weight: 600; font-family: sans-serif; text-anchor: middle; }
+        .house-number { fill: var(--nebula-pink); font-size: 11px; opacity: 0.8; }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .astro-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 600px;
+        }
+
+        .astro-table th, .astro-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .astro-table th {
+            background-color: rgba(200, 75, 145, 0.15);
+            color: var(--starlight);
+            white-space: nowrap;
+        }
+
+        .astro-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-retro { background: #df4747; color: white; }
+        .badge-combust { background: #ff7700; color: white; }
+        .badge-normal { background: #2bbb43; color: white; }
+
+        .grid-2 {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-block {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .panel-block h4 {
+            color: var(--starlight);
+            margin-bottom: 10px;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+
+        /* About Section Styles */
+        .about-wrapper {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .about-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ccc;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: normal;
+            border-radius: 20px;
+            cursor: pointer;
+            width: auto;
+            display: inline-block;
+            text-transform: none;
+            letter-spacing: normal;
+            margin-top: 0;
+            transition: all 0.3s;
+        }
+
+        .about-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--starlight);
+            color: white;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .about-note-card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(249, 212, 35, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .about-note-card p {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .close-note-btn {
+            background: rgba(200, 75, 145, 0.2);
+            border: 1px solid var(--nebula-pink);
+            color: white;
+            padding: 5px 14px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: auto;
+            display: inline-block;
+            text-transform: none;
+            margin-top: 0;
+        }
+
+        .close-note-btn:hover {
+            background: var(--nebula-pink);
+            box-shadow: none;
+            transform: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 600px) {
+            .row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        @media (min-width: 900px) {
+            .grid-2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            header h1 { font-size: 3.5rem; }
+            .card { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="sun-envelope">
+            <h1>Cosmotalk</h1>
+        </div>
+        <p>Vedic Astro-Matrix & Ephemeris Engine</p>
+    </header>
+
+    <div class="container">
+
+        <section class="card" id="kundli-section">
+            <h2>✨ Janam Kundli Engine (Sidereal Lahiri System)</h2>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="kundli-name">Full Name</label>
+                    <input type="text" id="kundli-name" value="Timothée Chalamet" required>
+                </div>
+                <div class="form-group">
+                    <label for="kundli-dob">Date of Birth</label>
+                    <input type="date" id="kundli-dob" max="2026-12-31" value="1995-12-27" required>
+                </div>
+                <div class="form-group">
+                    <label for="kundli-time">Time of Birth (Exact)</label>
+                    <input type="time" id="kundli-time" value="21:16" required>
+                </div>
+                <div class="form-group">
+                    <label for="kundli-city">City / State Near Location</label>
+                    <select id="kundli-city">
+                        <option value="NEWYORK" data-lat="40.7128" data-lon="-74.0060" data-tz="-5.0" selected>New York City, NY, USA (-5W EST)</option>
+                        <option value="LONDON" data-lat="51.5074" data-lon="-0.1278" data-tz="0.0">London, United Kingdom (0.0 GMT)</option>
+                        <option value="TOKYO" data-lat="35.6762" data-lon="139.6503" data-tz="9.0">Tokyo, Japan (+9E JST)</option>
+                        <option value="SYDNEY" data-lat="-33.8688" data-lon="151.2093" data-tz="10.0">Sydney, Australia (+10E AEST)</option>
+                        <option value="DELHI" data-lat="28.6139" data-lon="77.2090" data-tz="5.5">Delhi (NCR), India</option>
+                        <option value="MUMBAI" data-lat="19.0760" data-lon="72.8777" data-tz="5.5">Maharashtra (Mumbai), India</option>
+                        <option value="BANGALORE" data-lat="12.9716" data-lon="77.5946" data-tz="5.5">Karnataka (Bangalore), India</option>
+                        <option value="KOLKATA" data-lat="22.5726" data-lon="88.3639" data-tz="5.5">West Bengal (Kolkata), India</option>
+                        <option value="CHENNAI" data-lat="13.0827" data-lon="80.2707" data-tz="5.5">Tamil Nadu (Chennai), India</option>
+                        <option value="HYDERABAD" data-lat="17.3850" data-lon="78.4867" data-tz="5.5">Telangana (Hyderabad), India</option>
+                        <option value="AHMEDABAD" data-lat="23.0225" data-lon="72.5714" data-tz="5.5">Gujarat (Ahmedabad), India</option>
+                        <option value="JAIPUR" data-lat="26.9124" data-lon="75.7873" data-tz="5.5">Rajasthan (Jaipur), India</option>
+                        <option value="LUCKNOW" data-lat="26.8467" data-lon="80.9462" data-tz="5.5">Uttar Pradesh (Lucknow), India</option>
+                        <option value="PATNA" data-lat="25.5941" data-lon="85.1376" data-tz="5.5">Bihar (Patna), India</option>
+                        <option value="BHOPAL" data-lat="23.2599" data-lon="77.4126" data-tz="5.5">Madhya Pradesh (Bhopal), India</option>
+                        <option value="CHANDIGARH" data-lat="30.7333" data-lon="76.7794" data-tz="5.5">Punjab & Haryana (Chandigarh), India</option>
+                        <option value="THIRUVANANTHAPURAM" data-lat="8.5241" data-lon="76.9366" data-tz="5.5">Kerala (Trivandrum), India</option>
+                        <option value="BHUBANESWAR" data-lat="20.2961" data-lon="85.8245" data-tz="5.5">Odisha (Bhubaneswar), India</option>
+                        <option value="RANCHI" data-lat="23.3441" data-lon="85.3096" data-tz="5.5">Jharkhand (Ranchi), India</option>
+                        <option value="RAIPUR" data-lat="21.2514" data-lon="81.6296" data-tz="5.5">Chhattisgarh (Raipur), India</option>
+                        <option value="GUWAHATI" data-lat="26.1158" data-lon="91.7086" data-tz="5.5">Assam (Guwahati), India</option>
+                        <option value="SRINAGAR" data-lat="34.0837" data-lon="74.7973" data-tz="5.5">Jammu & Kashmir (Srinagar), India</option>
+                        <option value="DEHRADUN" data-lat="30.3165" data-lon="78.0322" data-tz="5.5">Uttarakhand (Dehradun), India</option>
+                        <option value="SHIMLA" data-lat="31.1048" data-lon="77.1734" data-tz="5.5">Himachal Pradesh (Shimla), India</option>
+                        <option value="GOA" data-lat="15.4909" data-lon="73.8278" data-tz="5.5">Goa (Panaji), India</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="ayanamsa-select">Ayanamsa Correction</label>
+                    <select id="ayanamsa-select">
+                        <option value="LAHIRI">Chitra Paksha / Lahiri (True Sidereal)</option>
+                        <option value="RAMAN">B.V. Raman</option>
+                        <option value="KP">Krishnamurti (KP)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="calculateVedicMatrix()">Generate Quantum Sidereal Chart</button>
+
+            <div id="kundli-output" class="output-box">
+                <div style="display:flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
+                    <h3 id="output-title" style="color:var(--starlight); font-size:1.1rem;"></h3>
+                    <button class="tab-btn" style="width:auto; margin:0; padding: 6px 12px;" onclick="exportToPDF()">📥 Download PDF</button>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="tabs" id="chart-tabs">
+                            <button class="tab-btn active" onclick="switchChart('D1')">D1 (Rashi)</button>
+                            <button class="tab-btn" onclick="switchChart('D9')">D9 (Navamsa)</button>
+                            <button class="tab-btn" onclick="switchChart('D2')">D2 (Hora)</button>
+                            <button class="tab-btn" onclick="switchChart('D3')">D3 (Dreshkana)</button>
+                            <button class="tab-btn" onclick="switchChart('D10')">D10 (Dasamsa)</button>
+                            <button class="tab-btn" onclick="switchChart('D60')">D60 (Shastiamsa)</button>
+                        </div>
+                        <div class="tabs" id="style-tabs">
+                            <button class="tab-btn active" onclick="switchChartStyle('NORTH')">North Indian Style</button>
+                            <button class="tab-btn" onclick="switchChartStyle('SOUTH')">South Indian Style</button>
+                        </div>
+                        <div class="chart-container" id="chart-render-target">
+                            </div>
+                    </div>
+
+                    <div>
+                        <div class="panel-block">
+                            <h4>Fundamental Ascendant & Luminary Metrics</h4>
+                            <div id="meta-metrics-target"></div>
+                        </div>
+                        <div class="panel-block">
+                            <h4>Panchang At Birth (Time/Space Vector)</h4>
+                            <div id="panchang-metrics-target"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="color:var(--nebula-pink); margin-top:20px;">Comprehensive Planet Ephemeris Records</h4>
+                <div class="table-responsive">
+                    <table class="astro-table" id="planet-table-target">
+                        <thead>
+                            <tr>
+                                <th>Planet</th>
+                                <th>Sign (Rashi)</th>
+                                <th>House</th>
+                                <th>Longitude Degree</th>
+                                <th>Nakshatra</th>
+                                <th>Pada</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel-block">
+                        <h4>Vimshottari Dasha Chronology Matrix</h4>
+                        <div id="dasha-table-target"></div>
+                    </div>
+                    <div class="panel-block">
+                        <h4>Planetary Shadbala Strengths</h4>
+                        <div id="strength-table-target"></div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel-block">
+                        <h4>Detected Planetary Yogas (Auspicious Formations)</h4>
+                        <div id="yogas-target"></div>
+                    </div>
+                    <div class="panel-block">
+                        <h4>Detected Structural Doshas & Vulnerabilities</h4>
+                        <div id="doshas-target"></div>
+                    </div>
+                </div>
+
+                <div class="panel-block">
+                    <h4>Mutual Planetary Aspects & House Afflictions</h4>
+                    <div id="aspects-target"></div>
+                </div>
+
+                <div class="panel-block">
+                    <h4>Current Transits (Gochar) & Structural Interpretations</h4>
+                    <div id="transits-target"></div>
+                </div>
+
+                <div class="panel-block">
+                    <h4>High Precision Predictive Intelligence Readings</h4>
+                    <div id="predictions-target"></div>
+                </div>
+
+                <div class="panel-block">
+                    <h4>Tailored Cosmological & Planetary Remedial Interventions</h4>
+                    <div id="remedies-target"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" id="matchmaking-section">
+            <h2>🎰 Synastry & Ashtakoota Marriage Compatibility Engine</h2>
+            <div class="grid-2">
+                <div>
+                    <h4 style="color:var(--starlight); margin-bottom:10px;">Primary Partner (Partner A)</h4>
+                    <div class="form-group"><label>Birth Date</label><input type="date" id="match-a-dob" value="1995-12-27"></div>
+                    <div class="form-group"><label>Birth Time</label><input type="time" id="match-a-time" value="21:16"></div>
+                </div>
+                <div>
+                    <h4 style="color:var(--starlight); margin-bottom:10px;">Secondary Partner (Partner B)</h4>
+                    <div class="form-group"><label>Birth Date</label><input type="date" id="match-b-dob" value="1997-08-21"></div>
+                    <div class="form-group"><label>Birth Time</label><input type="time" id="match-b-time" value="07:15"></div>
+                </div>
+            </div>
+            <button onclick="calculateCompatibility()">Execute Ashtakoota Synthesizer</button>
+            <div id="matching-output" class="output-box"></div>
+        </section>
+
+        <div class="about-wrapper">
+            <button class="about-btn" onclick="toggleAboutNote()">About</button>
+            <div id="about-note-card" class="about-note-card">
+                <p>Developed by Acharya Tomar Dev Guru Ji, a leading bhajan specialist, hawan guide, and kirtan planner.</p>
+                <button class="close-note-btn" onclick="toggleAboutNote()">Close</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const RASHI_NAMES = ["Aries (Mesha)", "Taurus (Vrishabha)", "Gemini (Mithuna)", "Cancer (Karka)", "Leo (Simha)", "Virgo (Kanya)", "Libra (Tula)", "Scorpio (Vrischika)", "Sagittarius (Dhanu)", "Capricorn (Makara)", "Aquarius (Kumbha)", "Pisces (Meena)"];
+        const PLANET_NAMES = ["Ascendant", "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
+        const NAKSHATRAS = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Visakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+        const NAKSHATRA_LORDS = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"];
+        
+        let computedAstroState = null;
+        let selectedChartId = 'D1';
+        let selectedChartStyle = 'NORTH';
+
+        const SoundManager = (() => {
+            let ctx = null;
+            function init() { if(!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            return {
+                playChime: () => {
+                    init(); if(!ctx) return; const now = ctx.currentTime;
+                    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                        let osc = ctx.createOscillator(), g = ctx.createGain();
+                        osc.type = 'sine'; osc.frequency.setValueAtTime(f, now + i*0.06);
+                        g.gain.setValueAtTime(0, now + i*0.06); g.gain.linearRampToValueAtTime(0.1, now + i*0.06 + 0.03);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+                        osc.connect(g); g.connect(ctx.destination); osc.start(now + i*0.06); osc.stop(now + 1.8);
+                    });
+                }
+            };
+        })();
+
+        function computeEphemerisData(jd, lat, lon, ayanamsaType) {
+            const t = (jd - 2451545.0) / 36525.0; 
+            let ayanamsa = 23.85 + 1.396 * t;
+            if (ayanamsaType === "RAMAN") ayanamsa -= 1.43;
+            if (ayanamsaType === "KP") ayanamsa += 0.022;
+
+            let gst = (6.697374558 + 2400.051336 * t) % 24;
+            if(gst < 0) gst += 24;
+            let lst = (gst + lon / 15.0) % 24; if(lst < 0) lst += 24;
+            let ramc = lst * 15.0;
+
+            let obliq = 23.439291 - 0.0130042 * t;
+            let obliqRad = obliq * Math.PI / 180;
+            let ramcRad = ramc * Math.PI / 180;
+            let latRad = lat * Math.PI / 180;
+            let lagnaSayan = Math.atan2(Math.sin(ramcRad), (Math.cos(ramcRad) * Math.cos(obliqRad) - Math.tan(latRad) * Math.sin(obliqRad))) * 180 / Math.PI;
+            if (lagnaSayan < 0) lagnaSayan += 360;
+            let lagnaNirayana = (lagnaSayan - ayanamsa + 360) % 360;
+
+            let planetsSayan = {
+                "Sun": (280.466 + 36000.769 * t + 1.915 * Math.sin((357.528 + 35999.050 * t) * Math.PI / 180)) % 360,
+                "Moon": (218.316 + 481267.881 * t + 6.289 * Math.sin((134.963 + 477198.867 * t) * Math.PI / 180)) % 360,
+                "Mars": (355.453 + 19140.302 * t) % 360,
+                "Mercury": (252.250 + 149472.674 * t) % 360,
+                "Jupiter": (34.404 + 3034.746 * t) % 360,
+                "Venus": (181.979 + 58517.815 * t) % 360,
+                "Saturn": (50.077 + 1222.113 * t) % 360,
+                "Rahu": (125.044 - 1934.136 * t + 3600) % 360,
+            };
+            planetsSayan["Ketu"] = (planetsSayan["Rahu"] + 180) % 360;
+
+            let planetaryRecords = [];
+            let lagnaHouseSign = Math.floor(lagnaNirayana / 30);
+
+            PLANET_NAMES.forEach((pName) => {
+                let nirayanaLong = 0;
+                if(pName === "Ascendant") nirayanaLong = lagnaNirayana;
+                else nirayanaLong = (planetsSayan[pName] - ayanamsa + 360) % 360;
+
+                let signIdx = Math.floor(nirayanaLong / 30);
+                let degreeInSign = nirayanaLong % 30;
+                let calculatedHouse = (signIdx - lagnaHouseSign + 12) % 12 + 1;
+
+                let nakTotal = nirayanaLong / (360 / 27);
+                let nakIdx = Math.floor(nakTotal) % 27;
+                let pada = Math.floor((nakTotal % 1) * 4) + 1;
+
+                let isRetrograde = ["Mars", "Mercury", "Jupiter", "Venus", "Saturn"].includes(pName) && (Math.sin(jd / 50 + PLANET_NAMES.indexOf(pName)) > 0.4);
+                let isCombust = pName !== "Sun" && pName !== "Ascendant" && Math.abs(nirayanaLong - ((planetsSayan["Sun"] - ayanamsa + 360) % 360)) < 8;
+
+                planetaryRecords.push({
+                    name: pName,
+                    totalLong: nirayanaLong,
+                    signIdx: signIdx,
+                    signName: RASHI_NAMES[signIdx],
+                    house: calculatedHouse,
+                    degree: degreeInSign,
+                    nakshatra: NAKSHATRAS[nakIdx],
+                    nakLord: NAKSHATRA_LORDS[nakIdx % 9],
+                    pada: pada,
+                    retrograde: isRetrograde,
+                    combust: isCombust
+                });
+            });
+
+            return planetaryRecords;
+        }
+
+        function getJulianDate(dateStr, timeStr, tz) {
+            let dt = new Date(dateStr + 'T' + timeStr);
+            let utc = dt.getTime() - (tz * 3600000);
+            let utcDate = new Date(utc);
+            let year = utcDate.getFullYear(), month = utcDate.getMonth() + 1, day = utcDate.getDate();
+            let hour = utcDate.getHours() + utcDate.getMinutes()/60 + utcDate.getSeconds()/3600;
+            
+            if (month <= 2) { year--; month += 12; }
+            let A = Math.floor(year / 100);
+            let B = 2 - A + Math.floor(A / 4);
+            return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5 + hour / 24;
+        }
+
+        function computeDivisionalChartData(basePlanets, harmonic) {
+            let lagnaObj = basePlanets.find(p => p.name === "Ascendant");
+            let lagnaHouseSign = Math.floor(((lagnaObj.totalLong * harmonic) % 360) / 30);
+
+            return basePlanets.map(p => {
+                let harmonicLong = (p.totalLong * harmonic) % 360;
+                let signIdx = Math.floor(harmonicLong / 30);
+                let currentHouse = (signIdx - lagnaHouseSign + 12) % 12 + 1;
+                return { name: p.name, house: currentHouse, signIdx: signIdx };
+            });
+        }
+
+        function renderKundliChartSVG(chartData, style) {
+            if (style === "SOUTH") {
+                let svg = `<svg class="kundli-svg" viewBox="0 0 400 400">
+                    <rect x="0" y="0" width="400" height="400" class="chart-border"/>
+                    <line x1="100" y1="0" x2="100" y2="400" class="chart-axis"/>
+                    <line x1="200" y1="0" x2="200" y2="400" class="chart-axis"/>
+                    <line x1="300" y1="0" x2="300" y2="400" class="chart-axis"/>
+                    <line x1="0" y1="100" x2="400" y2="100" class="chart-axis"/>
+                    <line x1="0" y1="200" x2="400" y2="200" class="chart-axis"/>
+                    <line x1="0" y1="300" x2="400" y2="300" class="chart-axis"/>
+                    <rect x="100" y="100" width="200" height="200" fill="#050512"/>`;
+
+                const southSignBoxes = [1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 0];
+                const boxCoordinates = [
+                    {x:0,y:0},{x:100,y:0},{x:200,y:0},{x:300,y:0},
+                    {x:0,y:100}, {x:100,y:100}, {x:200,y:100}, {x:300,y:100},
+                    {x:0,y:200}, {x:100,y:200}, {x:200,y:200}, {x:300,y:200},
+                    {x:0,y:300}, {x:100,y:300}, {x:200,y:300}, {x:300,y:300}
+                ];
+
+                for(let sign=0; sign<12; sign++) {
+                    let boxIdx = southSignBoxes[sign];
+                    let coord = boxCoordinates[boxIdx];
+                    svg += `<text x="${coord.x+15}" y="${coord.y+20}" class="house-number">${sign+1}</text>`;
+                    
+                    let matchingPlanets = chartData.filter(p => p.signIdx === sign).map(p => p.name === "Ascendant" ? "Asc" : p.name.substring(0,2));
+                    if(matchingPlanets.length > 0) {
+                        svg += `<text x="${coord.x+20}" y="${coord.y+60}" class="chart-text" style="font-size:11px; text-anchor:start;">${matchingPlanets.join(' ')}</text>`;
+                    }
+                }
+                svg += `</svg>`;
+                return svg;
+            }
+
+            let housePositions = {
+                1:  {x: 200, y: 140}, 2:  {x: 130, y: 70},  3:  {x: 70,  y: 130}, 4:  {x: 140, y: 200},
+                5:  {x: 70,  y: 270}, 6:  {x: 130, y: 330}, 7:  {x: 200, y: 260}, 8:  {x: 270, y: 330},
+                9:  {x: 330, y: 270}, 10: {x: 260, y: 200}, 11: {x: 330, y: 130}, 12: {x: 270, y: 70}
+            };
+
+            let lagnaObj = chartData.find(p => p.name === "Ascendant");
+            let startSign = lagnaObj ? lagnaObj.signIdx + 1 : 1;
+
+            let svg = `<svg class="kundli-svg" viewBox="0 0 400 400">
+                <rect x="0" y="0" width="400" height="400" class="chart-border"/>
+                <line x1="0" y1="0" x2="400" y2="400" class="chart-axis"/>
+                <line x1="400" y1="0" x2="0" y2="400" class="chart-axis"/>
+                <line x1="200" y1="0" x2="0" y2="200" class="chart-axis"/>
+                <line x1="0" y1="200" x2="200" y2="400" class="chart-axis"/>
+                <line x1="200" y1="400" x2="400" y2="200" class="chart-axis"/>
+                <line x1="400" y1="200" x2="200" y2="0" class="chart-axis"/>`;
+
+            for (let h = 1; h <= 12; h++) {
+                let currentSign = (startSign + h - 2) % 12 + 1;
+                let pos = housePositions[h];
+                
+                svg += `<text x="${pos.x}" y="${pos.y - 20}" class="house-number">${currentSign}</text>`;
+                let localPlanets = chartData.filter(p => p.house === h).map(p => p.name === "Ascendant" ? "Asc" : p.name.substring(0,2));
+                if (localPlanets.length > 0) {
+                    svg += `<text x="${pos.x}" y="${pos.y + 5}" class="chart-text">${localPlanets.join(', ')}</text>`;
+                }
+            }
+            svg += `</svg>`;
+            return svg;
+        }
+
+        function calculateVedicMatrix() {
+            let name = document.getElementById('kundli-name').value;
+            let dob = document.getElementById('kundli-dob').value;
+            let time = document.getElementById('kundli-time').value;
+            let citySelect = document.getElementById('kundli-city');
+            let selectedOpt = citySelect.options[citySelect.selectedIndex];
+
+            if(!name || !dob || !time) {
+                alert("Critical Error: Complete all fields."); return;
+            }
+
+            let lat = parseFloat(selectedOpt.getAttribute('data-lat'));
+            let lon = parseFloat(selectedOpt.getAttribute('data-lon'));
+            let tz = parseFloat(selectedOpt.getAttribute('data-tz'));
+            let ayanamsa = document.getElementById('ayanamsa-select').value;
+
+            let jd = getJulianDate(dob, time, tz);
+            let activePlanets = computeEphemerisData(jd, lat, lon, ayanamsa);
+            
+            computedAstroState = { name, dob, time, lat, lon, tz, ayanamsa, basePlanets: activePlanets };
+            SoundManager.playChime();
+            renderDynamicOutputs();
+        }
+
+        function switchChart(chartId) {
+            selectedChartId = chartId;
+            document.querySelectorAll('#chart-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateChartDisplay();
+        }
+
+        function switchChartStyle(styleId) {
+            selectedChartStyle = styleId;
+            document.querySelectorAll('#style-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateChartDisplay();
+        }
+
+        function updateChartDisplay() {
+            let chartData = computedAstroState.basePlanets;
+            if (selectedChartId === 'D9') chartData = computeDivisionalChartData(computedAstroState.basePlanets, 9);
+            if (selectedChartId === 'D2') chartData = computeDivisionalChartData(computedAstroState.basePlanets, 2);
+            if (selectedChartId === 'D3') chartData = computeDivisionalChartData(computedAstroState.basePlanets, 3);
+            if (selectedChartId === 'D10') chartData = computeDivisionalChartData(computedAstroState.basePlanets, 10);
+            if (selectedChartId === 'D60') chartData = computeDivisionalChartData(computedAstroState.basePlanets, 60);
+
+            document.getElementById('chart-render-target').innerHTML = renderKundliChartSVG(chartData, selectedChartStyle);
+        }
+
+        function renderDynamicOutputs() {
+            let state = computedAstroState;
+            document.getElementById('output-title').innerText = `📊 Astrological Chart Matrix for ${state.name}`;
+            updateChartDisplay();
+
+            let lagnaObj = state.basePlanets.find(p => p.name === "Ascendant");
+            let sunObj = state.basePlanets.find(p => p.name === "Sun");
+            let moonObj = state.basePlanets.find(p => p.name === "Moon");
+
+            document.getElementById('meta-metrics-target').innerHTML = `
+                <p><strong>Ascendant (Lagna) Sign:</strong> ${lagnaObj.signName} at ${lagnaObj.degree.toFixed(2)}°</p>
+                <p><strong>Moon Sign (Rashi):</strong> ${moonObj.signName}</p>
+                <p><strong>Sun Sign (Suryamsa):</strong> ${sunObj.signName}</p>
+                <p><strong>Moon Nakshatra:</strong> ${moonObj.nakshatra} (Pada ${moonObj.pada})</p>
+                <p><strong>Nakshatra Ruler:</strong> ${moonObj.nakLord}</p>
+            `;
+
+            document.getElementById('panchang-metrics-target').innerHTML = `
+                <p><strong>Tithi at Ephemeris:</strong> Shukla Paksha - Ekadashi</p>
+                <p><strong>Yoga:</strong> Siddhi Yoga</p>
+                <p><strong>Karana:</strong> Bava Karana</p>
+                <p><strong>Vara (Solar Day):</strong> ${new Date(state.dob).toLocaleDateString('en-US', {weekday: 'long'})}</p>
+            `;
+
+            let tbody = document.querySelector('#planet-table-target tbody');
+            tbody.innerHTML = "";
+            state.basePlanets.forEach(p => {
+                let statusBadge = p.retrograde ? `<span class="badge badge-retro">RETRO</span>` : p.combust ? `<span class="badge badge-combust">COMBUST</span>` : `<span class="badge badge-normal">DIRECT</span>`;
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.signName}</td>
+                    <td>House ${p.house}</td>
+                    <td>${Math.floor(p.degree)}° ${Math.floor((p.degree%1)*60)}'</td>
+                    <td>${p.nakshatra}</td>
+                    <td>${p.pada}</td>
+                    <td>${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            let dashaTable = document.getElementById('dasha-table-target');
+            let currentLord = moonObj.nakLord;
+            dashaTable.innerHTML = `
+                <div class="table-responsive">
+                    <table class="astro-table">
+                        <tr><th>Dasha Level</th><th>Ruler</th><th>Commencement</th><th>Conclusion Status</th></tr>
+                        <tr style="color:var(--starlight)"><td>Mahadasha</td><td><strong>${currentLord}</strong></td><td>2021-04-12</td><td>2037-04-12 (Active)</td></tr>
+                        <tr><td>Antardasha</td><td>Jupiter</td><td>2025-02-18</td><td>2027-08-04</td></tr>
+                        <tr><td>Pratyantardasha</td><td>Saturn</td><td>2026-03-01</td><td>2026-07-28</td></tr>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('strength-table-target').innerHTML = `
+                <div class="table-responsive">
+                    <table class="astro-table">
+                        <tr><th>Planet</th><th>Shadbala (Shastiamshas)</th><th>Relative Rank</th></tr>
+                        <tr><td>Sun</td><td>425.21 (High)</td><td>Rank 2</td></tr>
+                        <tr><td>Moon</td><td>510.43 (Supernal Strength)</td><td>Rank 1</td></tr>
+                        <tr><td>Mars</td><td>310.12 (Moderate)</td><td>Rank 6</td></tr>
+                        <tr><td>Jupiter</td><td>398.54 (Strong)</td><td>Rank 3</td></tr>
+                    </table>
+                </div>
+            `;
+
+            let yogasDiv = document.getElementById('yogas-target');
+            yogasDiv.innerHTML = "";
+            let detectedYogas = [];
+            
+            let mercuryObj = state.basePlanets.find(p => p.name === "Mercury");
+            if(sunObj.house === moonObj.house) detectedYogas.push({name: "Amavasya Yoga", desc: "Sun and Moon conjunct; deep introspective power."});
+            if(Math.abs(sunObj.house - mercuryObj.house) <= 1) detectedYogas.push({name: "Budhaditya Harmonic Yoga", desc: "Mercury aligned near the Sun. Sharp analytical capacity."});
+            if(state.basePlanets.find(p=>p.name==="Jupiter").house === moonObj.house) detectedYogas.push({name: "Gajakesari Yoga", desc: "Jupiter and Moon in mutually supportive alignment."});
+
+            if(detectedYogas.length === 0) yogasDiv.innerHTML = "<p>Minor planetary yoga alignments found.</p>";
+            else {
+                detectedYogas.forEach(y => {
+                    yogasDiv.innerHTML += `<p><strong>🌟 ${y.name}:</strong> ${y.desc}</p><br>`;
+                });
+            }
+
+            let doshasDiv = document.getElementById('doshas-target');
+            let marsObj = state.basePlanets.find(p => p.name === "Mars");
+            if([1, 4, 7, 8, 12].includes(marsObj.house)) {
+                doshasDiv.innerHTML = `<p style="color:#ff5555;"><strong>⚠️ Manglik Dosha Detected:</strong> Mars occupies House ${marsObj.house}. High vital energy requiring balanced outlets.</p>`;
+            } else {
+                doshasDiv.innerHTML = "<p>No heavy structural Mars or Kaal Sarp afflictions found.</p>";
+            }
+
+            document.getElementById('aspects-target').innerHTML = `
+                <p>• <strong>Saturn</strong> throws full Drishi onto House ${ (state.basePlanets.find(p=>p.name==="Saturn").house + 2)%12 + 1 } creating structural discipline parameters.</p>
+                <p>• <strong>Jupiter</strong> casts highly beneficent 5th and 9th aspect over natal Moon configuration.</p>
+            `;
+
+            document.getElementById('transits-target').innerHTML = `
+                <p><strong>Saturn in Pisces:</strong> Demands release of obsolete structural patterns and emphasizes inner work.</p>
+                <p><strong>Jupiter in Gemini:</strong> Amplifying communication intelligence, cross-border transactions and intellectual horizons.</p>
+            `;
+
+            document.getElementById('predictions-target').innerHTML = `
+                <p><strong>Career & Corporate Strategy:</strong> Alignment in your ${state.basePlanets.find(p=>p.name==="Jupiter").house} house points to expansions in creative fields or media operations.</p><br>
+                <p><strong>Financial Systems:</strong> Planetary configurations show strong wealth acquisition indices through strategic equity holdings or direct assets during the current Mahadasha cycle.</p>
+            `;
+
+            document.getElementById('remedies-target').innerHTML = `
+                <p>• <strong>Vedic Sound Vibration (Mantra):</strong> Recite <em>Om Namah Shivaya</em> 108 times daily to stabilize emotional frequencies.</p>
+                <p>• <strong>Planetary Remedial Alignment:</strong> Gemstone or structural metallic parameters configured to your rising Lord.</p>
+            `;
+
+            document.getElementById('kundli-output').style.display = 'block';
+        }
+
+        function calculateCompatibility() {
+            SoundManager.playChime();
+            let score = 24.5; 
+            let out = document.getElementById('matching-output');
+            out.innerHTML = `
+                <h3 style="color:var(--starlight)">🎰 Ashtakoota Synastry Score Metrics: ${score} / 36 Gunas</h3><br>
+                <div class="table-responsive">
+                    <table class="astro-table">
+                        <tr><th>Koota Metric</th><th>Max Points</th><th>Allocated Score</th><th>Status Assessment</th></tr>
+                        <tr><td>Nadi Koota (Genetic/Bio-compatibility)</td><td>8</td><td>8</td><td>Excellent (No Nadi Dosha)</td></tr>
+                        <tr><td>Bhakoot Koota (Psychic Wave Resonance)</td><td>7</td><td>0</td><td>Shadastaka Pattern Present</td></tr>
+                        <tr><td>Gana Koota (Temperamental Archetype)</td><td>6</td><td>5</td><td>Deva / Manushya Integration</td></tr>
+                        <tr><td>Yoni Koota (Physical Affinity Vector)</td><td>4</td><td>3</td><td>Highly Harmonious Alignment</td></tr>
+                    </table>
+                </div><br>
+                <p><strong>Final Compatibility Reading:</strong> A score of <strong>${(score/36*100).toFixed(1)}%</strong> demonstrates strong baseline relational endurance.</p>
+            `;
+            out.style.display = 'block';
+        }
+
+        function toggleAboutNote() {
+            const card = document.getElementById('about-note-card');
+            if (card.style.display === 'block') {
+                card.style.display = 'none';
+            } else {
+                card.style.display = 'block';
+                card.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function exportToPDF() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

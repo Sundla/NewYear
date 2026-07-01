@@ -5,13 +5,14 @@
   <title>Happy Birthday Mom</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- GOOGLE FONT -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
   <style>
     * {
       box-sizing: border-box;
       font-family: 'Poppins', sans-serif;
+      /* Remove mobile blue tap highlight effect */
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -19,6 +20,14 @@
       background: #fff;
       color: #222;
       overflow-x: hidden;
+    }
+
+    /* Prevent text/image highlight on quick double tap */
+    img, video, .videoBtn, .folderBtn {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     /* ===== MOVING RED LINE BACKGROUND ===== */
@@ -146,12 +155,10 @@
 
 <div class="bg-lines"></div>
 
-<!-- ===== HERO ===== -->
 <section class="hero">
   <h1>Happy Birthday Mom</h1>
   
   
-<!-- Mother's Day Marquee -->
 <style>
 .mothers-day-marquee {
   position: relative;
@@ -205,7 +212,9 @@
   </div>
 </div>
   
-  <img src="mother.jpg" alt="Mother" style="width:300px; display:block; margin:0 auto;">
+  <img id="motherImg" src="mother.jpg" alt="Mother" style="width:300px; display:block; margin:0 auto; cursor:pointer;-webkit-user-select:none;user-select:none;">
+  <audio id="momAudio" src="mom.mp3"></audio>
+
   <p>
     Today we celebrate the most loving, caring, and the strongest woman in our life.
   </p>
@@ -214,8 +223,7 @@
   </p>
 </section>
 
-<!-- ===== BEST WISHES ===== -->
-<section>
+<section class=").html">
   <h2>Best Wishes</h2>
   <p>
     Mom, you are our greatest blessing. Your love has shaped our lives, your strength
@@ -227,7 +235,6 @@
   </p>
 </section>
 
-<!-- ===== ABOUT YOU ===== -->
 <section>
   <h2>About You</h2>
   <p>
@@ -240,14 +247,13 @@
   </p>
 </section>
 
-<!-- ===== FAVORITES ===== -->
 <section>
   <h2>Favorites</h2>
 
   <div class="cards">
     <div class="card">
       <strong>Favorite Movie</strong>
-      Koi Mil Gaya 
+      Koi Dil Gaya 
       <div class="hi">पसंदीदा फ़िल्म</div>
     </div>
 
@@ -265,24 +271,26 @@
   </div>
 </section>
 
-<!-- ===== 3D QUOTE ===== -->
 <section>
   <h2>Special Quote</h2>
   <div class="quote">
     “A strong woman stands up for herself. A stronger woman stands up for everybody else.”
   </div>
   <div class="quote-hi">
- हैवर गैवर सघन धन, छन्नपती की नारि। तास पटेतर ना तुलै, हरिजन की पनिहारि। (A queen with wealth and grandeur cannot match the water-carrier woman devoted to Truth.) 
+ हैवर गैवर सघन धन, छन्नपती की नारि। तास पटेतर ना तुलै, हरिजन की panihaari। (A queen with wealth and grandeur cannot match the water-carrier woman devoted to Truth.) 
   </div>
 </section>
 
-<img src="qrcode.png" style="display:block;margin:0 auto;width:200px;">
+<div style="width:200px; margin:0 auto;">
+  <img id="qrImg" src="qrcode.png" style="display:block; width:100%; cursor:pointer; -webkit-user-select:none; user-select:none;">
+  <video id="qrVideo" src="qrgirl.mp4" playsinline style="display:none; width:100%; cursor:pointer;"></video>
+</div>
+
 <p style="text-align:center;">
     <strong>Scan to reach the site</strong><br>
     <strong>साइट पर जाने के लिए स्कैन करें</strong>
 </p>
 
-<!-- ===== GAMES ===== -->
 <section class="games">
   <h2>Games</h2>
   <a href="game1.html">PLAY 1</a>
@@ -398,84 +406,148 @@ iframe{width:100%;height:180px;border:0}
   color: #fff;
   padding: 10px;
 }
+
+/* Dynamic Part Toggler Buttons Setup */
+.part-nav-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 8px 0;
+}
+.partBtn {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.partBtn.activePart {
+  background: #ff5252;
+  font-weight: bold;
+}
+
+/* Audiobooks Theme Matching About Button Layout */
+.osho-footer {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 14px;
+  color: #fff;
+}
+.osho-btn {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+.osho-btn.back-mode {
+  background: #d50000;
+  border-color: #ff3333;
+}
+.osho-link {
+  color: #ff7777;
+  text-decoration: none;
+  font-weight: bold;
+}
+.osho-link:hover {
+  text-decoration: underline;
+}
 </style>
 
 <div id="overlay" onclick="closePanels()"></div>
 
-<!-- AUDIOBOOK PANEL -->
 <div id="audio" class="panel">
 <h2>Audiobooks</h2>
 
 <div class="videoBtn" onclick="play('a1')">Origin of Species</div>
 <div class="videoBox" id="a1">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/K6JX649vEXo?si=VOYLyDxiVDBUZSfb" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a2')">The Prince</div>
 <div class="videoBox" id="a2">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/Yb0T40VZUWc?si=b7L0BkSKNEKz9uop" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a3')">The Almanack of Ravikant</div>
 <div class="videoBox" id="a3">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/QJJeHtJC52g?si=SIW6XW3LgKSpVDOt" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a4')">Meditations</div>
 <div class="videoBox" id="a4">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/_8Ph6tJ3uwA?si=i423joBwf7K78yhO" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a5')">Brothers Karamazov</div>
 <div class="videoBox" id="a5">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/uPvcNp6Q4-8?si=trBuV8Qq02ArZ0i7" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a6')">Brothers Karamazov</div>
 <div class="videoBox" id="a6">
-  <iframe></iframe>
-  <a class="yt" href="https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB" target="_blank">Open on YouTube</a>
+  <iframe allowfullscreen></iframe>
+  
+  <div class="part-nav-container">
+    <button class="partBtn activePart" onclick="switchKaramazovPart(1, 'JZDKv8y4PKo', 'https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB', this)">Part 1</button>
+    <button class="partBtn" onclick="switchKaramazovPart(2, 'mBXrcvgKzTo', 'https://youtu.be/mBXrcvgKzTo?si=lCe7frAZJtpTaSbd', this)">Part 2</button>
+    <button class="partBtn" onclick="switchKaramazovPart(3, 'myLuxzCmnvc', 'https://youtu.be/myLuxzCmnvc?si=KFo6Cb2AAWrKDvPk', this)">Part 3</button>
+  </div>
+
+  <a class="yt" id="a6YtLink" href="https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a7')">The Cthulhu Mythos</div>
 <div class="videoBox" id="a7">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/UJDIvebdG8U?si=3anBr9N9lUu6B2Pg" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a8')">Dhammapada</div>
 <div class="videoBox" id="a8">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/I5UcyuiKYFI?si=xEXFhN4qYjaHCGA6" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a9')">Das Kapital</div>
 <div class="videoBox" id="a9">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/WUW6cjZgi7Y?si=8W7EyT_N-b8KJzvq" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a10')">The Gay Science</div>
 <div class="videoBox" id="a10">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <a class="yt" href="https://youtu.be/Bb70lU1fSbA?si=q2VAWPaQKj3WL0xe" target="_blank">Open on YouTube</a>
+</div>
+
+<div class="osho-footer">
+  <button id="oshoToggleBtn" class="osho-btn" onclick="toggleOshoText()">About</button>
+  <div id="oshoInfoBlock" style="display: none; margin-top: 10px;">
+    This page is based on Osho's Neo World Model from this <a class="osho-link" href="https://oshoworld.com/sambhog-se-samadhi-ki-oar-11" target="_blank">discourse</a>.
+  </div>
 </div>
 </div>
 
-<!-- SONG PANEL - Contains original 5 songs with star ratings AND folders -->
 <div id="song" class="panel">
 <h2>Songs</h2>
 
-<!-- ===== ORIGINAL TOP 5 SONGS WITH STAR SYSTEM (RESTORED) ===== -->
-<!-- SONG 1 -->
 <div class="videoBtn" onclick="play('s1')">India Unravel</div>
 <div class="videoBox" id="s1">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -485,10 +557,9 @@ iframe{width:100%;height:180px;border:0}
   <a class="yt" href="https://youtu.be/8iCxEzYcRRM?si=7FBPsi8kgkkSeI4O" target="_blank">Open on YouTube</a>
 </div>
 
-<!-- SONG 2 -->
 <div class="videoBtn" onclick="play('s2')">Lo Lo</div>
 <div class="videoBox" id="s2">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <div class="permanentStars">★★★★★</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -498,10 +569,9 @@ iframe{width:100%;height:180px;border:0}
   <a class="yt" href="https://youtu.be/8AmQ99-ZN2Y?si=E4uk9AG14KXS9MPY" target="_blank">Open on YouTube</a>
 </div>
 
-<!-- SONG 3 -->
 <div class="videoBtn" onclick="play('s3')">Blue Hawaii</div>
 <div class="videoBox" id="s3">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -511,10 +581,9 @@ iframe{width:100%;height:180px;border:0}
   <a class="yt" href="https://youtu.be/pGe2KQ30mYM?si=hrAmnXbmsxjlqcxm" target="_blank">Open on YouTube</a>
 </div>
 
-<!-- SONG 4 -->
 <div class="videoBtn" onclick="play('s4')">Bink's Sake Hindi</div>
 <div class="videoBox" id="s4">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <div class="permanentStars">★★★★★</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -524,10 +593,9 @@ iframe{width:100%;height:180px;border:0}
   <a class="yt" href="https://youtu.be/xqQCOKOpbBw?si=2XGeqcTughXDe4wl" target="_blank">Open on YouTube</a>
 </div>
 
-<!-- SONG 5 -->
 <div class="videoBtn" onclick="play('s5')">Wasteland</div>
 <div class="videoBox" id="s5">
-  <iframe></iframe>
+  <iframe allowfullscreen></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -537,7 +605,6 @@ iframe{width:100%;height:180px;border:0}
   <a class="yt" href="https://youtu.be/WPDpgSBEWaI?si=s7Cm5ebdDivD2yZE" target="_blank">Open on YouTube</a>
 </div>
 
-<!-- ===== FIVE FOLDERS: Live, Vibes, Nostalgia, AMV, imagine dragons (Light brown, edge glow active) ===== -->
 <div id="folderLive" class="videoBtn folderBtn">Live</div>
 <div id="subLive" style="display:none;"></div>
 
@@ -606,8 +673,31 @@ function play(id) {
   };
   if (videoMap[id] && box) {
     box.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoMap[id] + "?autoplay=1";
+    
+    // Reset specific toggler parameters back to default configuration when starting up
+    if (id === 'a6') {
+      const btns = box.querySelectorAll('.partBtn');
+      btns.forEach((btn, idx) => {
+        btn.classList.toggle('activePart', idx === 0);
+      });
+      document.getElementById('a6YtLink').href = "https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB";
+    }
   } else if(box) {
     box.querySelector("iframe").src = "";
+  }
+}
+
+// Custom handler configuration for multi-part Brothers Karamazov selection
+function switchKaramazovPart(partNum, videoId, youtubeUrl, element) {
+  event.stopPropagation(); // Avoid shutting down box
+  const parentBox = document.getElementById('a6');
+  if (parentBox) {
+    parentBox.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+    document.getElementById('a6YtLink').href = youtubeUrl;
+    
+    // Toggle color classes safely
+    parentBox.querySelectorAll('.partBtn').forEach(btn => btn.classList.remove('activePart'));
+    element.classList.add('activePart');
   }
 }
 
@@ -658,6 +748,7 @@ function buildSubContainer(folderId, songsArray) {
     boxDiv.id = subBoxId;
     boxDiv.style.marginLeft = '0';
     const iframeEl = document.createElement('iframe');
+    iframeEl.setAttribute('allowfullscreen', '');
     iframeEl.src = '';
     const ytLink = document.createElement('a');
     ytLink.className = 'yt';
@@ -724,7 +815,9 @@ const nostalgiaSongs = [
 const amvSongs = [
   { id: 'amv1', name: 'Saints', url: 'https://youtu.be/V-01Q8dTPKo?si=3oLieyuWzktcNpbO' },
   { id: 'amv2', name: 'Cruel World', url: 'https://youtu.be/Q5jnvfGgjGM?si=UAQpEjjLJZO4_1_N' },
-  { id: 'amv3', name: 'Antidote', url: 'https://youtu.be/OYnKsasX5Wc?si=HWwS1Ll5Khiu6M-5' }
+  { id: 'amv3', name: 'Antidote', url: 'https://youtu.be/OYnKsasX5Wc?si=HWwS1Ll5Khiu6M-5' },
+  { id: 'amv4', name: 'Subaru', url: 'https://youtu.be/P2_cJkhCNuc?si=PdL9erTWp_q2Q59Q' },
+  { id: 'amv5', name: 'Eren', url: 'https://youtu.be/UxnupMTgu70?si=23I5QHNp1twgqFoX' }
 ];
 const dragonsSongs = [
   { id: 'drag1', name: 'Megamix 1', url: 'https://youtu.be/vbh8wr5orkQ?si=NDWecDpqbuzAuok1' },
@@ -756,7 +849,6 @@ stopAll = window.stopAll;
 
 <br>
 
-<!-- MOVIE PANEL START (unchanged) -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;800&display=swap');
 
@@ -953,11 +1045,8 @@ function closeMovie() {
   nav.classList.remove('active');
 }
 </script>
-<!-- MOVIE PANEL END -->
-
 <br><br>
 
-<!-- ANIME NAV BUTTON COMPONENT (unchanged) -->
 <style>
 .anime-nav-wrapper * { box-sizing: border-box; font-family: 'Mulish', sans-serif; }
 .anime-nav-wrapper {
@@ -1073,6 +1162,83 @@ function anime4() { showAnime(); const b1 = document.createElement('button'); b1
 function loadS1() { animeEnjoy.innerHTML = `<span style="color:blue">⬇️ Season 1 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/6_20210210_20210210_1925" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 1 here"; animeWatch.href = "https://archive.org/details/6_20210210_20210210_1925"; }
 function loadS2() { animeEnjoy.innerHTML = `<span style="color:red">⬇️ Season 2 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/11_20210430/2.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 2 here"; animeWatch.href = "https://archive.org/details/11_20210430/2.mp4"; }
 function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = 'none'; animeNav.style.display = 'flex'; animeNav.classList.remove('active'); }
+</script>
+
+<script>
+(function() {
+  // Mobile-and-Desktop secure click counter engine for double tap
+  function configureDoubleTap(element, actionCallback) {
+    let tapCount = 0;
+    let tapTimeout;
+    element.addEventListener('click', function(e) {
+      tapCount++;
+      if (tapCount === 1) {
+        tapTimeout = setTimeout(function() { tapCount = 0; }, 300);
+      } else if (tapCount === 2) {
+        clearTimeout(tapTimeout);
+        tapCount = 0;
+        actionCallback();
+      }
+    });
+  }
+
+  // --- 1. MOTHER PICTURE CONFIGURATION ---
+  const motherImg = document.getElementById('motherImg');
+  const momAudio = document.getElementById('momAudio');
+  let motherTimer = null;
+
+  function triggerMotherEffect() {
+    if (motherTimer) clearTimeout(motherTimer);
+    
+    // Cache buster enforces the GIF animation resets completely from frame one
+    motherImg.src = 'mother.gif?t=' + Date.now();
+    momAudio.currentTime = 0;
+    momAudio.play().catch(e => console.log("Audio play deferred setup: ", e));
+
+    motherTimer = setTimeout(function() {
+      motherImg.src = 'mother.jpg';
+    }, 6000);
+  }
+  configureDoubleTap(motherImg, triggerMotherEffect);
+
+
+  // --- 2. QR CODE CONFIGURATION ---
+  const qrImg = document.getElementById('qrImg');
+  const qrVideo = document.getElementById('qrVideo');
+
+  function triggerQrEffect() {
+    qrImg.style.display = 'none';
+    qrVideo.style.display = 'block';
+    qrVideo.currentTime = 0;
+    qrVideo.play().catch(e => console.log("Video play deferred setup: ", e));
+  }
+
+  function restoreQrStatic() {
+    qrVideo.style.display = 'none';
+    qrImg.style.display = 'block';
+  }
+
+  qrVideo.onended = restoreQrStatic;
+
+  // Bind double tap listeners to both elements so it handles interrupts flawlessly
+  configureDoubleTap(qrImg, triggerQrEffect);
+  configureDoubleTap(qrVideo, triggerQrEffect);
+})();
+
+// Simple Footer Toggle Controller
+function toggleOshoText() {
+  const infoBlock = document.getElementById('oshoInfoBlock');
+  const toggleBtn = document.getElementById('oshoToggleBtn');
+  if (infoBlock.style.display === 'none') {
+    infoBlock.style.display = 'block';
+    toggleBtn.textContent = 'Back';
+    toggleBtn.classList.add('back-mode');
+  } else {
+    infoBlock.style.display = 'none';
+    toggleBtn.textContent = 'About';
+    toggleBtn.classList.remove('back-mode');
+  }
+}
 </script>
 
 <br><br>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spritual Seeker</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            /* Colorful, divine gradient blending saffron, teal, blue, and purple spiritual tones */
+            background: linear-gradient(135deg, #2d113d 0%, #0b1d3a 35%, #032b28 70%, #3d1d04 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+            font-family: 'Georgia', serif; 
+        }
+
+        /* Background Canvas */
+        #divineCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: pointer;
+            touch-action: none; 
+        }
+
+        /* Parallax Container */
+        .parallax-container {
+            position: relative;
+            z-index: 2;
+            height: 180vh; 
+            pointer-events: none; 
+        }
+
+        /* Stacked Button Container Centered on Screen */
+        .button-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column; 
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            pointer-events: none; 
+        }
+
+        /* Sacred Button Styling with Elegant Borders */
+        .divine-btn {
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            padding: 16px 40px;
+            border-radius: 4px; 
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            background: rgba(5, 3, 10, 0.7);
+            text-align: center;
+            width: 100%; 
+            backdrop-filter: blur(6px);
+            pointer-events: auto;
+        }
+
+        /* Gita Seekho - Saffron Orange Glow (#ff9800) */
+        .btn-gita {
+            color: #ff9800;
+            border: 1px solid #ff9800;
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+            box-shadow: inset 0 0 15px rgba(255, 152, 0, 0.15), 0 0 15px rgba(255, 152, 0, 0.1);
+        }
+        .btn-gita:hover {
+            color: #030206;
+            background: #ff9800;
+            box-shadow: 0 0 35px rgba(255, 152, 0, 0.8);
+            text-shadow: none;
+        }
+
+        /* Bible Study - Blue Glow (#2196f3) */
+        .btn-bible {
+            color: #2196f3;
+            border: 1px solid #2196f3;
+            text-shadow: 0 0 10px rgba(33, 150, 243, 0.6);
+            box-shadow: inset 0 0 15px rgba(33, 150, 243, 0.15), 0 0 15px rgba(33, 150, 243, 0.1);
+        }
+        .btn-bible:hover {
+            color: #030206;
+            background: #2196f3;
+            box-shadow: 0 0 35px rgba(33, 150, 243, 0.9);
+            text-shadow: none;
+        }
+
+        /* Quran Ilm- Teal/Emerald Glow (#2ec4b6) */
+        .btn-quran {
+            color: #2ec4b6;
+            border: 1px solid #2ec4b6;
+            text-shadow: 0 0 10px rgba(46, 196, 182, 0.6);
+            box-shadow: inset 0 0 15px rgba(46, 196, 182, 0.15), 0 0 15px rgba(46, 196, 182, 0.1);
+        }
+        .btn-quran:hover {
+            color: #030206;
+            background: #2ec4b6;
+            box-shadow: 0 0 35px rgba(46, 196, 182, 0.8);
+            text-shadow: none;
+        }
+
+        /* --- Red Glowing Warning Trigger Section --- */
+        .warning-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .warning-btn {
+            background: transparent;
+            border: none;
+            color: #ff3333;
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-shadow: 0 0 8px #ff3333, 0 0 15px rgba(255, 51, 51, 0.5);
+            transition: text-shadow 0.3s ease, transform 0.2s;
+            pointer-events: auto;
+        }
+        .warning-btn:hover {
+            text-shadow: 0 0 15px #ff3333, 0 0 30px #ff3333;
+        }
+
+        /* Smooth Downward Collapsible Drawer Container */
+        .warning-drawer {
+            width: 100%;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            pointer-events: none;
+        }
+        .warning-drawer.open {
+            max-height: 200px; 
+            margin-top: 15px;
+        }
+
+        /* Message in Pure White Text */
+        .warning-message {
+            color: #ffffff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            max-width: 360px;
+        }
+
+        /* Close Button in Glowing Green */
+        .warning-close {
+            background: transparent;
+            border: 1.5px solid #2ec4b6;
+            color: #2ec4b6;
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: inset 0 0 8px rgba(46, 196, 182, 0.2), 0 0 10px rgba(46, 196, 182, 0.2);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        .warning-close:hover {
+            color: #030206;
+            background: #2ec4b6;
+            box-shadow: 0 0 20px #2ec4b6;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="divineCanvas"></canvas>
+
+    <div class="parallax-container">
+        <div class="button-overlay">
+            <a href="Gita.html" class="divine-btn btn-gita" id="btnGita">Gita Seekho</a>
+            <a href="Bible.html" class="divine-btn btn-bible" id="btnBible">Bible Study</a>
+            <a href="Quran.html" class="divine-btn btn-quran" id="btnQuran">Quran Ilm علم القرآن</a>
+            
+            <div class="warning-wrapper">
+                <button class="warning-btn" id="warningToggleBtn">Warning:</button>
+                
+                <div class="warning-drawer" id="warningDrawer">
+                    <p class="warning-message">If you hold strong religious beliefs, studying these scriptures may challenge or alter those beliefs. Logical thinkers should avoid overanalyzing every detail...</p>
+                    <button class="warning-close" id="warningCloseBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- System State Trackers ---
+        let bellsRungCount = 0;
+        const initialCount = 10000000; // Updated to 1 Crore
+
+        const btnGita = document.getElementById('btnGita');
+        const btnBible = document.getElementById('btnBible');
+        const btnQuran = document.getElementById('btnQuran');
+
+        function updateButtonTexts() {
+            if (bellsRungCount >= 5) {
+                // Calculate reverse countdown value
+                const currentCounterValue = initialCount - (bellsRungCount - 5);
+
+                if (currentCounterValue <= 0) {
+                    // Trigger the final conditional state once countdown is completed
+                    btnGita.textContent = "you're a fool.";
+                    btnBible.textContent = "you're a fool.";
+                    btnQuran.textContent = "you're a fool.";
+                } else {
+                    // Standard countdown loop values
+                    btnGita.textContent = "Say / नाम";
+                    btnBible.textContent = "God / जप";
+                    btnQuran.textContent = currentCounterValue.toLocaleString() + "/₿";
+                }
+            }
+        }
+
+        // --- Warning Dropdown Controls ---
+        const warningToggleBtn = document.getElementById('warningToggleBtn');
+        const warningDrawer = document.getElementById('warningDrawer');
+        const warningCloseBtn = document.getElementById('warningCloseBtn');
+
+        warningToggleBtn.addEventListener('click', () => {
+            warningDrawer.classList.add('open');
+        });
+
+        warningCloseBtn.addEventListener('click', () => {
+            warningDrawer.classList.remove('open');
+        });
+
+        // --- Web Audio API Celestial Chime Sound Manager ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function getFrequencyForColor(colorBase) {
+            if (colorBase.includes('255, 152, 0')) {
+                return { f1: 432, f2: 648 }; 
+            } else if (colorBase.includes('33, 150, 243')) {
+                return { f1: 523.25, f2: 783.99 }; 
+            } else if (colorBase.includes('46, 196, 182')) {
+                return { f1: 493.88, f2: 739.99 }; 
+            } else {
+                return { f1: 587.33, f2: 1174.66 }; 
+            }
+        }
+
+        function playChimeSound(colorBase) {
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const freqs = getFrequencyForColor(colorBase);
+            
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            if (colorBase.includes('255, 152, 0')) {
+                osc1.type = 'triangle';
+                osc2.type = 'sine';
+            } else if (colorBase.includes('33, 150, 243')) {
+                osc1.type = 'sine';
+                osc2.type = 'sine';
+            } else {
+                osc1.type = 'sine';
+                osc2.type = 'triangle';
+            }
+            
+            osc1.frequency.setValueAtTime(freqs.f1, now); 
+            osc2.frequency.setValueAtTime(freqs.f2, now); 
+
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.20, now + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.4); 
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            
+            osc1.stop(now + 1.4);
+            osc2.stop(now + 1.4);
+        }
+
+        // --- Divine Graphics Engine ---
+        const canvas = document.getElementById('divineCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let orbs = [];
+        let ripples = [];
+        const numOrbs = 22; 
+        let breezeExcitement = 0; 
+
+        function getDivineColor() {
+            const colors = [
+                'rgba(255, 152, 0, ',  
+                'rgba(33, 150, 243, ', 
+                'rgba(46, 196, 182, ', 
+                'rgba(245, 230, 200, ' 
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createOrb(initiallyEverywhere = false) {
+            let x, y;
+            if (initiallyEverywhere) {
+                x = Math.random() * canvas.width;
+                y = Math.random() * canvas.height;
+            } else {
+                const rand = Math.random();
+                if (rand < 0.7) {
+                    x = Math.random() * canvas.width;
+                    y = canvas.height + 30;
+                } else if (rand < 0.85) {
+                    x = -30;
+                    y = Math.random() * canvas.height;
+                } else {
+                    x = canvas.width + 30;
+                    y = Math.random() * canvas.height;
+                }
+            }
+
+            return {
+                x: x,
+                y: y,
+                baseRadius: Math.random() * 6 + 4,
+                pulseSpeed: Math.random() * 0.03 + 0.01,
+                pulsePhase: Math.random() * Math.PI,
+                speedY: -(Math.random() * 0.8 + 0.4), 
+                driftSpeed: Math.random() * 0.02 + 0.005,
+                driftPhase: Math.random() * Math.PI * 2,
+                colorBase: getDivineColor()
+            };
+        }
+
+        for (let i = 0; i < numOrbs; i++) {
+            orbs.push(createOrb(true));
+        }
+
+        function releaseRipple(x, y, colorBase) {
+            playChimeSound(colorBase);
+            ripples.push({
+                x: x,
+                y: y,
+                radius: 10,
+                maxRadius: Math.random() * 80 + 70,
+                alpha: 0.8,
+                colorBase: colorBase
+            });
+
+            // Increment rung counter and execute tracking updates
+            bellsRungCount++;
+            updateButtonTexts();
+        }
+
+        function handleInteraction(clientX, clientY) {
+            initAudio();
+            let hitOccurred = false;
+
+            for (let i = orbs.length - 1; i >= 0; i--) {
+                const orb = orbs[i];
+                const distance = Math.hypot(clientX - orb.x, clientY - orb.y);
+                
+                if (distance < 45) { 
+                    releaseRipple(orb.x, orb.y, orb.colorBase);
+                    orbs.splice(i, 1); 
+                    hitOccurred = true;
+                    break; 
+                }
+            }
+
+            if (hitOccurred) {
+                while (orbs.length < numOrbs) {
+                    orbs.push(createOrb(false));
+                }
+            } else {
+                breezeExcitement = 1.0;
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            handleInteraction(e.clientX, e.clientY);
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if(e.touches.length > 0) {
+                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        function animateDivineSpace() {
+            // Uses destination-out to smoothly blend trails without overriding the new colorful CSS gradient
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'source-over';
+
+            if (breezeExcitement > 0) {
+                breezeExcitement -= 0.008;
+                if (breezeExcitement < 0) breezeExcitement = 0;
+            }
+
+            // Render Halos / Ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.radius += (r.maxRadius - r.radius) * 0.04;
+                r.alpha -= 0.015;
+
+                if (r.alpha <= 0 || r.radius >= r.maxRadius - 1) {
+                    ripples.splice(i, 1);
+                    continue;
+                }
+
+                ctx.strokeStyle = `${r.colorBase}${r.alpha})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Render Sacred Floating Orbs
+            orbs.forEach(orb => {
+                orb.pulsePhase += orb.pulseSpeed;
+                orb.driftPhase += orb.driftSpeed * (1 + breezeExcitement * 3);
+
+                const waveWobble = Math.sin(orb.driftPhase) * (0.4 + breezeExcitement * 1.5);
+                const currentSpeedY = orb.speedY * (1 + breezeExcitement);
+
+                orb.x += waveWobble;
+                orb.y += currentSpeedY;
+
+                if (orb.y < -30 || orb.x < -40 || orb.x > canvas.width + 40) {
+                    Object.assign(orb, createOrb(false));
+                }
+
+                const pulseSize = orb.baseRadius + Math.sin(orb.pulsePhase) * 2.5;
+
+                ctx.fillStyle = `${orb.colorBase}0.06)`;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulseSize * 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = `${orb.colorBase}0.75)`;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, pulseSize, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateDivineSpace);
+        }
+        animateDivineSpace();
+
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const scrollDelta = currentScrollY - lastScrollY;
+            lastScrollY = currentScrollY;
+
+            orbs.forEach(orb => {
+                orb.y -= scrollDelta * 0.2; 
+            });
+            ripples.forEach(r => {
+                r.y -= scrollDelta * 0.2;
+            });
+        });
+    </script>
+</body>
+</html>
