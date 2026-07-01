@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Snake Navigation</title>
+    <title>Fun</title>
     <style>
         /* Reset and Base Styles */
         * {
@@ -122,9 +122,9 @@
 
     <div class="parallax-container">
         <div class="button-overlay">
-            <a href="Hotline.html" class="neon-btn btn-cyan">Hotline</a>
             <a href="Spritual.html" class="neon-btn btn-saffron">Spritual Seeker</a>
             <a href="Cosmotalk.html" class="neon-btn btn-yellow">Cosmotalk</a>
+            <a href="Hotline.html" class="neon-btn btn-cyan">Hotline</a>
         </div>
     </div>
 
@@ -181,8 +181,14 @@
         const numSnakes = 10; 
         const segmentSize = 8;
 
-        // NEW: Handles the temporary water disturbance / speed boost physics
-        let waterExcitement = 0; // Ranges from 0 (calm) to 1 (fully startled)
+        let waterExcitement = 0; 
+
+        // Interaction State Variables
+        let heldSnake = null;
+        let holdTimer = null;
+        let isHolding = false;
+        let lastPointerX = 0;
+        let lastPointerY = 0;
 
         function getRandomColor() {
             const colors = [
@@ -268,76 +274,148 @@
             });
         }
 
-        function handleInteraction(clientX, clientY) {
+        // Unified Pointer Interaction Handling
+        function handlePointerDown(e) {
             initAudio();
-            let burstOccurred = false;
+            const clientX = e.clientX;
+            const clientY = e.clientY;
+            lastPointerX = clientX;
+            lastPointerY = clientY;
 
+            let hitSnake = null;
+
+            // Detect if a segment of any snake is targeted
             for (let i = snakes.length - 1; i >= 0; i--) {
                 const snake = snakes[i];
-                
                 for (let j = 0; j < snake.segments.length; j++) {
                     const seg = snake.segments[j];
-                    const distance = Math.hypot(clientX - seg.x, clientY - seg.y);
-                    
-                    if (distance < 35) { 
-                        burstSnake(snake);
-                        snakes.splice(i, 1); 
-                        burstOccurred = true;
-                        break; 
+                    if (Math.hypot(clientX - seg.x, clientY - seg.y) < 35) {
+                        hitSnake = snake;
+                        break;
                     }
                 }
+                if (hitSnake) break;
             }
 
-            if (burstOccurred) {
-                while (snakes.length < numSnakes) {
-                    snakes.push(createSnake(false));
-                }
+            if (hitSnake) {
+                isHolding = false;
+                heldSnake = hitSnake;
+                // Triggers 'catch' mode if held down for more than 250 milliseconds
+                holdTimer = setTimeout(() => {
+                    isHolding = true;
+                }, 250);
             } else {
-                // MODIFIED: If no snake was hit, spike water excitement level to trigger the fish scare effect
                 waterExcitement = 1.0;
             }
         }
 
-        canvas.addEventListener('mousedown', (e) => handleInteraction(e.clientX, e.clientY));
-        
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault(); 
-            if(e.touches.length > 0) {
-                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+        function handlePointerMove(e) {
+            lastPointerX = e.clientX;
+            lastPointerY = e.clientY;
+        }
+
+        function handlePointerUp(e) {
+            clearTimeout(holdTimer);
+            if (heldSnake) {
+                // If it was released quickly without triggering long-tap hold mode, burst it
+                if (!isHolding) {
+                    const index = snakes.indexOf(heldSnake);
+                    if (index > -1) {
+                        burstSnake(heldSnake);
+                        snakes.splice(index, 1);
+                    }
+                    while (snakes.length < numSnakes) {
+                        snakes.push(createSnake(false));
+                    }
+                }
+                heldSnake = null;
+                isHolding = false;
             }
-        }, { passive: false });
+        }
+
+        canvas.addEventListener('pointerdown', handlePointerDown);
+        canvas.addEventListener('pointermove', handlePointerMove);
+        canvas.addEventListener('pointerup', handlePointerUp);
+        canvas.addEventListener('pointercancel', handlePointerUp);
 
         function animateSnakes() {
             ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Gradually decay the excitement back down to 0 over roughly 2-3 seconds
             if (waterExcitement > 0) {
                 waterExcitement -= 0.007; 
                 if (waterExcitement < 0) waterExcitement = 0;
             }
 
-            // Render Snakes
-            snakes.forEach(snake => {
-                // If water is excited, snakes check and alter course much faster/sharper
-                const decisionRate = waterExcitement > 0 ? 0.15 : 0.05;
-                if (Math.random() < decisionRate) {
-                    // Turn limits scale higher when excited to retain beautiful curves during fast movement
-                    const turnFactor = waterExcitement > 0 ? 0.5 : 0.3;
-                    snake.turnSpeed = (Math.random() - 0.5) * turnFactor;
+            // Render & Process Snakes
+            for (let i = snakes.length - 1; i >= 0; i--) {
+                const snake = snakes[i];
+                
+                if (snake === heldSnake && isHolding) {
+                    // Pull and steer head properties directly along sliding route coordinates
+                    const dx = lastPointerX - snake.x;
+                    const dy = lastPointerY - snake.y;
+                    if (Math.hypot(dx, dy) > 1) {
+                        snake.angle = Math.atan2(dy, dx);
+                    }
+                    snake.x = lastPointerX;
+                    snake.y = lastPointerY;
+
+                    // Handle collision checking when a caught snake strikes other snakes
+                    let struckOtherIndex = -1;
+                    for (let j = 0; j < snakes.length; j++) {
+                        if (snakes[j] === snake) continue;
+                        
+                        // Check if head of held snake intersects any segment of another snake
+                        for (let k = 0; k < snakes[j].segments.length; k++) {
+                            const otherSeg = snakes[j].segments[k];
+                            if (Math.hypot(snake.x - otherSeg.x, snake.y - otherSeg.y) < 25) {
+                                struckOtherIndex = j;
+                                break;
+                            }
+                        }
+                        if (struckOtherIndex !== -1) break;
+                    }
+
+                    // If a strike occurs, pop both out of existence immediately
+                    if (struckOtherIndex !== -1) {
+                        const otherSnake = snakes[struckOtherIndex];
+                        
+                        burstSnake(snake);
+                        burstSnake(otherSnake);
+
+                        // Remove both items safely
+                        snakes.splice(i, 1);
+                        const secondaryIdx = snakes.indexOf(otherSnake);
+                        if (secondaryIdx > -1) snakes.splice(secondaryIdx, 1);
+
+                        heldSnake = null;
+                        isHolding = false;
+
+                        while (snakes.length < numSnakes) {
+                            snakes.push(createSnake(false));
+                        }
+                        continue; 
+                    }
+
+                } else {
+                    // Standard wandering AI movement execution loop
+                    const decisionRate = waterExcitement > 0 ? 0.15 : 0.05;
+                    if (Math.random() < decisionRate) {
+                        const turnFactor = waterExcitement > 0 ? 0.5 : 0.3;
+                        snake.turnSpeed = (Math.random() - 0.5) * turnFactor;
+                    }
+                    snake.angle += snake.turnSpeed;
+
+                    const dynamicSpeed = snake.speed * (1 + waterExcitement);
+                    snake.x += Math.cos(snake.angle) * dynamicSpeed;
+                    snake.y += Math.sin(snake.angle) * dynamicSpeed;
+
+                    if (snake.x < -50) snake.x = canvas.width + 50;
+                    if (snake.x > canvas.width + 50) snake.x = -50;
+                    if (snake.y < -50) snake.y = canvas.height + 50;
+                    if (snake.y > canvas.height + 50) snake.y = -50;
                 }
-                snake.angle += snake.turnSpeed;
-
-                // Dynamic speed calculation: Base speed doubles when waterExcitement is at maximum
-                const dynamicSpeed = snake.speed * (1 + waterExcitement);
-
-                snake.x += Math.cos(snake.angle) * dynamicSpeed;
-                snake.y += Math.sin(snake.angle) * dynamicSpeed;
-
-                if (snake.x < -50) snake.x = canvas.width + 50;
-                if (snake.x > canvas.width + 50) snake.x = -50;
-                if (snake.y < -50) snake.y = canvas.height + 50;
-                if (snake.y > canvas.height + 50) snake.y = -50;
 
                 snake.segments.unshift({ x: snake.x, y: snake.y });
                 if (snake.segments.length > snake.length) {
@@ -354,7 +432,7 @@
                     ctx.arc(seg.x, seg.y, currentSize, 0, Math.PI * 2);
                     ctx.fill();
                 });
-            });
+            }
 
             // Render Exploding Pop Particles
             for (let i = particles.length - 1; i >= 0; i--) {
@@ -385,7 +463,9 @@
             lastScrollY = currentScrollY;
 
             snakes.forEach(snake => {
-                snake.y -= scrollDelta * 0.3; 
+                if (!(snake === heldSnake && isHolding)) {
+                    snake.y -= scrollDelta * 0.3; 
+                }
             });
             particles.forEach(p => {
                 p.y -= scrollDelta * 0.3;
