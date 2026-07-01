@@ -415,7 +415,7 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .yt-link:hover{ background:#c1121f; }
 .folder-content{ display:none; padding:12px; }
 .multi-btns{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
-.version-btn{ flex:1; min-width:100px; border:none; padding:10px; border-radius:40px; font-weight:700; cursor:pointer; font-size:.9rem; transition: background 0.3s, color 0.3s; }
+.version-btn{ flex:1; min-width:100px; border: 2px solid transparent; padding:10px; border-radius:40px; font-weight:700; cursor:pointer; font-size:.9rem; transition: background 0.3s, color 0.3s, border-color 0.3s; }
 .panel-close{ position:absolute; top:16px; right:20px; font-size:32px; cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; z-index:10; }
 .overlay-music{ position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:1999; display:none; backdrop-filter:blur(2px); }
 .overlay-music.active{ display:block; }
@@ -851,6 +851,13 @@ function buildFolder(folder, idx){
             notice.textContent = songData.buttons[0].customText;
             notice.style.display = "block";
           }
+          player.querySelectorAll('.version-btn').forEach(b => {
+            if(!b.classList.contains('about-toggle-btn')) b.style.borderColor = "transparent";
+          });
+          const firstBtn = player.querySelector('.version-btn');
+          if(firstBtn && !firstBtn.classList.contains('about-toggle-btn')) {
+            firstBtn.style.borderColor = "#ff4d4d";
+          }
         }
       } else {
         player.querySelector('iframe').src = songData.embed ? songData.embed + "&autoplay=1" : `https://www.youtube.com/embed/${songData.videoId}?autoplay=1`;
@@ -895,6 +902,11 @@ function buildFolder(folder, idx){
           notice.style.display = "none";
         }
       }
+
+      player.querySelectorAll('.version-btn').forEach(b => {
+        if(!b.classList.contains('about-toggle-btn')) b.style.borderColor = "transparent";
+      });
+      btn.style.borderColor = "#ff4d4d";
     };
   });
 
@@ -913,6 +925,7 @@ function closeAllPlayers(){
   document.querySelectorAll('.song-player').forEach(p => { p.style.display = "none"; p.querySelector('iframe').src = ""; });
   document.querySelectorAll('.dynamic-yt').forEach(d => d.style.display = "none");
   document.querySelectorAll('.custom-notice-text').forEach(n => n.style.display = "none");
+  document.querySelectorAll('.version-btn').forEach(b => { if(!b.classList.contains('about-toggle-btn')) b.style.borderColor = "transparent"; });
 }
 
 /* LEFT PANEL STATE & RENDER LOGIC WITH THEME TRANSITIONS */

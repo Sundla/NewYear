@@ -70,6 +70,25 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Loading Overlay Indicator Styles */
+        .loading-text {
+            display: none;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            font-weight: 500;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
 
         audio {
@@ -84,6 +103,7 @@
             gap: 10px;
             font-size: 0.9rem;
             color: var(--text-secondary);
+            width: 100%;
         }
 
         .speed-select {
@@ -213,6 +233,7 @@
         </div>
 
         <div class="native-player-wrapper">
+            <div id="player-loading-text" class="loading-text">⏳ Loading Audio Track...</div>
             <audio id="native-audio-player" controls src="https://archive.org/download/YatharthGeetaEnglishAudio/01Chapter1.mp3"></audio>
             
             <div class="speed-control-container">
@@ -264,6 +285,24 @@
         const trackDisplay = document.getElementById('track-display');
         const audioPlayer = document.getElementById('native-audio-player');
         const speedDropdown = document.getElementById('speed-dropdown');
+        const loadingText = document.getElementById('player-loading-text');
+
+        // Dynamic Loading Events for Media States
+        audioPlayer.addEventListener('waiting', () => {
+            loadingText.style.display = 'block';
+        });
+
+        audioPlayer.addEventListener('loadstart', () => {
+            loadingText.style.display = 'block';
+        });
+
+        audioPlayer.addEventListener('canplay', () => {
+            loadingText.style.display = 'none';
+        });
+
+        audioPlayer.addEventListener('playing', () => {
+            loadingText.style.display = 'none';
+        });
 
         function changeChapter(chapterNum, titleText, urlPath) {
             trackDisplay.textContent = titleText;
@@ -272,6 +311,9 @@
                 btn.classList.toggle('active', index === (chapterNum - 1));
             });
             
+            // Trigger the visual loading layout cleanly
+            loadingText.style.display = 'block';
+
             // Point directly to the MP3 source on Archive.org instead of embedding an iframe
             audioPlayer.src = `https://archive.org/download/YatharthGeetaEnglishAudio${urlPath}`;
             

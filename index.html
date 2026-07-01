@@ -213,6 +213,7 @@
 </div>
   
   <img id="motherImg" src="mother.jpg" alt="Mother" style="width:300px; display:block; margin:0 auto; cursor:pointer;-webkit-user-select:none;user-select:none;">
+  <video id="motherVideo" src="mother.mp4" playsinline style="display:none; width:300px; margin:0 auto; cursor:pointer;"></video>
   <audio id="momAudio" src="mom.mp3"></audio>
 
   <p>
@@ -1184,22 +1185,28 @@ function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = '
 
   // --- 1. MOTHER PICTURE CONFIGURATION ---
   const motherImg = document.getElementById('motherImg');
+  const motherVideo = document.getElementById('motherVideo');
   const momAudio = document.getElementById('momAudio');
-  let motherTimer = null;
 
   function triggerMotherEffect() {
-    if (motherTimer) clearTimeout(motherTimer);
-    
-    // Cache buster enforces the GIF animation resets completely from frame one
-    motherImg.src = 'mother.gif?t=' + Date.now();
+    motherImg.style.display = 'none';
+    motherVideo.style.display = 'block';
+    motherVideo.currentTime = 0;
+    motherVideo.play().catch(e => console.log("Video play deferred setup: ", e));
     momAudio.currentTime = 0;
     momAudio.play().catch(e => console.log("Audio play deferred setup: ", e));
-
-    motherTimer = setTimeout(function() {
-      motherImg.src = 'mother.jpg';
-    }, 6000);
   }
+
+  function restoreMotherStatic() {
+    motherVideo.style.display = 'none';
+    motherImg.style.display = 'block';
+  }
+
+  motherVideo.onended = restoreMotherStatic;
+
+  // Bind double tap listeners to both elements so it handles interrupts flawlessly
   configureDoubleTap(motherImg, triggerMotherEffect);
+  configureDoubleTap(motherVideo, triggerMotherEffect);
 
 
   // --- 2. QR CODE CONFIGURATION ---

@@ -71,6 +71,26 @@
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #23332a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Loading Overlay Indicator Styles */
+        .loading-text {
+            display: none;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            font-weight: 500;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
 
         iframe {
@@ -213,6 +233,7 @@
         </div>
 
         <div class="iframe-wrapper">
+            <div id="player-loading-text" class="loading-text">⏳ Loading Audio Track...</div>
             <iframe id="archive-player" src="https://archive.org/embed/translation-of-the-noble-quran-in-modern-english-language-audio-mp3-hq/001+-+Al-Fatihah+(+The+Opening+)+-+%D8%B3%D9%88%D8%B1%D8%A9+%D8%A7%D9%84%D9%81%D8%A7%D8%AA%D8%AD%D8%A9.mp3" height="30" frameborder="0" allowfullscreen=""></iframe>
         </div>
 
@@ -312,7 +333,7 @@
             "077 - Al-Mursalat ( Those sent forth ) - سورة المرسلات",
             "078 - An-Naba' ( The Great News ) - سورة النبأ",
             "079 - An-Nazi'at ( Those who Pull Out ) - سورة النازعات",
-            "080 - Abasa ( He frowned ) - سورة عبس",
+            "080 - Abasa ( He frowned ) - سورة عبस",
             "081 - At-Takwir ( The Overthrowing ) - سورة التكوير",
             "082 - Al-Infitar ( The Cleaving ) - سورة الانفطار",
             "083 - Al-Mutaffifin (Those Who Deal in Fraud) - سورة المطففين",
@@ -372,6 +393,12 @@
         const iframe = document.getElementById('archive-player');
         const gridContainer = document.getElementById('chapter-grid-container');
         const searchInput = document.getElementById('search-input');
+        const loadingText = document.getElementById('player-loading-text');
+
+        // Clean event listener to hide loading message when iframe completely targets frame rendering
+        iframe.addEventListener('load', () => {
+            loadingText.style.display = 'none';
+        });
 
         function renderGrid(data) {
             gridContainer.innerHTML = '';
@@ -401,6 +428,9 @@
             
             const selectedBtn = document.getElementById(`surah-btn-${trackId}`);
             if (selectedBtn) selectedBtn.classList.add('active');
+            
+            // Trigger visual loading text instantly on choice execution
+            loadingText.style.display = 'block';
             
             iframe.src = `https://archive.org/embed/translation-of-the-noble-quran-in-modern-english-language-audio-mp3-hq/${urlPath}`;
         }
