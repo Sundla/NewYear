@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tomar Art Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <style>
         :root {
             --bg-main: #141419;
@@ -391,7 +392,7 @@
             
             <div class="file-wrapper">
                 <button class="btn">Import Image</button>
-                <input type="file" id="start-file-input" accept="image/*">
+                <input type="file" id="start-file-input" accept="image/*, .heic, .heif">
             </div>
 
             <div class="divider">OR</div>
@@ -421,7 +422,7 @@
             <div class="toolbar-cluster">
                 <div class="file-wrapper" style="margin:0;">
                     <button class="ctrl-btn" style="font-weight:bold; font-size:14px; background:var(--accent);">+ Layer Photo</button>
-                    <input type="file" id="layer-file-import" accept="image/*">
+                    <input type="file" id="layer-file-import" accept="image/*, .heic, .heif">
                 </div>
                 <button class="ctrl-btn" id="hdr-download-png">💾</button>
             </div>
@@ -499,6 +500,24 @@
             STABILIZATION: 0.25,
             LONG_PRESS_MS: 600
         };
+
+        // Helper function to handle async image decoding conversion for HEIC/HEIF blobs
+        async function ensureReadableImageFile(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            if ((extension === 'heic' || extension === 'heif') && typeof heic2any === 'function') {
+                try {
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: "image/png"
+                    });
+                    const singleBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    return new File([singleBlob], file.name.substring(0, file.name.lastIndexOf('.')) + '.png', { type: 'image/png' });
+                } catch (err) {
+                    console.error("HEIC format conversion failed: ", err);
+                }
+            }
+            return file;
+        }
 
         class MobileAppEngineState {
             constructor() {
@@ -1018,9 +1037,12 @@
                 this.setupGestures();
             },
 
-            processImport(e) {
-                const file = e.target.files[0];
+            async processImport(e) {
+                let file = e.target.files[0];
                 if (!file) return;
+
+                file = await ensureReadableImageFile(file);
+
                 const r = new FileReader();
                 r.onload = (ev) => {
                     const img = new Image();
@@ -1148,9 +1170,12 @@
                     this.startWorkspace(w, h, null);
                 });
 
-                document.getElementById('start-file-input').addEventListener('change', (e) => {
-                    const file = e.target.files[0];
+                document.getElementById('start-file-input').addEventListener('change', async (e) => {
+                    let file = e.target.files[0];
                     if (!file) return;
+
+                    file = await ensureReadableImageFile(file);
+
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         const img = new Image();

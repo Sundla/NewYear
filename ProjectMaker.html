@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,7 +101,7 @@
         <input type="text" id="titleIn" placeholder="Title">
         <textarea id="descIn" rows="4" placeholder="Description"></textarea>
         
-        <input type="file" id="imageInput" accept="image/*">
+        <input type="file" id="imageInput" accept="image/*,.heic,.heif">
         <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;">Upload Image</button>
         
         <button onclick="exportPDF()" style="background:#b91c1c; color:white;">Download PDF</button>
@@ -117,7 +118,7 @@
         <div class="pdf-maker-controls">
             <input type="text" id="pdfNameInput" placeholder="Enter PDF File Name">
             <div class="pdf-maker-buttons">
-                <input type="file" id="bulkImageInput" accept="image/*" multiple>
+                <input type="file" id="bulkImageInput" accept="image/*,.heic,.heif" multiple>
                 <button onclick="document.getElementById('bulkImageInput').click()" style="background:#10b981; color:white; width:auto; margin-bottom:0;"><i class="fas fa-plus"></i> Add Images</button>
                 <button onclick="exportImagesToPDF()" style="background:#b91c1c; color:white; width:auto; margin-bottom:0;"><i class="fas fa-file-pdf"></i> Download PDF</button>
             </div>
@@ -177,10 +178,29 @@
         renderThumbs();
     }
 
-    document.getElementById("imageInput").onchange = (e) => {
+    // Helper to process regular images or convert HEIC/HEIF files preserving high quality
+    async function processImageFile(file) {
+        const isHeic = file.type === "image/heic" || file.type === "image/heif" || 
+                       file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif");
+        
+        if (isHeic && typeof heic2any !== "undefined") {
+            try {
+                let converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.98 });
+                return Array.isArray(converted) ? converted[0] : converted;
+            } catch (error) {
+                console.error("HEIC conversion failed, trying normal load:", error);
+                return file;
+            }
+        }
+        return file;
+    }
+
+    document.getElementById("imageInput").onchange = async (e) => {
+        if (!e.target.files.length) return;
+        const file = await processImageFile(e.target.files[0]);
         const reader = new FileReader();
         reader.onload = (event) => { slides[current].img = event.target.result; updateView(); };
-        reader.readAsDataURL(e.target.files[0]);
+        reader.readAsDataURL(file);
     };
 
     function renderThumbs() {
@@ -291,27 +311,28 @@
         pptx.writeFile({ fileName: "Presentation.pptx" });
     }
 
-    // Logic for Image PDF Maker
-    document.getElementById("bulkImageInput").onchange = (e) => {
+    // Logic for Image PDF Maker with guaranteed order indexing configuration
+    document.getElementById("bulkImageInput").onchange = async (e) => {
         const files = Array.from(e.target.files);
-        let processed = 0;
+        if (files.length === 0) return;
         
-        if (files.length > 0) {
-            document.getElementById("pdfNameInput").style.display = "inline-block";
+        document.getElementById("pdfNameInput").style.display = "inline-block";
+        
+        // Loop sequentially to guarantee exact selection configuration alignment across async steps
+        for (let i = 0; i < files.length; i++) {
+            const processedFile = await processImageFile(files[i]);
+            await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    pdfImages.push(event.target.result);
+                    resolve();
+                };
+                reader.readAsDataURL(processedFile);
+            });
         }
         
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                pdfImages.push(event.target.result);
-                processed++;
-                if (processed === files.length) {
-                    renderPdfThumbs();
-                    document.getElementById("bulkImageInput").value = "";
-                }
-            };
-            reader.readAsDataURL(file);
-        });
+        renderPdfThumbs();
+        document.getElementById("bulkImageInput").value = "";
     };
 
     function renderPdfThumbs() {
