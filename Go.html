@@ -199,6 +199,117 @@
             PointState: { EMPTY: ".", BLACK: "X", WHITE: "O" }
         };
 
+        // --- Web Audio API Sound Manager ---
+        var SoundManager = {
+            ctx: null,
+
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            playStone: function() {
+                this.init();
+                if (!this.ctx) return;
+                var now = this.ctx.currentTime;
+
+                var osc = this.ctx.createOscillator();
+                var gain = this.ctx.createGain();
+                var filter = this.ctx.createBiquadFilter();
+
+                // Lowpass filter softens the digital bite for an earthy wooden sound
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(800, now);
+
+                osc.type = "sine";
+                // Slight pitch slide down mimicking the dynamic impact on a wooden Go board
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.12);
+            },
+
+            playCapture: function() {
+                this.init();
+                if (!this.ctx) return;
+                var now = this.ctx.currentTime;
+
+                var osc = this.ctx.createOscillator();
+                var gain = this.ctx.createGain();
+
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            },
+
+            playPass: function() {
+                this.init();
+                if (!this.ctx) return;
+                var now = this.ctx.currentTime;
+
+                var osc = this.ctx.createOscillator();
+                var gain = this.ctx.createGain();
+
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.08);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            },
+
+            playGameOver: function() {
+                this.init();
+                if (!this.ctx) return;
+                var now = this.ctx.currentTime;
+
+                var notes = [261.63, 329.63, 392.00, 523.25]; // C major arpeggio
+                notes.forEach((freq, index) => {
+                    var osc = this.ctx.createOscillator();
+                    var gain = this.ctx.createGain();
+
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, now + index * 0.1);
+
+                    gain.gain.setValueAtTime(0.2, now + index * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + index * 0.1);
+                    osc.stop(now + index * 0.1 + 0.4);
+                });
+            }
+        };
+
         function Player(color, pointState) {
             this.color = color;
             this.pointState = pointState;
@@ -219,7 +330,6 @@
             this.board = Array(size).fill(null).map(() => Array(size).fill(Constants.PointState.EMPTY));
             this.deadPositions = Array(size).fill(null).map(() => Array(size).fill(false));
             this.previousBoard = $.extend(true, [], this.board);
-            // We now explicitly maintain the layout *before* the current move to handle immediate Ko
             this.preMoveBoardString = null; 
             this.player1 = new Player(Constants.Color.BLACK, Constants.PointState.BLACK);
             this.player2 = new Player(Constants.Color.WHITE, Constants.PointState.WHITE);
@@ -232,7 +342,6 @@
             this.setPointStateAt = function(p, s) { this.board[p.row][p.column] = s; };
             this.getBoardCopy = function() { return $.extend(true, [], this.board); };
             
-            // Replaced total history Superko logic with localized traditional 1-turn Ko check
             this.isKoViolation = function(nextBoardLayout) {
                 if (!this.preMoveBoardString) return false;
                 return JSON.stringify(nextBoardLayout) === this.preMoveBoardString;
@@ -251,7 +360,6 @@
                 if (this.isPointInBounds(new Point(p.row, p.column + 1))) adj.push(new Point(p.row, p.column + 1));
                 return adj;
             },
-            // Fixed direct recursion to an iterative structure using a stack to safe-proof against Stack Overflows
             getChainPoints: function(startPoint) {
                 var chainPoints = [];
                 var pState = gGameState.getPointStateAt(startPoint);
@@ -298,7 +406,6 @@
 
                 var originalBoard = gGameState.getBoardCopy();
                 
-                // Simulate placement
                 gGameState.setPointStateAt(point, gGameState.currentPlayer.pointState);
                 
                 var opponentState = (gGameState.currentPlayer == gGameState.player1) ? Constants.PointState.WHITE : Constants.PointState.BLACK;
@@ -334,10 +441,16 @@
                     return false;
                 }
 
-                // Check traditional Ko rule (immediate layout duplication comparison)
                 if (gGameState.isKoViolation(gGameState.board)) {
                     gGameState.board = originalBoard;
                     return false;
+                }
+
+                // Trigger placement or capture sound effects dynamically
+                if (distinctCaptured.length > 0) {
+                    SoundManager.playCapture();
+                } else {
+                    SoundManager.playStone();
                 }
 
                 gGameState.currentPlayer.capturedCount += distinctCaptured.length;
@@ -456,6 +569,8 @@
                                 for (var i = 0; i < chain.length; i++) {
                                     gGameState.deadPositions[chain[i].row][chain[i].column] = nextState;
                                 }
+                                // Click audio response when toggling dead groups
+                                SoundManager.playStone();
                                 this.drawBoard();
                             }
                         } else {
@@ -486,6 +601,8 @@
                 banner.style.display = "none";
                 banner.classList.remove("active");
 
+                // Initialize AudioContext on first interface interaction
+                SoundManager.init();
                 this.updateUI();
             }
 
@@ -493,10 +610,12 @@
                 if (gGameState.isGameOver) return;
                 gGameState.consecutivePasses++;
                 
+                SoundManager.playPass();
+
                 if (gGameState.consecutivePasses >= 2) {
                     this.enterDeadStonesPhase();
                 } else {
-                    gGameState.preMoveBoardString = null; // A pass allows the next player to break common board layouts
+                    gGameState.preMoveBoardString = null; 
                     gGameState.currentPlayer = (gGameState.currentPlayer === gGameState.player1) ? gGameState.player2 : gGameState.player1;
                     this.updateUI();
                 }
@@ -523,6 +642,8 @@
                 gGameState.isGameOver = true;
                 var winner = (gGameState.currentPlayer === gGameState.player1) ? "White" : "Black";
                 
+                SoundManager.playGameOver();
+
                 document.getElementById("winnerHeader").textContent = `${winner} Wins!`;
                 document.getElementById("resultsDetails").innerHTML = `Match ended by Resignation.<br>Opponent conceded the match layout.`;
                 document.getElementById("resultsModal").classList.add("active");
@@ -531,6 +652,8 @@
             declareFinalScores() {
                 gGameState.isMarkingDeadPhase = false;
                 GoLogic.calculateScoresAndTerritory();
+
+                SoundManager.playGameOver();
 
                 var jpBlack = gGameState.player1.territoryCount + gGameState.player1.capturedCount + gGameState.player1.deadStonesMarked;
                 var jpWhite = gGameState.player2.territoryCount + gGameState.player2.capturedCount + gGameState.player2.deadStonesMarked + JAPANESE_KOMI;

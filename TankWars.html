@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TANK WARS</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght=700&display=swap');
     * { box-sizing: border-box; padding: 0; margin: 0; user-select: none; font-family: 'Quicksand', sans-serif; }
     
     body { background-color: #1a1a1a; overflow: hidden; color: white; touch-action: none; }
@@ -56,7 +56,7 @@
     <div>Stage: <span id="stage-num">1</span></div>
     <div>Target: <span id="enemy-count">25</span></div>
     <div>Ammo: <span id="ammo-count">50</span></div>
-    <div>Time: <span id="timer">150</span>s</div>
+    <div>Time: <span id="timer">200</span>s</div>
 </div>
 
 <div id="overlay" class="overlay">
@@ -104,7 +104,8 @@ const state = {
     player: { x: 2000, y: 100, dir: 'left', vx: 0, vy: 0, speed: 4.5, size: 28 },
     enemies: [],
     blocks: [],
-    timer: 150,
+    bullets: [], // Added to manage all active shots in the main game loop
+    timer: 200, // Increased to 200 seconds
     ammo: 50,
     kills: 0,
     timerInt: null
@@ -132,17 +133,19 @@ function updateUI() {
 function startGame() {
     overlay.classList.add('d-none');
     state.active = true;
-    state.timer = 150; // Updated to 150 seconds for all stages
+    state.timer = 200; // Increased to 200 seconds for all stages
     state.ammo = 50;
     if(state.stage === 1) state.kills = 0; 
     
+    // Clean remaining bullets if restarting
+    state.bullets.forEach(b => b.el.remove());
+    state.bullets = [];
     state.enemies = [];
     state.blocks = [];
     state.player.x = 2000;
     state.player.y = 100;
     
     buildWorld();
-    // Updated enemy spawn counts: 25 for stage 1, 40 for stage 2
     spawnEnemies(state.stage === 1 ? 25 : 40);
     updateUI();
     
@@ -227,6 +230,7 @@ function gameLoop() {
     const rots = { up: 0, right: 90, down: 180, left: 270 };
     state.playerEl.style.transform = `rotate(${rots[state.player.dir]}deg)`;
     
+    // Update enemies
     state.enemies.forEach(en => {
         let ox = en.x, oy = en.y;
         if (en.dir === 'up') en.y -= 2; else if (en.dir === 'down') en.y += 2; else if (en.dir === 'left') en.x -= 2; else if (en.dir === 'right') en.x += 2;
@@ -239,6 +243,73 @@ function gameLoop() {
             createBlast(en.x, en.y); createBlast(state.player.x, state.player.y); endGame("COLLISION!"); 
         }
     });
+
+    // Integrated Bullet updates inside loop to sync frame-rates across devices
+    for (let i = state.bullets.length - 1; i >= 0; i--) {
+        let bullet = state.bullets[i];
+        if (bullet.dir === 'up') bullet.y -= bullet.speed; 
+        else if (bullet.dir === 'down') bullet.y += bullet.speed; 
+        else if (bullet.dir === 'left') bullet.x -= bullet.speed; 
+        else if (bullet.dir === 'right') bullet.x += bullet.speed;
+        
+        bullet.el.style.left = bullet.x + 'px'; 
+        bullet.el.style.top = bullet.y + 'px';
+
+        let removed = false;
+
+        // Wall collision
+        for (let j = state.blocks.length - 1; j >= 0; j--) {
+            let bl = state.blocks[j];
+            if (bullet.x > bl.x && bullet.x < bl.x + 40 && bullet.y > bl.y && bullet.y < bl.y + 40) {
+                if (bullet.type === 'player' && bl.type === 'brick') { 
+                    createBlast(bl.x, bl.y); 
+                    bl.el.remove(); 
+                    state.blocks.splice(j, 1); 
+                }
+                bullet.el.remove();
+                state.bullets.splice(i, 1);
+                removed = true;
+                break;
+            }
+        }
+        if (removed) continue;
+
+        // Hit logic
+        if (bullet.type === 'player') {
+            for (let e = state.enemies.length - 1; e >= 0; e--) {
+                let en = state.enemies[e];
+                if (bullet.x > en.x && bullet.x < en.x + 30 && bullet.y > en.y && bullet.y < en.y + 30) {
+                    createBlast(en.x, en.y); 
+                    en.el.remove(); 
+                    state.enemies.splice(e, 1);
+                    state.ammo += 5; 
+                    state.kills++; 
+                    updateUI();
+                    bullet.el.remove();
+                    state.bullets.splice(i, 1);
+                    removed = true;
+                    if (state.enemies.length === 0) endGame(state.stage === 1 ? "STAGE 1 CLEAR!" : "ALL STAGES CLEAR!");
+                    break;
+                }
+            }
+        } else {
+            if (bullet.x > state.player.x && bullet.x < state.player.x + 28 && bullet.y > state.player.y && bullet.y < state.player.y + 28) {
+                createBlast(state.player.x, state.player.y); 
+                endGame("DESTROYED!");
+                bullet.el.remove();
+                state.bullets.splice(i, 1);
+                removed = true;
+            }
+        }
+        if (removed) continue;
+
+        // Boundaries check
+        if (bullet.x < 0 || bullet.x > worldW || bullet.y < 0 || bullet.y > worldH) { 
+            bullet.el.remove(); 
+            state.bullets.splice(i, 1); 
+        }
+    }
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -256,34 +327,16 @@ function fire(type, owner) {
     b.className = `bullet ${type === 'player' ? 'player-shot' : 'enemy-shot'}`;
     let bx = owner.x + 10, by = owner.y + 10, bd = owner.dir;
     world.appendChild(b);
-    const bInt = setInterval(() => {
-        const spd = type === 'player' ? 9 : 6;
-        if (bd === 'up') by -= spd; else if (bd === 'down') by += spd; else if (bd === 'left') bx -= spd; else if (bd === 'right') bx += spd;
-        b.style.left = bx + 'px'; b.style.top = by + 'px';
-        for (let i = state.blocks.length - 1; i >= 0; i--) {
-            let bl = state.blocks[i];
-            if (bx > bl.x && bx < bl.x + 40 && by > bl.y && by < bl.y + 40) {
-                if (type === 'player' && bl.type === 'brick') { createBlast(bl.x, bl.y); bl.el.remove(); state.blocks.splice(i, 1); }
-                clearInterval(bInt); b.remove(); return;
-            }
-        }
-        if (type === 'player') {
-            state.enemies.forEach((en, i) => {
-                if (bx > en.x && bx < en.x + 30 && by > en.y && by < en.y + 30) {
-                    createBlast(en.x, en.y); en.el.remove(); state.enemies.splice(i, 1);
-                    state.ammo += 5; state.kills++; updateUI();
-                    if (state.enemies.length === 0) endGame(state.stage === 1 ? "STAGE 1 CLEAR!" : "ALL STAGES CLEAR!");
-                    clearInterval(bInt); b.remove();
-                }
-            });
-        } else {
-            if (bx > state.player.x && bx < state.player.x + 28 && by > state.player.y && by < state.player.y + 28) {
-                createBlast(state.player.x, state.player.y); endGame("DESTROYED!");
-                clearInterval(bInt); b.remove();
-            }
-        }
-        if (bx < 0 || bx > worldW || by < 0 || by > worldH) { clearInterval(bInt); b.remove(); }
-    }, 20);
+    
+    // Add bullet data tracking array to state structure
+    state.bullets.push({
+        el: b,
+        type: type,
+        x: bx,
+        y: by,
+        dir: bd,
+        speed: type === 'player' ? 9 : 6
+    });
 }
 
 function endGame(msg) {

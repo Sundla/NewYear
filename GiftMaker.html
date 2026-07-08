@@ -555,7 +555,7 @@
 
             <label for="fileUpload" class="upload-btn">📸 UPLOAD PHOTO</label>
 
-            <input type="file" id="fileUpload" accept="image/*" style="display:none">
+            <input type="file" id="fileUpload" accept="image/*, .heic, .heif" style="display:none">
 
             <button class="download-btn" id="downloadBtn">
                 ✨ DOWNLOAD GIFT CARD
@@ -605,6 +605,8 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
 
     <script>
         // APP ICON IMAGE
@@ -674,15 +676,46 @@
             });
         });
 
-        // PHOTO UPLOAD
+        // PHOTO UPLOAD WITH ORIGINAL QUALITY AND HEIC/HEIF COMPATIBILITY
         fileUpload.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
+                const fileName = file.name.toLowerCase();
+                const uploadBtn = document.querySelector('.upload-btn');
+                
+                // Check if file is HEIC or HEIF format
+                if (fileName.endsWith('.heic') || fileName.endsWith('.heif')) {
+                    const originalText = uploadBtn.innerText;
+                    uploadBtn.innerText = "⏳ CONVERTING...";
+                    
+                    // Convert HEIC/HEIF blob to full original-quality JPEG
+                    heic2any({
+                        blob: file,
+                        toType: "image/jpeg",
+                        quality: 1.0
+                    })
+                    .then(function(conversionResult) {
+                        const resultBlob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
+                            uploadBtn.innerText = originalText;
+                        };
+                        reader.readAsDataURL(resultBlob);
+                    })
+                    .catch(function(err) {
+                        console.error(err);
+                        alert("Could not read HEIC/HEIF image. Try converting it or uploading standard PNG/JPG.");
+                        uploadBtn.innerText = originalText;
+                    });
+                } else {
+                    // Standard files are read directly without modifications to preserve full original resolution
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
+                    };
+                    reader.readAsDataURL(file);
                 }
-                reader.readAsDataURL(file);
             }
         });
 
