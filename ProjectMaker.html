@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PPT Maker Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Lobster&family=Montserrat:wght@400;500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Sacramento&family=Parisienne&family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
@@ -12,7 +12,7 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f0f4fe; font-family: 'Inter', sans-serif; padding: 24px; color: #0f172a; }
+        body { background: #f0f4fe; font-family: 'Arial', sans-serif; padding: 24px; color: #0f172a; }
         .app-wrapper { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
         .preview-section { flex: 2; min-width: 350px; }
         
@@ -25,6 +25,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             display: block; 
             transition: background 0.3s; 
+            font-family: 'Arial', sans-serif;
         }
         
         .master-slide h1 {
@@ -55,15 +56,18 @@
         .active-thumb { border: 2px solid #4f46e5; }
         
         .tool-panel { flex: 1; min-width: 300px; background: white; padding: 24px; border-radius: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; }
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; }
         button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; width: 100%; }
         
         .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; }
         .theme-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
         
-        #imageInput { display: none; }
+        #imageInput, #fontFileInput { display: none; }
 
-        /* Style for the new Image PDF Maker panel at the bottom */
+        .btn-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+        .btn-row button, .btn-row select { margin-bottom: 0; width: 50%; }
+
+        /* Style for the Image PDF Maker panel at the bottom */
         .pdf-maker-panel { width: 100%; max-width: 1200px; margin: 40px auto 0 auto; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .pdf-maker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .pdf-maker-title { font-size: 18px; font-weight: bold; }
@@ -75,6 +79,128 @@
         .pdf-thumb-remove { position: absolute; top: 5px; right: 5px; background: rgba(220, 38, 38, 0.85); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; }
         #bulkImageInput { display: none; }
         #pdfNameInput { width: 220px; margin-bottom: 0; padding: 8px 12px; display: none; }
+
+        /* Animated Modal Popup for Size Selector */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.85);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0f172a;
+        }
+
+        .size-inputs-wrapper {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .size-field {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .size-field label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .size-input-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 0 10px;
+            background: #f8fafc;
+            width: 100%;
+        }
+
+        .size-input-box input {
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            margin-bottom: 0;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+            text-align: center;
+        }
+
+        .size-input-box span {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .size-separator {
+            font-size: 20px;
+            font-weight: bold;
+            color: #64748b;
+            padding-bottom: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-actions button {
+            margin-bottom: 0;
+            padding: 12px;
+        }
+
+        .btn-apply {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
     </style>
 </head>
 <body>
@@ -101,9 +227,50 @@
         <input type="text" id="titleIn" placeholder="Title">
         <textarea id="descIn" rows="4" placeholder="Description"></textarea>
         
+        <div class="btn-row">
+            <button onclick="openSizeModal()" style="background:#4b5563; color:white;"><i class="fas fa-expand"></i> Size (<span id="sizeDisplay">960x540</span>)</button>
+            <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;">Upload Image</button>
+        </div>
         <input type="file" id="imageInput" accept="image/*,.heic,.heif">
-        <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;">Upload Image</button>
         
+        <p style="font-weight:bold; font-size: 14px; margin-bottom: 6px;">Font</p>
+        <div class="btn-row">
+            <select id="fontSelect" onchange="applyFont(this.value)">
+                <optgroup label="Standard Sans-Serif">
+                    <option value="Arial" selected>Arial</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Roboto">Roboto</option>
+                </optgroup>
+                <optgroup label="Cursive Calligraphy">
+                    <option value="Arrowlicious">Arrowlicious</option>
+                    <option value="Berson Dream">Berson Dream</option>
+                    <option value="Madina">Madina</option>
+                    <option value="Classique Script">Classique Script</option>
+                    <option value="Gravity">Gravity</option>
+                    <option value="La Jour">La Jour</option>
+                    <option value="Billion Miracles">Billion Miracles</option>
+                    <option value="Cataline">Cataline</option>
+                    <option value="Endless and Sunshine Olivia">Endless & Sunshine Olivia</option>
+                </optgroup>
+                <optgroup label="Classic Calligraphy">
+                    <option value="Dancing Script">Dancing Script</option>
+                    <option value="Great Vibes">Great Vibes</option>
+                    <option value="Pacifico">Pacifico</option>
+                </optgroup>
+                <optgroup label="Serif & Monospace">
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Cinzel">Cinzel</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Lobster">Lobster</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                    <option value="Courier New">Courier New</option>
+                </optgroup>
+            </select>
+            <button onclick="document.getElementById('fontFileInput').click()" style="background:#8b5cf6; color:white;">Upload Font</button>
+            <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2">
+        </div>
+
         <button onclick="exportPDF()" style="background:#b91c1c; color:white;">Download PDF</button>
         <button onclick="exportPPTX()" style="background:#2d6a4f; color:white;">Download PPTX</button>
 
@@ -127,6 +294,33 @@
     <div class="pdf-thumb-grid" id="pdfThumbGrid"></div>
 </div>
 
+<div class="modal-overlay" id="sizeModalOverlay">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fas fa-ruler-combined"></i> Set Slide Dimensions</div>
+        <div class="size-inputs-wrapper">
+            <div class="size-field">
+                <label for="modalWidthInput">Width</label>
+                <div class="size-input-box">
+                    <input type="number" id="modalWidthInput" placeholder="960" min="1">
+                    <span>px</span>
+                </div>
+            </div>
+            <div class="size-separator">x</div>
+            <div class="size-field">
+                <label for="modalHeightInput">Height</label>
+                <div class="size-input-box">
+                    <input type="number" id="modalHeightInput" placeholder="540" min="1">
+                    <span>px</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeSizeModal()">Cancel</button>
+            <button class="btn-apply" onclick="applyCustomSize()">Apply Size</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // 10 Themes: Background, Title Color, Text Color
     const themes = [
@@ -146,6 +340,81 @@
     let current = 0;
     let activeThemeIdx = 0;
     let pdfImages = []; // Stores DataURLs for the Image PDF Maker
+    
+    // Global dimension settings (in px) - Default set to 960x540
+    let slideWidthPx = 960;
+    let slideHeightPx = 540;
+    let currentFont = "Arial";
+    let customFontData = null; // Stores Base64 string for uploaded fonts
+
+    // Reliable Font TTF source mapping (via CDN) for embedding vector fonts into PDF
+    const fontSourceMap = {
+        "Montserrat": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf",
+        "Roboto": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-400-normal.ttf",
+        "Dancing Script": "https://cdn.jsdelivr.net/fontsource/fonts/dancing-script@latest/latin-400-normal.ttf",
+        "Great Vibes": "https://cdn.jsdelivr.net/fontsource/fonts/great-vibes@latest/latin-400-normal.ttf",
+        "Pacifico": "https://cdn.jsdelivr.net/fontsource/fonts/pacifico@latest/latin-400-normal.ttf",
+        "Playfair Display": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-normal.ttf",
+        "Cinzel": "https://cdn.jsdelivr.net/fontsource/fonts/cinzel@latest/latin-400-normal.ttf",
+        "Lobster": "https://cdn.jsdelivr.net/fontsource/fonts/lobster@latest/latin-400-normal.ttf",
+        "Roboto Mono": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-mono@latest/latin-400-normal.ttf",
+        "Sacramento": "https://cdn.jsdelivr.net/fontsource/fonts/sacramento@latest/latin-400-normal.ttf",
+        "Parisienne": "https://cdn.jsdelivr.net/fontsource/fonts/parisienne@latest/latin-400-normal.ttf",
+        "Tangerine": "https://cdn.jsdelivr.net/fontsource/fonts/tangerine@latest/latin-400-normal.ttf"
+    };
+
+    // Font family fallbacks and target mapped TTF font family for non-standard web options
+    const fontFallbacks = {
+        "Arrowlicious": "'Dancing Script', 'Great Vibes', cursive",
+        "Berson Dream": "'Playfair Display', 'Georgia', serif",
+        "Madina": "'Sacramento', 'Great Vibes', cursive",
+        "Classique Script": "'Parisienne', 'Great Vibes', cursive",
+        "Gravity": "'Montserrat', 'Arial', sans-serif",
+        "La Jour": "'Cinzel', 'Playfair Display', serif",
+        "Billion Miracles": "'Tangerine', 'Great Vibes', cursive",
+        "Cataline": "'Pacifico', 'Dancing Script', cursive",
+        "Endless and Sunshine Olivia": "'Great Vibes', 'Sacramento', cursive"
+    };
+
+    const fontToTTFMap = {
+        "Arrowlicious": "Dancing Script",
+        "Berson Dream": "Playfair Display",
+        "Madina": "Sacramento",
+        "Classique Script": "Parisienne",
+        "Gravity": "Montserrat",
+        "La Jour": "Cinzel",
+        "Billion Miracles": "Tangerine",
+        "Cataline": "Pacifico",
+        "Endless and Sunshine Olivia": "Great Vibes"
+    };
+
+    // Font mapping specifically for PPTX to map web fonts to standard cross-platform desktop system fonts
+    const fontToPPTXMap = {
+        "Arial": "Arial",
+        "Montserrat": "Arial",
+        "Roboto": "Calibri",
+        "Arrowlicious": "Monotype Corsiva",
+        "Berson Dream": "Georgia",
+        "Madina": "Monotype Corsiva",
+        "Classique Script": "Brush Script MT",
+        "Gravity": "Arial",
+        "La Jour": "Georgia",
+        "Billion Miracles": "Monotype Corsiva",
+        "Cataline": "Comic Sans MS",
+        "Endless and Sunshine Olivia": "Monotype Corsiva",
+        "Dancing Script": "Monotype Corsiva",
+        "Great Vibes": "Monotype Corsiva",
+        "Pacifico": "Comic Sans MS",
+        "Playfair Display": "Georgia",
+        "Cinzel": "Times New Roman",
+        "Georgia": "Georgia",
+        "Times New Roman": "Times New Roman",
+        "Lobster": "Impact",
+        "Roboto Mono": "Courier New",
+        "Courier New": "Courier New"
+    };
+
+    const fetchedFontCache = {};
 
     function initThemes() {
         const grid = document.getElementById("themeGrid");
@@ -158,10 +427,102 @@
         });
     }
 
+    // Modal popup size controls
+    function openSizeModal() {
+        document.getElementById("modalWidthInput").value = slideWidthPx;
+        document.getElementById("modalHeightInput").value = slideHeightPx;
+        const overlay = document.getElementById("sizeModalOverlay");
+        overlay.classList.add("active");
+        setTimeout(() => document.getElementById("modalWidthInput").focus(), 150);
+    }
+
+    function closeSizeModal() {
+        document.getElementById("sizeModalOverlay").classList.remove("active");
+    }
+
+    function applyCustomSize() {
+        const w = parseInt(document.getElementById("modalWidthInput").value, 10);
+        const h = parseInt(document.getElementById("modalHeightInput").value, 10);
+
+        if (!isNaN(w) && w > 0 && !isNaN(h) && h > 0) {
+            slideWidthPx = w;
+            slideHeightPx = h;
+            document.getElementById("sizeDisplay").innerText = `${slideWidthPx}x${slideHeightPx}`;
+            updateView();
+            closeSizeModal();
+        } else {
+            alert("Please enter valid positive dimensions for both Width and Height.");
+        }
+    }
+
+    // Close modal when clicking outer backdrop area
+    document.getElementById("sizeModalOverlay").onclick = function(e) {
+        if (e.target === this) closeSizeModal();
+    };
+
+    document.getElementById("modalWidthInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomSize(); });
+    document.getElementById("modalHeightInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomSize(); });
+
+    function applyFont(fontName) {
+        currentFont = fontName;
+        const fallback = fontFallbacks[fontName] || "sans-serif";
+        document.getElementById("slideDisplay").style.fontFamily = `'${fontName}', ${fallback}`;
+    }
+
+    // Process custom font uploads (.ttf, .otf, .woff, .woff2)
+    document.getElementById("fontFileInput").onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const fontName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9]/g, "_");
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            const fontBuffer = event.target.result;
+            const font = new FontFace(fontName, fontBuffer);
+
+            font.load().then((loadedFont) => {
+                document.fonts.add(loadedFont);
+                customFontData = {
+                    name: fontName,
+                    base64: arrayBufferToBase64(fontBuffer),
+                    fileName: file.name
+                };
+
+                const fontSelect = document.getElementById("fontSelect");
+                const opt = document.createElement("option");
+                opt.value = fontName;
+                opt.innerText = `${fontName} (Uploaded Custom)`;
+                fontSelect.appendChild(opt);
+                fontSelect.value = fontName;
+
+                applyFont(fontName);
+            }).catch((err) => {
+                alert("Failed to load custom font. Please use a valid TTF/OTF font file.");
+                console.error(err);
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
     function updateView() {
         const theme = themes[activeThemeIdx];
         const display = document.getElementById("slideDisplay");
         display.style.background = theme.bg;
+        
+        const fallback = fontFallbacks[currentFont] || "sans-serif";
+        display.style.fontFamily = `'${currentFont}', ${fallback}`;
+        display.style.aspectRatio = `${slideWidthPx} / ${slideHeightPx}`;
+
         document.getElementById("dTitle").style.color = theme.title;
         document.getElementById("dDesc").style.color = theme.text;
         
@@ -178,7 +539,6 @@
         renderThumbs();
     }
 
-    // Helper to process regular images or convert HEIC/HEIF files preserving high quality
     async function processImageFile(file) {
         const isHeic = file.type === "image/heic" || file.type === "image/heif" || 
                        file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif");
@@ -188,7 +548,7 @@
                 let converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.98 });
                 return Array.isArray(converted) ? converted[0] : converted;
             } catch (error) {
-                console.error("HEIC conversion failed, trying normal load:", error);
+                console.error("HEIC conversion failed:", error);
                 return file;
             }
         }
@@ -221,41 +581,216 @@
     function addSlide() { slides.splice(current + 1, 0, { title: "New Slide", description: "Add content here", img: null }); current++; updateView(); }
     function deleteSlide() { if(slides.length > 1) { slides.splice(current, 1); if(current >= slides.length) current--; updateView(); } }
 
+    async function fetchFontBase64(url) {
+        if (fetchedFontCache[url]) return fetchedFontCache[url];
+        try {
+            const res = await fetch(url);
+            if (!res.ok) return null;
+            const blob = await res.arrayBuffer();
+            const b64 = arrayBufferToBase64(blob);
+            fetchedFontCache[url] = b64;
+            return b64;
+        } catch(e) {
+            console.error("Failed to fetch font TTF:", e);
+            return null;
+        }
+    }
+
+    // Renders text lines with word wrapping onto a HTML5 canvas context
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        let currentY = y;
+
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + ' ';
+            let metrics = ctx.measureText(testLine);
+            let testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                ctx.fillText(line, x, currentY);
+                line = words[n] + ' ';
+                currentY += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, x, currentY);
+        return currentY + lineHeight;
+    }
+
+    // Helper: High quality canvas rendering for flat PDF export when custom font is active
+    async function renderSlideToCanvas(slide, theme, fontName) {
+        const canvas = document.createElement('canvas');
+        const scale = 2; // High resolution rendering for sharp text & graphics
+        canvas.width = slideWidthPx * scale;
+        canvas.height = slideHeightPx * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+
+        // Fill background
+        ctx.fillStyle = theme.bg;
+        ctx.fillRect(0, 0, slideWidthPx, slideHeightPx);
+
+        const margin = 40;
+        const maxTextWidth = slideWidthPx - (margin * 2);
+        let currentY = margin;
+
+        const fallback = fontFallbacks[fontName] || "sans-serif";
+        const fontStack = `'${fontName}', ${fallback}`;
+
+        // Render Title
+        if (slide.title) {
+            ctx.font = `bold 40px ${fontStack}`;
+            ctx.fillStyle = theme.title;
+            ctx.textBaseline = "top";
+            currentY = wrapCanvasText(ctx, slide.title, margin, currentY, maxTextWidth, 48);
+            currentY += 15;
+        }
+
+        // Render Description
+        if (slide.description) {
+            ctx.font = `20px ${fontStack}`;
+            ctx.fillStyle = theme.text;
+            ctx.textBaseline = "top";
+            currentY = wrapCanvasText(ctx, slide.description, margin, currentY, maxTextWidth, 30);
+            currentY += 20;
+        }
+
+        // Render Image
+        if (slide.img) {
+            try {
+                const img = new Image();
+                img.src = slide.img;
+                await img.decode();
+
+                const maxImgWidth = maxTextWidth;
+                const maxImgHeight = slideHeightPx - currentY - margin;
+
+                let imgW = img.naturalWidth;
+                let imgH = img.naturalHeight;
+
+                let imgScale = Math.min(maxImgWidth / imgW, maxImgHeight / imgH);
+                if (imgScale > 1) imgScale = 1;
+
+                imgW = imgW * imgScale;
+                imgH = imgH * imgScale;
+
+                if (imgW > 0 && imgH > 0 && maxImgHeight > 20) {
+                    ctx.drawImage(img, margin, currentY, imgW, imgH);
+                }
+            } catch (err) {
+                console.error("Error rendering image on canvas:", err);
+            }
+        }
+
+        return canvas.toDataURL("image/png");
+    }
+
     async function exportPDF() {
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('l', 'mm', 'a4');
-        const theme = themes[activeThemeIdx];
         
-        for (let i = 0; i < slides.length; i++) {
-            if (i !== 0) pdf.addPage();
-            pdf.setFillColor(theme.bg); pdf.rect(0,0,297,210,'F');
-            
-            // Draw Title
-            pdf.setTextColor(theme.title); pdf.setFontSize(40); 
-            const titleLines = pdf.splitTextToSize(slides[i].title, 260);
-            pdf.text(titleLines, 20, 30);
-            
-            // Calculate starting Y position for Description based on Title height
-            let descY = 30 + (titleLines.length * 15);
-            
-            // Draw Description
-            pdf.setTextColor(theme.text); pdf.setFontSize(20); 
-            const descLines = pdf.splitTextToSize(slides[i].description, 260);
-            pdf.text(descLines, 20, descY);
-            
-            // Calculate starting Y position for Image based on Description height
-            let imgY = descY + (descLines.length * 10);
-            
-            if(slides[i].img) {
-                const img = new Image(); img.src = slides[i].img; await img.decode();
-                const maxAvailableHeight = 190 - imgY;
-                let ratio = Math.min(100 / img.naturalWidth, 80 / img.naturalHeight);
-                let finalImgHeight = img.naturalHeight * ratio;
-                
-                if (finalImgHeight > maxAvailableHeight && maxAvailableHeight > 20) {
-                    ratio = maxAvailableHeight / img.naturalHeight;
+        // Exact 1:1 Pixel-to-Point scaling for accuracy
+        const slideWidthPt = slideWidthPx * 0.75;
+        const slideHeightPt = slideHeightPx * 0.75;
+
+        const pdf = new jsPDF({
+            orientation: slideWidthPt >= slideHeightPt ? 'l' : 'p',
+            unit: 'pt',
+            format: [slideWidthPt, slideHeightPt]
+        });
+        
+        const theme = themes[activeThemeIdx];
+
+        // Checks if an uploaded custom font is active
+        const isCustomUploadedFontActive = customFontData && customFontData.name === currentFont;
+
+        if (isCustomUploadedFontActive) {
+            // Render High Quality FLAT (Non Copy-Paste) PDF using HTML5 Canvas rendering
+            for (let i = 0; i < slides.length; i++) {
+                if (i !== 0) pdf.addPage([slideWidthPt, slideHeightPt], slideWidthPt >= slideHeightPt ? 'l' : 'p');
+                const imgData = await renderSlideToCanvas(slides[i], theme, currentFont);
+                pdf.addImage(imgData, 'PNG', 0, 0, slideWidthPt, slideHeightPt);
+            }
+        } else {
+            // Vector (Copy-Paste) standard rendering for built-in system and web fonts
+            let pdfFontName = "helvetica";
+            let targetFontKey = fontToTTFMap[currentFont] || currentFont;
+
+            if (fontSourceMap[targetFontKey]) {
+                const b64 = await fetchFontBase64(fontSourceMap[targetFontKey]);
+                if (b64) {
+                    const cleanFontName = targetFontKey.replace(/[^a-zA-Z0-9]/g, "");
+                    pdf.addFileToVFS(`${cleanFontName}.ttf`, b64);
+                    pdf.addFont(`${cleanFontName}.ttf`, cleanFontName, 'normal');
+                    pdfFontName = cleanFontName;
                 }
-                pdf.addImage(slides[i].img, 'PNG', 20, imgY, img.naturalWidth * ratio, img.naturalHeight * ratio);
+            } else if (currentFont === "Times New Roman" || currentFont === "Georgia") {
+                pdfFontName = "times";
+            } else if (currentFont === "Courier New" || currentFont === "Roboto Mono") {
+                pdfFontName = "courier";
+            }
+
+            const margin = 30; // 30pt padding
+            const maxTextWidth = slideWidthPt - (margin * 2);
+            const titleFontSize = 28;
+            const descFontSize = 14;
+
+            for (let i = 0; i < slides.length; i++) {
+                if (i !== 0) pdf.addPage([slideWidthPt, slideHeightPt], slideWidthPt >= slideHeightPt ? 'l' : 'p');
+                
+                // Background
+                pdf.setFillColor(theme.bg); 
+                pdf.rect(0, 0, slideWidthPt, slideHeightPt, 'F');
+                
+                pdf.setFont(pdfFontName, 'normal');
+                let currentY = margin;
+
+                // Draw Vector Selectable Title
+                if (slides[i].title) {
+                    pdf.setFontSize(titleFontSize);
+                    pdf.setTextColor(theme.title); 
+                    const titleLines = pdf.splitTextToSize(slides[i].title, maxTextWidth);
+                    const titleLineHeight = titleFontSize * 1.25;
+                    pdf.text(titleLines, margin, currentY + titleFontSize);
+                    currentY += (titleLines.length * titleLineHeight) + 15;
+                }
+
+                // Draw Vector Selectable Description
+                if (slides[i].description) {
+                    pdf.setFontSize(descFontSize);
+                    pdf.setTextColor(theme.text); 
+                    const descLines = pdf.splitTextToSize(slides[i].description, maxTextWidth);
+                    const descLineHeight = descFontSize * 1.4;
+                    pdf.text(descLines, margin, currentY + descFontSize);
+                    currentY += (descLines.length * descLineHeight) + 20;
+                }
+
+                // Draw Image maintaining strict aspect ratio
+                if (slides[i].img) {
+                    try {
+                        const img = new Image(); 
+                        img.src = slides[i].img; 
+                        await img.decode();
+
+                        const maxImgWidth = maxTextWidth;
+                        const maxImgHeight = slideHeightPt - currentY - margin;
+
+                        let imgW = img.naturalWidth;
+                        let imgH = img.naturalHeight;
+                        
+                        let scale = Math.min(maxImgWidth / imgW, maxImgHeight / imgH);
+                        if (scale > 1) scale = 1;
+
+                        imgW = imgW * scale;
+                        imgH = imgH * scale;
+
+                        if (imgW > 0 && imgH > 0 && maxImgHeight > 20) {
+                            pdf.addImage(slides[i].img, 'PNG', margin, currentY, imgW, imgH);
+                        }
+                    } catch(err) {
+                        console.error("Error drawing image to PDF:", err);
+                    }
+                }
             }
         }
         pdf.save("Presentation.pdf");
@@ -263,62 +798,84 @@
 
     async function exportPPTX() {
         let pptx = new PptxGenJS();
+        
+        // Convert screen pixel dimensions to PPT Inches
+        pptx.defineLayout({
+            name: 'CUSTOM_LAYOUT',
+            width: slideWidthPx / 96,
+            height: slideHeightPx / 96
+        });
+        pptx.layout = 'CUSTOM_LAYOUT';
+
         const theme = themes[activeThemeIdx];
         
+        // Map custom/web fonts to standard desktop system fonts so PowerPoint and Keynote display them properly
+        let fontFaceToUse = fontToPPTXMap[currentFont] || currentFont;
+        if (customFontData && customFontData.name === currentFont) {
+            fontFaceToUse = customFontData.name;
+        }
+
         for (let i = 0; i < slides.length; i++) {
             const s = slides[i];
             let slide = pptx.addSlide();
             slide.background = { color: theme.bg.replace('#','') };
             
-            const titleCharsPerLine = 30; 
-            const descCharsPerLine = 60;
+            let currentY = 0.5;
+
+            // Add Title Box
+            if (s.title) {
+                slide.addText(s.title, { 
+                    x: 0.5, y: currentY, w: (slideWidthPx / 96) - 1.0, 
+                    fontSize: 32, bold: true, color: theme.title.replace('#',''), 
+                    fontFace: fontFaceToUse, wrap: true 
+                });
+                currentY += 1.2;
+            }
             
-            const titleLines = Math.max(1, Math.ceil((s.title || "").length / titleCharsPerLine));
-            const descLines = Math.max(1, Math.ceil((s.description || "").length / descCharsPerLine));
+            // Add Description Box
+            if (s.description) {
+                slide.addText(s.description, { 
+                    x: 0.5, y: currentY, w: (slideWidthPx / 96) - 1.0, 
+                    fontSize: 18, color: theme.text.replace('#',''), 
+                    fontFace: fontFaceToUse, wrap: true 
+                });
+                currentY += 1.0;
+            }
             
-            let titleY = 0.5;
-            let titleH = titleLines * 0.6;
-            
-            let descY = titleY + titleH + 0.2;
-            let descH = descLines * 0.4;
-            
-            let imgY = descY + descH + 0.2;
-            
-            // Add Title
-            slide.addText(s.title, { x: 0.5, y: titleY, h: titleH, fontSize: 40, bold: true, color: theme.title.replace('#',''), vertical: 'top' });
-            
-            // Add Description
-            slide.addText(s.description, { x: 0.5, y: descY, h: descH, fontSize: 20, color: theme.text.replace('#',''), vertical: 'top' });
-            
-            // Add Image asynchronously with valid image metrics
-            if(s.img) {
-                const img = new Image(); img.src = s.img; await img.decode();
-                let maxH = 7.0 - imgY; 
-                if(maxH < 1.5) maxH = 1.5;
-                
-                // Calculate dynamic structural width/height to match PDF full aspect scale rule
-                let widthVal = 5;
-                let heightVal = (5 * img.naturalHeight) / img.naturalWidth;
-                
-                if (heightVal > maxH) {
-                    heightVal = maxH;
-                    widthVal = (maxH * img.naturalWidth) / img.naturalHeight;
+            // Add Image Box preserving aspect ratio
+            if (s.img) {
+                try {
+                    const img = new Image(); 
+                    img.src = s.img; 
+                    await img.decode();
+                    
+                    let maxH = (slideHeightPx / 96) - currentY - 0.5; 
+                    if (maxH < 1.0) maxH = 1.0;
+                    
+                    let widthVal = (slideWidthPx / 96) - 1.0;
+                    let heightVal = (widthVal * img.naturalHeight) / img.naturalWidth;
+                    
+                    if (heightVal > maxH) {
+                        heightVal = maxH;
+                        widthVal = (maxH * img.naturalWidth) / img.naturalHeight;
+                    }
+                    
+                    slide.addImage({ data: s.img, x: 0.5, y: currentY, w: widthVal, h: heightVal });
+                } catch(e) {
+                    console.error("Error drawing PPTX image:", e);
                 }
-                
-                slide.addImage({ data: s.img, x: 0.5, y: imgY, w: widthVal, h: heightVal, sizing: { type: 'contain' } });
             }
         }
         pptx.writeFile({ fileName: "Presentation.pptx" });
     }
 
-    // Logic for Image PDF Maker with guaranteed order indexing configuration
+    // Logic for Image PDF Maker
     document.getElementById("bulkImageInput").onchange = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
         
         document.getElementById("pdfNameInput").style.display = "inline-block";
         
-        // Loop sequentially to guarantee exact selection configuration alignment across async steps
         for (let i = 0; i < files.length; i++) {
             const processedFile = await processImageFile(files[i]);
             await new Promise((resolve) => {
@@ -374,16 +931,13 @@
 
         const { jsPDF } = window.jspdf;
         
-        // Setup initial blank array configuration for dynamic dimension creation
         let firstImg = new Image();
         firstImg.src = pdfImages[0];
         await firstImg.decode();
         
-        // Dynamic single canvas configuration logic: width is locked to 210mm
         const targetWidth = 210;
         let targetHeight = (targetWidth * firstImg.naturalHeight) / firstImg.naturalWidth;
         
-        // Initialize PDF dynamically using the dimensions calculated from the first image
         const pdf = new jsPDF({
             orientation: targetHeight > targetWidth ? 'p' : 'l',
             unit: 'mm',
@@ -395,19 +949,15 @@
             img.src = pdfImages[i];
             await img.decode();
 
-            // All images maintain exact uniform match size logic perfectly across distinct aspect pages
             const currentHeight = (targetWidth * img.naturalHeight) / img.naturalWidth;
 
             if (i !== 0) {
-                // Dynamically append new layout page sizing matching image bounding boxes flawlessly
                 pdf.addPage([targetWidth, currentHeight], currentHeight > targetWidth ? 'p' : 'l');
             }
             
-            // Render from point 0,0 across entire workspace context to leave zero background canvas margins showing
             pdf.addImage(pdfImages[i], 'NONE', 0, 0, targetWidth, currentHeight);
         }
         
-        // Get custom name or fallback to standard default name
         let filename = document.getElementById("pdfNameInput").value.trim();
         if(!filename) {
             filename = "Images";

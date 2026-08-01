@@ -437,6 +437,18 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 .longpress-note h4{ font-family: 'Quicksand', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #000000; }
 .longpress-note p{ font-family: 'Quicksand', sans-serif; color: #000000; margin: 0; }
 
+/* SWIPE GIF DIM PINKISH NEON GLOW CONTAINER */
+.swipe-img-glow-wrapper {
+  display: inline-block;
+  border-radius: 24px;
+  background: rgba(255, 182, 193, 0.15);
+  box-shadow: 0 0 25px rgba(255, 105, 180, 0.4), inset 0 0 15px rgba(255, 182, 193, 0.3);
+  padding: 8px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @media(max-width:550px){ .music-panel{ width:100%; } }
 </style>
 </head>
@@ -535,8 +547,10 @@ NEW SIDE PANEL SYSTEM WITH DYNAMIC THEMES
 
 <br>
 <div style="text-align:center; margin:20px 0;">
-  <a href="https://youtu.be/6D7rWLzloOI?si=XK04HtNRvrcBtAVp" target="_blank" id="swipeLink">
-    <img src="swipe.gif" alt="Swipe" style="width:min(90vw,200px); height:auto; display:block; margin:auto; object-fit:contain; cursor:pointer;">
+  <a href="https://youtu.be/6D7rWLzloOI?si=XK04HtNRvrcBtAVp" target="_blank" id="swipeLink" oncontextmenu="return false;">
+    <div class="swipe-img-glow-wrapper">
+      <img src="swipe.gif" alt="Swipe" style="width:min(90vw,200px); height:auto; display:block; margin:auto; object-fit:contain; cursor:pointer; pointer-events:none; border-radius:20px;">
+    </div>
   </a>
   <div style="font-size:18px; font-weight:700; color: white; margin-top:10px; font-family:'Quicksand',sans-serif;">Swipe Right or Left</div>
 </div>
@@ -615,12 +629,6 @@ const englishSongs = [
 ];
 
 const folders = [
-  { name:"K Pop", songs:[
-    {title:"Fifty Fifty", videoId:"Qc7_zRjH808", url:"https://youtu.be/Qc7_zRjH808?si=nmQJVt0EdvXxhttJ"},
-    {title:"bts", embed:"https://www.youtube.com/embed/hmE9f-TEutc?start=53", url:"https://youtu.be/hmE9f-TEutc?t=53&si=KtPJyvXDpxnNnxYw"},
-    {title:"jenny", embed:"https://www.youtube.com/embed/JSFG-IE8n_c?start=38", url:"https://youtu.be/JSFG-IE8n_c?t=38&si=KKXS3nAYiO07jskR"},
-    {title:"thumkebaaz", videoId:"NOiyDlWl534", url:"https://youtu.be/NOiyDlWl534?si=xcib-9Dkvy5Eljaw"}
-  ]},
   { name:"Japani", songs:[
     {title:"Odoriko", videoId:"7HgJIAUtICU", url:"https://youtu.be/7HgJIAUtICU?si=vhmKsTAKqUWxdfDH"},
     {title:"Sekai no Owari", videoId:"PnFxzx9PXEM", url:"https://youtu.be/PnFxzx9PXEM?si=utyCNuTahJAdnn22"},
@@ -642,10 +650,16 @@ const folders = [
     {title:"Something Inside", videoId:"IqYvHVg1RUM", url:"https://youtu.be/IqYvHVg1RUM?si=DL5UrnuqhBp64tvt"}, 
     {title:"Jhonny 3 Tears", videoId:"qGSb8eSm42k", url:"https://youtu.be/qGSb8eSm42k?si=LSit6MvbJl48hj22"}
   ]},
+  { name:"K Pop", songs:[
+    {title:"Fifty Fifty", videoId:"Qc7_zRjH808", url:"https://youtu.be/Qc7_zRjH808?si=nmQJVt0EdvXxhttJ"},
+    {title:"bts", embed:"https://www.youtube.com/embed/hmE9f-TEutc?start=53", url:"https://youtu.be/hmE9f-TEutc?t=53&si=KtPJyvXDpxnNnxYw"},
+    {title:"jenny", embed:"https://www.youtube.com/embed/JSFG-IE8n_c?start=38", url:"https://youtu.be/JSFG-IE8n_c?t=38&si=KKXS3nAYiO07jskR"},
+    {title:"thumkebaaz", videoId:"NOiyDlWl534", url:"https://youtu.be/NOiyDlWl534?si=xcib-9Dkvy5Eljaw"}
+  ]},
   { name:"Anime", songs:[
-    {title:"One Please", videoId:"hQ8UUpxjrNk", url:"https://youtu.be/hQ8UUpxjrNk?si=p0gEaEa2MhPuzbbO"},
+    {title:"One Peace", videoId:"hQ8UUpxjrNk", url:"https://youtu.be/hQ8UUpxjrNk?si=p0gEaEa2MhPuzbbO"},
     {title:"Zenryoku Shounen", videoId:"IvDTkTKi5pA", url:"https://youtu.be/IvDTkTKi5pA?si=vHZcbQLDeNPB3JFG"}, 
-    {title:"Demon Slayer", videoId:"Jb6Zlg30rgk", url:"https://youtu.be/Jb6Zlg30rgk?si=fgY5fq0VLxTXY65W"},
+    {title:"Kimetsu no Yaiba", videoId:"Jb6Zlg30rgk", url:"https://youtu.be/Jb6Zlg30rgk?si=fgY5fq0VLxTXY65W"},
     {title:"Gankutsuou Op", videoId:"zaVhC9ziJQ0", url:"https://youtu.be/zaVhC9ziJQ0?si=CC5XCycQ-e-zp7C6"}, 
     {title:"Seasons die one after one", videoId:"wtJcLWeY114", url:"https://youtu.be/wtJcLWeY114?si=19o1lPRWy7F9OrT1"}
   ]}
@@ -684,7 +698,7 @@ const rightPanelFolders = [
   { name: "Science", songs: [ {title: "The Mind", videoId: "z1PSbDmV8Gw", url: "https://youtu.be/z1PSbDmV8Gw?si=nOHFj9oecnodxN_u"}, {title: "Feynman's Charm", videoId: "nYg6jzotiAc", url: "https://youtu.be/nYg6jzotiAc?si=YjRkRzfCprYhbw96"}, {title: "Humility", videoId: "o8GA2w-qrcg", url: "https://youtu.be/o8GA2w-qrcg?si=h46YXegkbBYy8EQY"} ] },
   { name: "Art", songs: [ 
       {title: "Kim Jung Gi", videoId: "aoqu5SEFqRI", url: "https://youtu.be/aoqu5SEFqRI?si=vQ1XuBlzJsOoLyRk"}, 
-      {title: "Artistic", multi: true, buttons: [
+      {title: "influenzar", multi: true, buttons: [
           {name: "Farts", videoId: "M33PO9rEg2I", url: "https://youtu.be/M33PO9rEg2I?si=zsjzryJE3eSkuFQu"},
           {name: "Jazza", videoId: "Rpj2J4tn4YI", url: "https://youtu.be/Rpj2J4tn4YI?si=P4qaWzgLPwJlSk9K"}
       ]}, 
@@ -702,7 +716,12 @@ const rightPanelFolders = [
       ]},
       {title: "Dostoevsky (novel)", multi: true, buttons: [ {name: "Hindi", videoId: "gDVVrK1L38Q", url: "https://youtu.be/gDVVrK1L38Q?si=Lc0fCzYrKBWup_wI"}, {name: "English", videoId: "8a8xw4YO6AA", url: "https://youtu.be/8a8xw4YO6AA?si=we9Pjj5IPCU61zJa"} ]} 
   ] },
-  { name: "Hustle", songs: [ {title: "Simonster", multi: true, buttons: [ {name: "Gravitas", videoId: "FHBtLAvNGo4", url: "https://youtu.be/FHBtLAvNGo4?si=H8NjiVx1TnZCzC_g"}, {name: "Tribute", videoId: "I8gi7QagCrc", url: "https://youtu.be/I8gi7QagCrc?si=g5wPOPFjG5NHoIjd"} ]}, {title: "Mike Shake", videoId: "HKuTSYF5Wlc", url: "https://youtu.be/HKuTSYF5Wlc?si=uLiHr_ri-soS8NH9"}, {title: "Madkilla", videoId: "ZewGON5hJPk", url: "https://youtu.be/ZewGON5hJPk?si=5bzaFhH3R_lsPjzf"} ] },
+  { name: "Hustle", songs: [ 
+      {title: "Simonster", multi: true, buttons: [ {name: "Gravitas", videoId: "FHBtLAvNGo4", url: "https://youtu.be/FHBtLAvNGo4?si=H8NjiVx1TnZCzC_g"}, {name: "Tribute", videoId: "I8gi7QagCrc", url: "https://youtu.be/I8gi7QagCrc?si=g5wPOPFjG5NHoIjd"} ]}, 
+      {title: "Mike Shake", videoId: "HKuTSYF5Wlc", url: "https://youtu.be/HKuTSYF5Wlc?si=uLiHr_ri-soS8NH9"}, 
+      {title: "Madkilla", videoId: "ZewGON5hJPk", url: "https://youtu.be/ZewGON5hJPk?si=5bzaFhH3R_lsPjzf"},
+      {title: "Pahadi", videoId: "cjZvFY6__qw", url: "https://youtu.be/cjZvFY6__qw?si=kllLJ8oZRmZOfTkH"}
+  ] },
   { name: "Intresting", songs: [ {title: "Humans", multi: true, buttons: [ {name: "Research", videoId: "LuCans9euxY", url: "https://youtu.be/LuCans9euxY?si=_PIFJHBt-v5vrlYb"}, {name: "Evolving", videoId: "_XYNsTvnU7E", url: "https://youtu.be/_XYNsTvnU7E?si=CAWpN7bqTWDImhtX"} ]}, {title: "Money", multi: true, buttons: [ {name: "Part 1", videoId: "eDa1U9qJKxo", url: "https://youtu.be/eDa1U9qJKxo?si=AAAS7F2BJ209M-CE"}, {name: "Part 2", videoId: "Qxc_uS7R1CY", url: "https://youtu.be/Qxc_uS7R1CY?si=BeM-WVTay8Sp5Z4K"} ]}, {title: "History", videoId: "KnviRvdmFTc", url: "https://youtu.be/KnviRvdmFTc?si=m7tro87GS-YMW1dE"} ] },
   { name: "Neo Gen", songs: [ {title: "Criticism", multi: true, buttons: [ {name: "Religious", videoId: "S6w7w706g2I", url: "https://youtu.be/S6w7w706g2I?si=pj30-65tVPsLSmZ4"}, {name: "Political", videoId: "bzbsJGMVHxQ", url: "https://youtu.be/bzbsJGMVHxQ?si=nTZsJWCVG6h-DmPS"} ]}, {title: "Spiritual", videoId: "PYfyrsFu88E", url: "https://youtu.be/PYfyrsFu88E?si=3zf5aAXbte2OLhRg"}, {title: "Random", videoId: "Vhlwk1HcFdI", url: "https://youtu.be/Vhlwk1HcFdI?si=HRhW1ByECloyKYKK"} ] }
 ];
@@ -713,7 +732,10 @@ const dPanelFolders = [
           {name: "Strings", videoId: "Da-2h2B4faU", url: "https://youtu.be/Da-2h2B4faU?si=GEiGWHjcCj7BKTPz"},
           {name: "Entropy", videoId: "DxL2HoqLbyA", url: "https://youtu.be/DxL2HoqLbyA?si=GZ5JS-RJ_Q7G7q82"}
       ]},
-      {title: "Tradition", videoId: "7J1lD9yPTRE", url: "https://youtu.be/7J1lD9yPTRE?si=NR3UvRlvWcAaJw8B"},
+      {title: "Tradition", multi: true, buttons: [
+          {name: "Novel", videoId: "7J1lD9yPTRE", url: "https://youtu.be/7J1lD9yPTRE?si=NR3UvRlvWcAaJw8B"},
+          {name: "Movie", videoId: "bIij-KQ0jYU", url: "https://youtu.be/bIij-KQ0jYU?si=0I0-Tlm7nTkXMywJ"}
+      ]},
       {title: "Talent", videoId: "2grlyPbchBs", url: "https://youtu.be/2grlyPbchBs?si=dZ384ScqHVZlwf_w"}
   ]},
   { name: "Original", songs: [
@@ -730,7 +752,8 @@ const dPanelFolders = [
       {title: "Outgrow", multi: true, buttons: [
           {name: "company", videoId: "6Afpey7Eldo", url: "https://youtu.be/6Afpey7Eldo?si=v7Xhf6VIsQaLI1yG"},
           {name: "country", videoId: "0JDoll8OEFE", url: "https://youtu.be/0JDoll8OEFE?si=LNBA2jar1eLupIdh"},
-          {name: "modern biology", videoId: "u8mmn9lOIyw", url: "https://youtu.be/u8mmn9lOIyw?si=KdHu0osKyb6bU7_6"}
+          {name: "modern biology", videoId: "u8mmn9lOIyw", url: "https://youtu.be/u8mmn9lOIyw?si=KdHu0osKyb6bU7_6"},
+          {name: "neck", videoId: "LC-2Ql3T4Bg", url: "https://youtu.be/LC-2Ql3T4Bg?si=huIiQz8dwO46VwRk"}
       ]}
   ]},
   { name: "Maths", songs: [
@@ -749,14 +772,20 @@ const dPanelFolders = [
   ]},
   { name: "Revolution", songs: [
       {title: "Religious", multi: true, buttons: [
-          {name: "jesus", videoId: "NI4XGTathLA", url: "https://youtube.com/shorts/NI4XGTathLA?si=51DZvuAu4Hjo_aZt", customText: "rebel against orthadox religion"},
+          {name: "jesus", videoId: "NI4XGTathLA", url: "https://youtube.com/shorts/NI4XGTathLA?si=51DZvuAu4Hjo_aZt", customText: "rebel against orthodox religion"},
           {name: "jain", videoId: "UvNNCdSHZ_A", url: "https://youtu.be/UvNNCdSHZ_A?si=gxTlbENOwSiS8wfa", customText: "revolt against animalistic nature"}
       ]},
       {title: "Renaissance", multi: true, buttons: [
           {name: "voltaire", videoId: "LAzKGkTIKpg", url: "https://youtu.be/LAzKGkTIKpg?si=kTj28Wxv1fv9ckyv"},
           {name: "marx", videoId: "fSQgCy_iIcc", url: "https://youtu.be/fSQgCy_iIcc?si=0k-8Lz4HKK8FafdR"}
       ]},
-      {title: "Resurrection", videoId: "FwgMxjhXkKo", url: "https://youtu.be/FwgMxjhXkKo?si=je1lhwjDU2CCosVS", customText: "future rebellion"}
+      {
+  title: "Resurrection", 
+  videoId: "FwgMxjhXkKo", 
+  url: "https://youtu.be/FwgMxjhXkKo?si=je1lhwjDU2CCosVS", 
+  customText: "future rebellion"
+}
+
   ]}
 ];
 
@@ -1022,21 +1051,45 @@ document.addEventListener("touchend", e => {
 const swipeLink = document.getElementById('swipeLink');
 const longPressBox = document.getElementById('longPressBox');
 let swipeTimer;
+let isLongPress = false;
+
+swipeLink.addEventListener('contextmenu', (e) => e.preventDefault());
 
 swipeLink.addEventListener('touchstart', (e) => {
+  isLongPress = false;
   swipeTimer = setTimeout(() => {
-    e.preventDefault();
+    isLongPress = true;
     longPressBox.style.display = (longPressBox.style.display === "block") ? "none" : "block";
   }, 700);
 });
 
-swipeLink.addEventListener('touchend', () => clearTimeout(swipeTimer));
-swipeLink.addEventListener('mousedown', () => {
+swipeLink.addEventListener('touchend', (e) => {
+  clearTimeout(swipeTimer);
+  if (isLongPress) {
+    e.preventDefault();
+  }
+});
+
+swipeLink.addEventListener('mousedown', (e) => {
+  isLongPress = false;
   swipeTimer = setTimeout(() => {
+    isLongPress = true;
     longPressBox.style.display = (longPressBox.style.display === "block") ? "none" : "block";
   }, 700);
 });
-swipeLink.addEventListener('mouseup', () => clearTimeout(swipeTimer));
+
+swipeLink.addEventListener('mouseup', (e) => {
+  clearTimeout(swipeTimer);
+  if (isLongPress) {
+    e.preventDefault();
+  }
+});
+
+swipeLink.addEventListener('click', (e) => {
+  if (isLongPress) {
+    e.preventDefault();
+  }
+});
 
 // Close longPressBox when clicking outside of it and swipeLink
 document.addEventListener('click', (e) => {

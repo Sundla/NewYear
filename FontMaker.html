@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Font Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #141419;
+            --bg-panel: #1e1e26;
+            --bg-item: #2a2a38;
+            --accent: #3a86ff;
+            --text: #f5f5fa;
+            --text-muted: #8e8e9f;
+            --border: #2d2d3d;
+            --success: #25a244;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text);
+            font-family: 'Roboto', -apple-system, sans-serif;
+            font-weight: 500;
+            overflow-x: hidden;
+        }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        header {
+            height: 60px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        h1 { font-size: 15px; font-weight: 500; }
+
+        .counter-badge {
+            font-size: 13px;
+            background-color: var(--bg-item);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Shining Border About/Back Button */
+        .btn-about-bottom {
+            background-color: var(--bg-panel);
+            color: var(--text);
+            font-size: 15px;
+            padding: 10px 32px;
+            border-radius: 30px;
+            border: 2px solid #3a86ff;
+            box-shadow: 0 0 10px rgba(58, 134, 255, 0.6), 0 0 20px rgba(58, 134, 255, 0.3);
+            animation: shineGlowBlue 2s infinite alternate;
+            transition: all 0.3s ease;
+        }
+
+        .btn-about-bottom.is-back {
+            border: 2px solid #ff4d4d;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.6), 0 0 20px rgba(255, 77, 77, 0.3);
+            animation: shineGlowRed 2s infinite alternate;
+        }
+
+        @keyframes shineGlowBlue {
+            0% {
+                border-color: #3a86ff;
+                box-shadow: 0 0 8px rgba(58, 134, 255, 0.5), 0 0 16px rgba(58, 134, 255, 0.2);
+            }
+            100% {
+                border-color: #60a5fa;
+                box-shadow: 0 0 18px rgba(96, 165, 250, 0.9), 0 0 30px rgba(96, 165, 250, 0.5);
+            }
+        }
+
+        @keyframes shineGlowRed {
+            0% {
+                border-color: #ff4d4d;
+                box-shadow: 0 0 8px rgba(255, 77, 77, 0.5), 0 0 16px rgba(255, 77, 77, 0.2);
+            }
+            100% {
+                border-color: #ff8080;
+                box-shadow: 0 0 18px rgba(255, 128, 128, 0.9), 0 0 30px rgba(255, 128, 128, 0.5);
+            }
+        }
+
+        .about-panel {
+            display: none;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            text-align: center;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .about-panel.open {
+            display: block;
+        }
+
+        .font-download-link {
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+
+        .font-download-link:hover {
+            color: #60a5fa;
+        }
+
+        .tape-container {
+            background-color: var(--bg-panel);
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tape-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+            flex-grow: 1;
+        }
+
+        .add-glyph-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 8px;
+            border-left: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .add-glyph-input {
+            width: 50px;
+            height: 38px;
+            background-color: var(--bg-item);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            text-align: center;
+            font-size: 16px;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .btn-add-glyph {
+            height: 38px;
+            white-space: nowrap;
+            background-color: var(--bg-item);
+            border: 1px solid var(--border);
+        }
+
+        .glyph-node {
+            display: inline-flex;
+            min-width: 44px;
+            height: 44px;
+            background-color: var(--bg-item);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            color: var(--text);
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .glyph-node.active {
+            border-color: var(--accent);
+            background-color: var(--bg-main);
+        }
+        .glyph-node.has-data::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background-color: var(--success);
+            border-radius: 50%;
+        }
+
+        .workspace-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .canvas-section {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            touch-action: none;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .brush-toolbar {
+            width: 100%;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tool-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .slider-input {
+            width: 65%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .control-panel {
+            margin-top: 10px;
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .control-panel .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+        }
+        .btn-clear { background-color: var(--bg-item); border: 1px solid var(--border); }
+        .btn-save { background-color: var(--success); }
+
+        .notepad-section {
+            width: 100%;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .notepad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .notepad-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notepad-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .text-format-toolbar {
+            display: flex;
+            gap: 4px;
+            background-color: var(--bg-item);
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .fmt-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fmt-btn:hover {
+            color: var(--text);
+        }
+
+        .fmt-btn.active {
+            background-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .notepad-textarea {
+            width: 100%;
+            height: 150px;
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 48px;
+            line-height: 1.4;
+            resize: none;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            text-decoration: none;
+        }
+
+        .bottom-about-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <header>
+            <h1>Font Maker</h1>
+            <div class="counter-badge" id="completionMetrics">[ 0 / 99 ] Finished</div>
+            <div class="action-group">
+                <button class="btn" onclick="exportTrueTypeFont()">Export TTF Font</button>
+            </div>
+        </header>
+
+        <div class="tape-container">
+            <div class="tape-scroll" id="glyphTape"></div>
+            <div class="add-glyph-wrapper">
+                <input type="text" id="newCharInput" class="add-glyph-input" maxlength="2" placeholder="Char">
+                <button class="btn btn-add-glyph" onclick="addNewCustomGlyph()">Add Glyph</button>
+            </div>
+        </div>
+
+        <div class="workspace-grid">
+            <div class="canvas-section">
+                <div class="canvas-wrapper" id="touchSurfaceBlock">
+                    <canvas id="fontCanvas" width="1024" height="1024"></canvas>
+                </div>
+
+                <div class="brush-toolbar">
+                    <div class="tool-row">
+                        <span>Pen Thickness:</span>
+                        <input type="range" id="penWidthSlider" class="slider-input" min="8" max="120" value="64">
+                        <span id="widthValueDisplay">64px</span>
+                    </div>
+                </div>
+
+                <div class="control-panel">
+                    <button class="btn btn-clear" onclick="clearActiveCanvas()">Clear Canvas</button>
+                    <button class="btn btn-save" onclick="saveActiveGlyph()">Save Progress</button>
+                </div>
+            </div>
+
+            <div class="notepad-section">
+                <div class="notepad-header">
+                    <div class="notepad-title-group">
+                        <span class="notepad-title">Testing Note</span>
+                        <div class="text-format-toolbar">
+                            <button class="fmt-btn" id="btnBold" onclick="toggleFormat('bold')" title="Bold">B</button>
+                            <button class="fmt-btn" id="btnItalic" onclick="toggleFormat('italic')" title="Italics" style="font-style: italic;">I</button>
+                            <button class="fmt-btn" id="btnUnderline" onclick="toggleFormat('underline')" title="Underline" style="text-decoration: underline;">U</button>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="downloadNotepadImage()" style="background-color: var(--bg-item); border: 1px solid var(--border);">
+                        📷 Download Note
+                    </button>
+                </div>
+                <textarea class="notepad-textarea" id="fontTestingCard" placeholder="Type here... Font letters match saved drawing sizes and character widths perfectly."></textarea>
+            </div>
+
+            <div class="bottom-about-container">
+                <button class="btn btn-about-bottom" id="toggleAboutBtn" onclick="toggleAboutPanel()">About</button>
+                <div class="about-panel" id="aboutInfoPanel">
+                    Create your own original font! with calligraphy example:
+                    <a href="TomarFont.ttf" download="TomarFont.ttf" class="font-download-link">TomarFont.ttf</a>
+                    <a href="SachinHandwriting.ttf" download="SachinHandwriting.ttf" class="font-download-link">SachinHandwriting.ttf</a>
+                    <a href="PahadiScript.ttf" download="PahadiScript.ttf" class="font-download-link">PahadiScript.ttf</a>
+                    and nasa's futuristic font
+                    <a href="nasalization.ttf" download="nasalization.ttf" class="font-download-link">nasalization.ttf</a>
+                    Draw and save your design, then check it in Note. To include characters from other languages, type them and add their glyphs.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const masterGlyphs = [
+            "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+            "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+            "0","1","2","3","4","5","6","7","8","9",
+            "!","\"","#","$","%","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","?","@","[","\\","]","^","_","`","{","|","}","~",
+            "€","£","₹","÷","×"," "
+        ];
+
+        let activeChar = "A";
+        const fontGlyphDatabase = {};
+        let currentFontFamilyName = 'Roboto';
+
+        const canvas = document.getElementById('fontCanvas');
+        const ctx = canvas.getContext('2d');
+        const widthSlider = document.getElementById('penWidthSlider');
+        const widthDisplay = document.getElementById('widthValueDisplay');
+        const touchSurfaceBlock = document.getElementById('touchSurfaceBlock');
+        const metricsDisplay = document.getElementById('completionMetrics');
+        const testingNotepad = document.getElementById('fontTestingCard');
+        const tape = document.getElementById('glyphTape');
+
+        let currentStroke = [];
+        let allStrokes = []; 
+        let isDrawing = false;
+        let robotoTemplateFont = null;
+
+        // FIXED CRITICAL METRICS FRAMEWORK
+        const BASELINE_Y = 820;
+        const CAP_HEIGHT_Y = BASELINE_Y - 711; 
+        const X_HEIGHT_Y = BASELINE_Y - 528;   
+        const DESCENDER_Y = BASELINE_Y + 204;  
+
+        masterGlyphs.forEach(char => renderGlyphNode(char));
+
+        function renderGlyphNode(char) {
+            if (!fontGlyphDatabase.hasOwnProperty(char)) {
+                fontGlyphDatabase[char] = [];
+            }
+            const node = document.createElement('div');
+            node.className = `glyph-node ${char === activeChar ? 'active' : ''}`;
+            node.id = `node-${btoa(encodeURIComponent(char))}`;
+            node.innerText = char === " " ? "SPC" : char;
+            node.onclick = () => selectTargetGlyph(char);
+            tape.appendChild(node);
+        }
+
+        function toggleAboutPanel() {
+            const panel = document.getElementById('aboutInfoPanel');
+            const btn = document.getElementById('toggleAboutBtn');
+            panel.classList.toggle('open');
+            
+            if (panel.classList.contains('open')) {
+                btn.innerText = 'Back';
+                btn.classList.add('is-back');
+            } else {
+                btn.innerText = 'About';
+                btn.classList.remove('is-back');
+            }
+        }
+
+        function downloadCustomNamedFont(filename) {
+            try {
+                const targetFont = buildFontDataStructure();
+                targetFont.download(filename);
+            } catch (err) {
+                alert('Export configuration error: ' + err.message);
+            }
+        }
+
+        function addNewCustomGlyph() {
+            const input = document.getElementById('newCharInput');
+            const newChar = input.value;
+            if (!newChar) return;
+            
+            if (!masterGlyphs.includes(newChar)) {
+                masterGlyphs.push(newChar);
+                renderGlyphNode(newChar);
+                selectTargetGlyph(newChar);
+                updateProgressMetrics();
+            } else {
+                selectTargetGlyph(newChar);
+            }
+            input.value = '';
+        }
+
+        // Formatting Toggles
+        const formattingState = { bold: false, italic: false, underline: false };
+
+        function toggleFormat(type) {
+            formattingState[type] = !formattingState[type];
+            document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.toggle('active', formattingState[type]);
+            
+            testingNotepad.style.fontWeight = formattingState.bold ? '700' : '500';
+            testingNotepad.style.fontStyle = formattingState.italic ? 'italic' : 'normal';
+            testingNotepad.style.textDecoration = formattingState.underline ? 'underline' : 'none';
+        }
+
+        // Download High Quality Note Image
+        function downloadNotepadImage() {
+            const text = testingNotepad.value || testingNotepad.placeholder;
+            const exportCanvas = document.createElement('canvas');
+            const expCtx = exportCanvas.getContext('2d');
+            
+            const padding = 60;
+            const fontSize = 56;
+            const lineHeight = fontSize * 1.4;
+            
+            exportCanvas.width = 1200;
+            
+            let fontStyleStr = "";
+            if (formattingState.italic) fontStyleStr += "italic ";
+            if (formattingState.bold) fontStyleStr += "bold ";
+            
+            expCtx.font = `${fontStyleStr}${fontSize}px "${currentFontFamilyName}", sans-serif`;
+
+            const maxWidth = exportCanvas.width - (padding * 2);
+            const words = text.split('');
+            let lines = [];
+            let currentLine = '';
+
+            for (let i = 0; i < words.length; i++) {
+                let char = words[i];
+                if (char === '\n') {
+                    lines.push(currentLine);
+                    currentLine = '';
+                    continue;
+                }
+                let testLine = currentLine + char;
+                let metrics = expCtx.measureText(testLine);
+                if (metrics.width > maxWidth && i > 0) {
+                    lines.push(currentLine);
+                    currentLine = char;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine);
+
+            exportCanvas.height = Math.max(400, (lines.length * lineHeight) + (padding * 2));
+
+            expCtx.fillStyle = '#ffffff';
+            expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+            expCtx.font = `${fontStyleStr}${fontSize}px "${currentFontFamilyName}", sans-serif`;
+            expCtx.fillStyle = '#000000';
+            expCtx.textBaseline = 'top';
+
+            lines.forEach((line, index) => {
+                const y = padding + (index * lineHeight);
+                expCtx.fillText(line, padding, y);
+                
+                if (formattingState.underline) {
+                    const textWidth = expCtx.measureText(line).width;
+                    expCtx.beginPath();
+                    expCtx.lineWidth = 3;
+                    expCtx.strokeStyle = '#000000';
+                    expCtx.moveTo(padding, y + fontSize + 4);
+                    expCtx.lineTo(padding + textWidth, y + fontSize + 4);
+                    expCtx.stroke();
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = 'TestingNote.png';
+            link.href = exportCanvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+
+        // Pulling accurate metrics configuration profiles from live CDN
+        opentype.load('https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9vAx05IsDqlA.ttf', function(err, font) {
+            if (!err) {
+                robotoTemplateFont = font;
+                autoApplyLiveFont();
+            }
+        });
+
+        widthSlider.addEventListener('input', (e) => {
+            widthDisplay.innerText = e.target.value + "px";
+        });
+
+        function updateProgressMetrics() {
+            let completedCount = 0;
+            masterGlyphs.forEach(char => {
+                if (fontGlyphDatabase[char] && fontGlyphDatabase[char].length > 0) {
+                    completedCount++;
+                }
+            });
+            metricsDisplay.innerText = `[ ${completedCount} / ${masterGlyphs.length} ] Finished`;
+        }
+
+        function selectTargetGlyph(char) {
+            document.querySelectorAll('.glyph-node').forEach(el => el.classList.remove('active'));
+            const targetNode = document.getElementById(`node-${btoa(encodeURIComponent(char))}`);
+            if (targetNode) targetNode.classList.add('active');
+            
+            activeChar = char;
+            allStrokes = fontGlyphDatabase[char] ? JSON.parse(JSON.stringify(fontGlyphDatabase[char])) : [];
+            redrawCanvas();
+        }
+
+        function drawGuideline(yPosition, strokeColor, labelText, solid = false) {
+            ctx.lineWidth = solid ? 3 : 1.5;
+            ctx.strokeStyle = strokeColor;
+            if (!solid) ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.moveTo(0, yPosition);
+            ctx.lineTo(canvas.width, yPosition);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = strokeColor;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(labelText, 15, yPosition - 6);
+        }
+
+        function drawVerticalGuideline(xPosition, strokeColor, labelText) {
+            if (xPosition < 0 || xPosition > canvas.width) return;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = strokeColor;
+            ctx.beginPath();
+            ctx.moveTo(xPosition, 0);
+            ctx.lineTo(xPosition, canvas.height);
+            ctx.stroke();
+
+            ctx.fillStyle = strokeColor;
+            ctx.font = '9px sans-serif';
+            ctx.save();
+            ctx.translate(xPosition - 6, 40);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(labelText, 0, 0);
+            ctx.restore();
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let dynamicMinX = 150;
+            let dynamicMaxX = 874;
+
+            if (allStrokes.length > 0) {
+                let foundBounds = false;
+                let strokeMinX = 1024, strokeMaxX = 0;
+                allStrokes.forEach(s => {
+                    s.points.forEach(p => {
+                        const r = (s.width || 64) / 2;
+                        if (p.x - r < strokeMinX) strokeMinX = p.x - r;
+                        if (p.x + r > strokeMaxX) strokeMaxX = p.x + r;
+                        foundBounds = true;
+                    });
+                });
+                if (foundBounds) {
+                    dynamicMinX = Math.max(0, strokeMinX);
+                    dynamicMaxX = Math.min(canvas.width, strokeMaxX);
+                }
+            } else if (robotoTemplateFont) {
+                const fontGlyph = robotoTemplateFont.charToGlyph(activeChar);
+                if (fontGlyph && fontGlyph.advanceWidth) {
+                    const scaleFactor = 930 / 1024;
+                    const rWidth = fontGlyph.advanceWidth * scaleFactor;
+                    const startX = (canvas.width - rWidth) / 2;
+                    dynamicMinX = startX;
+                    dynamicMaxX = startX + rWidth;
+                }
+            }
+
+            if (robotoTemplateFont) {
+                ctx.save();
+                const fontGlyph = robotoTemplateFont.charToGlyph(activeChar);
+                const scaleFactor = 930 / 1024;
+                const rWidth = (fontGlyph.advanceWidth || 600) * scaleFactor;
+                const renderX = (canvas.width - rWidth) / 2;
+                
+                const path = robotoTemplateFont.getPath(activeChar, renderX, BASELINE_Y, 930);
+                path.fill = '#e2e8f0';
+                path.draw(ctx);
+                ctx.restore();
+            }
+
+            drawGuideline(CAP_HEIGHT_Y, '#ef4444', 'CAP HEIGHT (711px Above Baseline)');
+            drawGuideline(X_HEIGHT_Y, '#f59e0b', 'X-HEIGHT (528px Above Baseline)');
+            drawGuideline(DESCENDER_Y, '#10b981', 'DESCENDER ZONE');
+            drawGuideline(BASELINE_Y, '#3a86ff', 'BASELINE (0px Floor Reference Point)', true);
+
+            drawVerticalGuideline(dynamicMinX, '#2563eb', 'DYNAMIC LEFT SIDE EDGE');
+            drawVerticalGuideline(dynamicMaxX, '#2563eb', 'DYNAMIC RIGHT SIDE EDGE');
+
+            ctx.fillStyle = '#000000';
+            allStrokes.forEach(stroke => {
+                if (!stroke.points || stroke.points.length === 0) return;
+                const r = stroke.width / 2;
+
+                if (stroke.points.length === 1) {
+                    ctx.beginPath();
+                    ctx.arc(stroke.points[0].x, stroke.points[0].y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    return;
+                }
+
+                for (let i = 0; i < stroke.points.length - 1; i++) {
+                    const p1 = stroke.points[i];
+                    const p2 = stroke.points[i+1];
+
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    if (len === 0) continue;
+
+                    const nx = -dy / len;
+                    const ny = dx / len;
+
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x + nx * r, p1.y + ny * r);
+                    ctx.lineTo(p2.x + nx * r, p2.y + ny * r);
+                    ctx.arc(p2.x, p2.y, r, Math.atan2(ny, nx), Math.atan2(ny, nx) + Math.PI);
+                    ctx.lineTo(p1.x - nx * r, p1.y - ny * r);
+                    ctx.arc(p1.x, p1.y, r, Math.atan2(-ny, -nx), Math.atan2(-ny, -nx) + Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+                y: ((e.clientY - rect.top) / rect.height) * canvas.height
+            };
+        }
+
+        touchSurfaceBlock.addEventListener('pointerdown', (e) => {
+            touchSurfaceBlock.setPointerCapture(e.pointerId);
+            isDrawing = true;
+            const pt = getCoords(e);
+            currentStroke = [pt];
+            allStrokes.push({
+                width: parseInt(widthSlider.value),
+                points: currentStroke
+            });
+            redrawCanvas();
+        });
+
+        touchSurfaceBlock.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+            const pt = getCoords(e);
+            currentStroke.push(pt);
+            redrawCanvas();
+        });
+
+        touchSurfaceBlock.addEventListener('pointerup', (e) => {
+            if (isDrawing) {
+                touchSurfaceBlock.releasePointerCapture(e.pointerId);
+                isDrawing = false;
+                redrawCanvas();
+            }
+        });
+
+        touchSurfaceBlock.addEventListener('pointercancel', (e) => {
+            if (isDrawing) {
+                touchSurfaceBlock.releasePointerCapture(e.pointerId);
+                isDrawing = false;
+            }
+        });
+
+        function clearActiveCanvas() {
+            allStrokes = [];
+            redrawCanvas();
+        }
+
+        function saveActiveGlyph() {
+            fontGlyphDatabase[activeChar] = JSON.parse(JSON.stringify(allStrokes));
+            const node = document.getElementById(`node-${btoa(encodeURIComponent(activeChar))}`);
+            if (node) {
+                if (allStrokes.length > 0) node.classList.add('has-data');
+                else node.classList.remove('has-data');
+            }
+            
+            updateProgressMetrics();
+            autoApplyLiveFont();
+        }
+
+        function buildFontDataStructure() {
+            const fontGlyphs = [];
+
+            const notdefGlyph = new opentype.Glyph({
+                name: '.notdef',
+                unicode: 0,
+                advanceWidth: 600,
+                path: new opentype.Path()
+            });
+            fontGlyphs.push(notdefGlyph);
+
+            masterGlyphs.forEach(char => {
+                const strokes = fontGlyphDatabase[char];
+                
+                if (strokes && strokes.length > 0) {
+                    const ttfPath = new opentype.Path();
+                    
+                    let minX = 1024, maxX = 0;
+                    let calculatedPoints = false;
+
+                    strokes.forEach(stroke => {
+                        stroke.points.forEach(p => {
+                            const r = stroke.width / 2;
+                            if (p.x - r < minX) minX = p.x - r;
+                            if (p.x + r > maxX) maxX = p.x + r;
+                            calculatedPoints = true;
+                        });
+                    });
+
+                    let trackingLeftBound = calculatedPoints ? Math.max(0, minX) : 150;
+                    let trackingRightBound = calculatedPoints ? Math.min(1024, maxX) : 874;
+                    let characterDrawnWidth = trackingRightBound - trackingLeftBound;
+                    
+                    let offsetShiftX = -trackingLeftBound + 60; 
+                    let finalAdvanceWidth = characterDrawnWidth + 120;
+
+                    if (char === " ") {
+                        finalAdvanceWidth = 320; 
+                    }
+
+                    strokes.forEach(stroke => {
+                        if (!stroke.points || stroke.points.length === 0) return;
+                        const r = stroke.width / 2;
+
+                        if (stroke.points.length === 1) {
+                            const p = stroke.points[0];
+                            const cx = p.x + offsetShiftX;
+                            const cy = BASELINE_Y - p.y;
+                            ttfPath.moveTo(cx - r, cy);
+                            ttfPath.bezierCurveTo(cx - r, cy + r * 0.55, cx - r * 0.55, cy + r, cx, cy + r);
+                            ttfPath.bezierCurveTo(cx + r * 0.55, cy + r, cx + r, cy + r * 0.55, cx + r, cy);
+                            ttfPath.bezierCurveTo(cx + r, cy - r * 0.55, cx + r * 0.55, cy - r, cx, cy - r);
+                            ttfPath.bezierCurveTo(cx - r * 0.55, cy - r, cx - r, cy - r * 0.55, cx - r, cy);
+                            return;
+                        }
+
+                        for (let i = 0; i < stroke.points.length - 1; i++) {
+                            const p1 = stroke.points[i];
+                            const p2 = stroke.points[i+1];
+
+                            const dx = p2.x - p1.x;
+                            const dy = p2.y - p1.y;
+                            const len = Math.sqrt(dx * dx + dy * dy);
+                            if (len === 0) continue;
+
+                            const nx = -dy / len;
+                            const ny = dx / len;
+
+                            const ax = p1.x + nx * r + offsetShiftX;
+                            const ay = BASELINE_Y - (p1.y + ny * r);
+                            const bx = p2.x + nx * r + offsetShiftX;
+                            const by = BASELINE_Y - (p2.y + ny * r);
+                            const cx = p2.x - nx * r + offsetShiftX;
+                            const cy = BASELINE_Y - (p2.y - ny * r);
+                            const dx_ = p1.x - nx * r + offsetShiftX;
+                            const dy_ = BASELINE_Y - (p1.y - ny * r);
+
+                            ttfPath.moveTo(ax, ay);
+                            ttfPath.lineTo(bx, by);
+                            ttfPath.lineTo(cx, cy);
+                            ttfPath.lineTo(dx_, dy_);
+                            ttfPath.close();
+                        }
+                    });
+
+                    const glyph = new opentype.Glyph({
+                        name: char === " " ? "space" : "char_" + char.charCodeAt(0),
+                        unicode: char.charCodeAt(0),
+                        advanceWidth: finalAdvanceWidth, 
+                        path: ttfPath
+                    });
+                    fontGlyphs.push(glyph);
+                }
+            });
+
+            const generatedFont = new opentype.Font({
+                familyName: 'CustomRobotoMediumDynamicFont',
+                styleName: 'Medium',
+                unitsPerEm: 1024,
+                ascender: 950,
+                descender: -250,
+                glyphs: fontGlyphs
+            });
+
+            return generatedFont;
+        }
+
+        function autoApplyLiveFont() {
+            try {
+                const generatedFont = buildFontDataStructure();
+                const arrayBuffer = generatedFont.toArrayBuffer();
+                const blob = new Blob([arrayBuffer], { type: 'font/ttf' });
+                const fontUrl = URL.createObjectURL(blob);
+                
+                const uniqueFontName = 'LiveHandwrittenFont_' + Date.now();
+                const fontFace = new FontFace(uniqueFontName, `url(${fontUrl})`);
+                
+                fontFace.load().then((loadedFace) => {
+                    document.fonts.add(loadedFace);
+                    currentFontFamilyName = uniqueFontName;
+                    testingNotepad.style.fontFamily = `"${uniqueFontName}", "Roboto", sans-serif`;
+                }).catch(err => {
+                    console.log('Update delay: ' + err.message);
+                });
+            } catch (err) {
+                console.log('Refreshing database stack...');
+            }
+        }
+
+        function exportTrueTypeFont() {
+            downloadCustomNamedFont('CustomHandwrittenFont.ttf');
+        }
+
+        updateProgressMetrics();
+        redrawCanvas();
+    </script>
+</body>
+</html>
