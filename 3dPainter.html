@@ -65,7 +65,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       flex-direction: column;
       gap: 12px;
-      min-width: 220px;
+      min-width: 260px;
       position: relative;
     }
 
@@ -171,6 +171,53 @@
       cursor: not-allowed;
     }
 
+    /* Customized Color Picker Controls */
+    .color-picker-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .custom-color-btn {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      background: linear-gradient(135deg, #ff0000, #00ff00, #0000ff);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s ease;
+    }
+
+    .custom-color-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .color-swatch-inner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.5);
+    }
+
+    .custom-color-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      border: none;
+    }
+
     #loading-screen {
       position: absolute;
       top: 50%;
@@ -216,8 +263,21 @@
         <button id="toggle-paint-btn" class="btn btn-toggle">Rotate Mode</button>
 
         <div class="control-group">
-          <label for="brush-color">Color:</label>
-          <input type="color" id="brush-color" value="#ff0000" />
+          <div class="color-picker-wrapper" title="Paint Full Body Color">
+            <div class="custom-color-btn">
+              <div id="fill-color-preview" class="color-swatch-inner" style="background-color: #ffffff;"></div>
+              <input type="color" id="fill-color-input" class="custom-color-input" value="#ffffff" />
+            </div>
+            <label for="fill-color-input" style="font-size: 12px; cursor: pointer;">Fill All</label>
+          </div>
+
+          <div class="color-picker-wrapper" title="Brush Color Picker">
+            <label for="brush-color" style="font-size: 12px; cursor: pointer;">Brush:</label>
+            <div class="custom-color-btn">
+              <div id="brush-color-preview" class="color-swatch-inner" style="background-color: #ff0000;"></div>
+              <input type="color" id="brush-color" class="custom-color-input" value="#ff0000" />
+            </div>
+          </div>
         </div>
 
         <div class="control-group">
@@ -351,10 +411,35 @@
     const undoBtn = document.getElementById('undo-btn');
     const redoBtn = document.getElementById('redo-btn');
     const brushColorInput = document.getElementById('brush-color');
+    const brushColorPreview = document.getElementById('brush-color-preview');
+    const fillColorInput = document.getElementById('fill-color-input');
+    const fillColorPreview = document.getElementById('fill-color-preview');
     const brushSizeInput = document.getElementById('brush-size');
 
     undoBtn.addEventListener('click', undo);
     redoBtn.addEventListener('click', redo);
+
+    // Sync Custom UI Swatches with Inputs
+    brushColorInput.addEventListener('input', (e) => {
+      brushColorPreview.style.backgroundColor = e.target.value;
+    });
+
+    fillColorInput.addEventListener('input', (e) => {
+      const selectedColor = e.target.value;
+      fillColorPreview.style.backgroundColor = selectedColor;
+
+      // Fill full canvas with selected color
+      drawCtx.fillStyle = selectedColor;
+      drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+      canvasTexture.needsUpdate = true;
+
+      if (!hasMadeEdits) {
+        hasMadeEdits = true;
+        downloadBtn.style.display = 'block';
+      }
+
+      saveState();
+    });
 
     // --- Loaders Setup (Including Draco Decoder) ---
     const dracoLoader = new THREE.DRACOLoader();
