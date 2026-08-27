@@ -7,10 +7,45 @@
 
     <meta name="theme-color" content="#0f172a">
 
-    <!-- Updated to use static manifest file -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Embedded Web Manifest via Blob URL for single-file PWA support -->
+    <script>
+        const manifestData = {
+            "name": "GiftMaker",
+            "short_name": "GiftMaker",
+            "start_url": "./GiftMaker.html",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#0f172a",
+            "icons": [
+                {
+                    "src": "https://sundla.github.io/NewYear/icon.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ],
+            "id": "./GiftMaker.html",
+            "description": "a friend is a gift you give yourself.",
+            "display_override": [
+                "window-controls-overlay",
+                "standalone"
+            ],
+            "orientation": "any",
+            "categories": [
+                "design",
+                "developer tools",
+                "social networking",
+                "utilities"
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const linkTag = document.createElement('link');
+        linkTag.rel = 'manifest';
+        linkTag.href = manifestURL;
+        document.head.appendChild(linkTag);
+    </script>
 
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touch-icon" href="https://sundla.github.io/NewYear/icon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
@@ -54,7 +89,6 @@
             margin-bottom: 15px;
         }
 
-        /* Side-by-Side Maker Button Row */
         .maker-btn-container {
             display: flex;
             justify-content: center;
@@ -64,7 +98,6 @@
             margin: 0 auto;
         }
 
-        /* Individual Navigation Buttons styling */
         .maker-nav-btn {
             flex: 1;
             display: inline-flex;
@@ -198,7 +231,6 @@
             transform: translateY(2px);
         }
 
-        /* SHINING EFFECT FOR INSTALL BUTTON */
         #installBtn {
             background: linear-gradient(90deg, #2563eb, #1d4ed8);
             position: relative;
@@ -236,15 +268,9 @@
         }
 
         @keyframes shine {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         #installBtn:hover {
@@ -252,14 +278,12 @@
             transition: transform 0.2s;
         }
 
-        /* ADD SPACE REDUCTION FOR HAMBURGER WRAPPER */
         .hamburger-nav-wrapper {
             margin-top: -5px;
             margin-bottom: -5px;
             text-align: center;
         }
 
-        /* HAMBURGER MENU NAVIGATION STYLES */
         .hamburger-nav {
             position: relative;
             display: inline-flex;
@@ -388,9 +412,7 @@
             display: none;
         }
 
-        .menu-overlay.active {
-            display: block;
-        }
+        .menu-overlay.active { display: block; }
 
         @media (max-width: 700px) {
             .dropdown-menu { min-width: 190px; }
@@ -570,11 +592,20 @@
 
     </div>
 
+    <!-- Required Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
 
     <script>
-        // ELEMENTS
+        // Service Worker Registration pointing to local sw.js file
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered successfully', reg))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+
         const inputName = document.getElementById('inputName');
         const inputOccasion = document.getElementById('inputOccasion');
         const displayName = document.getElementById('displayName');
@@ -586,7 +617,6 @@
         const captureTarget = document.getElementById('captureTarget');
         const installBtn = document.getElementById('installBtn');
 
-        // LIVE PREVIEW
         inputName.addEventListener('input', () => {
             displayName.innerText = inputName.value || "Recipient";
         });
@@ -595,7 +625,6 @@
             displayOccasion.innerText = inputOccasion.value || "THE OCCASION";
         });
 
-        // THEMES
         themeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 themeBtns.forEach(b => b.classList.remove('active'));
@@ -604,7 +633,6 @@
             });
         });
 
-        // PHOTO UPLOAD WITH ORIGINAL QUALITY AND HEIC/HEIF COMPATIBILITY
         fileUpload.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -644,7 +672,6 @@
             }
         });
 
-        // DOWNLOAD CARD
         downloadBtn.addEventListener('click', () => {
             downloadBtn.innerText = "Generating...";
             html2canvas(captureTarget, {
@@ -666,7 +693,6 @@
             });
         });
 
-        // INSTALL APP
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -694,7 +720,6 @@ Click install icon in address bar`
             }
         });
 
-        // HAMBURGER MENU FUNCTIONALITY
         const hamburgerBtn = document.getElementById('hamburgerMenuBtn');
         const dropdown = document.getElementById('dropdownMenu');
         const overlay = document.getElementById('menuOverlay');
