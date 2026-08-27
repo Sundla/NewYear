@@ -1,0 +1,28 @@
+{
+  "name": "GiftMaker",
+  "short_name": "GiftMaker",
+  "start_url": "https://sundla.github.io/NewYear/GiftMaker.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "blob:https://sundla.github.io/59146206-4710-4fbc-ba00-a9ff0ec0edf1",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "id": "/",
+  "description": "a friend is a gift you give yourself.",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "orientation": "any",
+  "categories": [
+    "design",
+    "developer tools",
+    "social networking",
+    "utilities"
+  ]
+}

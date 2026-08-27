@@ -7,9 +7,10 @@
 
     <meta name="theme-color" content="#0f172a">
 
-    <link rel="manifest" id="manifestPlaceholder">
+    <!-- Updated to use static manifest file -->
+    <link rel="manifest" href="manifest.json">
 
-    <link rel="apple-touch-icon" id="appleIcon">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
@@ -258,7 +259,7 @@
             text-align: center;
         }
 
-        /* HAMBURGER MENU NAVIGATION STYLES - exact height/size as previous Home button, slower animation */
+        /* HAMBURGER MENU NAVIGATION STYLES */
         .hamburger-nav {
             position: relative;
             display: inline-flex;
@@ -279,7 +280,6 @@
             transform: scale(1.04);
         }
 
-        /* Button Text: "Menu" */
         .ham-btn-text {
             position: relative;
             z-index: 5;
@@ -290,7 +290,6 @@
             letter-spacing: 1px;
         }
 
-        /* Waves effect (same as original but slower animations) */
         .ham-wave {
             position: absolute;
             width: 90px;
@@ -315,30 +314,17 @@
         }
 
         @keyframes hamLeftFlow {
-            0% {
-                transform: translateX(0) scale(1);
-            }
-            50% {
-                transform: translateX(85px) scale(1.25);
-            }
-            100% {
-                transform: translateX(0) scale(1);
-            }
+            0% { transform: translateX(0) scale(1); }
+            50% { transform: translateX(85px) scale(1.25); }
+            100% { transform: translateX(0) scale(1); }
         }
 
         @keyframes hamRightFlow {
-            0% {
-                transform: translateX(0) scale(1);
-            }
-            50% {
-                transform: translateX(-85px) scale(1.25);
-            }
-            100% {
-                transform: translateX(0) scale(1);
-            }
+            0% { transform: translateX(0) scale(1); }
+            50% { transform: translateX(-85px) scale(1.25); }
+            100% { transform: translateX(0) scale(1); }
         }
 
-        /* Dropdown menu panel - hidden by default, appears below */
         .dropdown-menu {
             position: absolute;
             top: calc(100% + 12px);
@@ -390,7 +376,6 @@
             transform: translateX(5px);
         }
 
-        /* Overlay click-to-close */
         .menu-overlay {
             position: fixed;
             top: 0;
@@ -407,21 +392,11 @@
             display: block;
         }
 
-        /* Responsive adjustments */
         @media (max-width: 700px) {
-            .dropdown-menu {
-                min-width: 190px;
-            }
-            .ham-btn-text {
-                font-size: 18px;
-            }
-            .hamburger-nav {
-                padding: 12px 28px;
-            }
-            .maker-btn-container {
-                max-width: 90vw;
-                padding: 0 10px;
-            }
+            .dropdown-menu { min-width: 190px; }
+            .ham-btn-text { font-size: 18px; }
+            .hamburger-nav { padding: 12px 28px; }
+            .maker-btn-container { max-width: 90vw; padding: 0 10px; }
         }
 
         .card-canvas {
@@ -499,12 +474,10 @@
                 flex-direction: column;
                 align-items: center;
             }
-
             .card-canvas {
                 width: 90vw;
                 height: 120vw;
             }
-
             .controls {
                 width: 90vw;
             }
@@ -536,25 +509,18 @@
                 <input type="text" id="inputOccasion" placeholder="e.g. Happy Birthday" maxlength="25">
             </div>
 
-
             <label>Choose Card Theme</label>
 
             <div class="theme-selector">
                 <div class="theme-btn active" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-theme="neon"></div>
-
                 <div class="theme-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" data-theme="gold"></div>
-
                 <div class="theme-btn" style="background: linear-gradient(135deg, #ec4899, #be185d);" data-theme="rose"></div>
-
                 <div class="theme-btn" style="background: linear-gradient(135deg, #10b981, #059669);" data-theme="emerald"></div>
-
                 <div class="theme-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b);" data-theme="crimson"></div>
-
                 <div class="theme-btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2);" data-theme="ocean"></div>
             </div>
 
             <label for="fileUpload" class="upload-btn">📸 UPLOAD PHOTO</label>
-
             <input type="file" id="fileUpload" accept="image/*, .heic, .heif" style="display:none">
 
             <button class="download-btn" id="downloadBtn">
@@ -605,47 +571,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
 
     <script>
-        // APP ICON IMAGE
-        const iconSVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
-            <rect width="100%" height="100%" fill="white"/>
-            <text x="50%" y="54%" font-size="260" text-anchor="middle">🎁</text>
-        </svg>`;
-
-        const iconBlob = new Blob([iconSVG], {type:'image/svg+xml'});
-        const iconURL = URL.createObjectURL(iconBlob);
-
-        document.getElementById("appleIcon").href = iconURL;
-
-        // MANIFEST
-        const manifestData = {
-            name: "Gift Card Maker",
-            short_name: "GiftMaker",
-            start_url: ".",
-            display: "standalone",
-            background_color: "#ffffff",
-            theme_color: "#0f172a",
-            icons: [
-                {
-                    src: iconURL,
-                    sizes: "512x512",
-                    type: "image/svg+xml"
-                }
-            ]
-        };
-
-        const manifestBlob = new Blob(
-            [JSON.stringify(manifestData)],
-            {type:'application/json'}
-        );
-
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        document.getElementById("manifestPlaceholder").setAttribute("href", manifestURL);
-
         // ELEMENTS
         const inputName = document.getElementById('inputName');
         const inputOccasion = document.getElementById('inputOccasion');
@@ -683,12 +611,10 @@
                 const fileName = file.name.toLowerCase();
                 const uploadBtn = document.querySelector('.upload-btn');
                 
-                // Check if file is HEIC or HEIF format
                 if (fileName.endsWith('.heic') || fileName.endsWith('.heif')) {
                     const originalText = uploadBtn.innerText;
                     uploadBtn.innerText = "⏳ CONVERTING...";
                     
-                    // Convert HEIC/HEIF blob to full original-quality JPEG
                     heic2any({
                         blob: file,
                         toType: "image/jpeg",
@@ -709,7 +635,6 @@
                         uploadBtn.innerText = originalText;
                     });
                 } else {
-                    // Standard files are read directly without modifications to preserve full original resolution
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         displayPhoto.style.backgroundImage = `url('${e.target.result}')`;
