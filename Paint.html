@@ -30,7 +30,7 @@
       position: relative;
     }
 
-    /* Left UI: Fixed width prevents Load Model button from resizing */
+    /* Left UI: Fixed width containing Load, Download, Move, and full unconstrained Animation List */
     #left-ui {
       position: absolute;
       top: 20px;
@@ -41,6 +41,9 @@
       align-items: flex-start;
       gap: 10px;
       width: 200px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
     /* Right UI: Drawing Mode Entry & Controls */
@@ -53,6 +56,13 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 10px;
+    }
+
+    #animation-list {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
     }
 
     /* Drawing Panel */
@@ -94,6 +104,7 @@
       justify-content: space-between;
       gap: 10px;
       font-size: 14px;
+      position: relative;
     }
 
     .undo-redo-group {
@@ -119,7 +130,7 @@
       transition: background-color 0.2s ease;
       text-align: center;
       user-select: none;
-      width: 100%; /* Uniform button width within container */
+      width: 100%;
     }
 
     .btn:hover {
@@ -137,11 +148,37 @@
 
     .btn-download {
       background-color: #fd7e14;
-      display: none; /* Initially hidden until first stroke is made */
+      display: none; /* Controlled dynamically */
     }
 
     .btn-download:hover {
       background-color: #e06b0e;
+    }
+
+    .btn-move {
+      background-color: #6f42c1;
+      width: 100%;
+      display: none; /* Initially hidden until animations are found */
+    }
+
+    .btn-move:hover {
+      background-color: #5a32a3;
+    }
+
+    .anim-btn {
+      background-color: #20c997;
+      width: 100%;
+      font-size: 13px;
+      padding: 8px 12px;
+    }
+
+    .anim-btn:hover {
+      background-color: #17a589;
+    }
+
+    .anim-btn.active {
+      background-color: #ffc107;
+      color: #000;
     }
 
     .btn-toggle {
@@ -207,15 +244,59 @@
       box-shadow: inset 0 0 2px rgba(0,0,0,0.5);
     }
 
-    .custom-color-input {
+    /* Interactive Color Wheel Popup */
+    #color-wheel-popup {
+      display: none;
       position: absolute;
-      top: 0;
+      top: 45px;
       left: 0;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 12px;
+      z-index: 100;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-wheel-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      cursor: crosshair;
+    }
+
+    #color-wheel-canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    /* Selection Pointer / Indicator */
+    #wheel-pointer {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 3px rgba(0,0,0,0.8);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Color Code & Name Info Bar */
+    .wheel-info-bar {
+      display: flex;
+      justify-content: space-between;
       width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      border: none;
+      font-size: 11px;
+      font-family: monospace;
+      color: #ddd;
+      padding: 2px 4px;
     }
 
     #loading-screen {
@@ -233,20 +314,21 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
 <body>
 
   <div id="canvas-container">
     <div id="left-ui">
-      <label for="file-input" class="btn">Load Model</label>
-      <input type="file" id="file-input" accept=".glb, .gltf, .obj" />
+      <label for="file-input" class="btn">Load Model/Photo</label>
+      <input type="file" id="file-input" accept=".glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, .heif" />
       <button id="download-btn" class="btn btn-download">Download Painted Model</button>
+      <button id="move-btn" class="btn btn-move">Move</button>
+      <div id="animation-list"></div>
     </div>
 
     <div id="right-ui">
@@ -264,19 +346,29 @@
 
         <div class="control-group">
           <div class="color-picker-wrapper" title="Paint Full Body Color">
-            <div class="custom-color-btn">
+            <div id="fill-color-btn" class="custom-color-btn">
               <div id="fill-color-preview" class="color-swatch-inner" style="background-color: #ffffff;"></div>
-              <input type="color" id="fill-color-input" class="custom-color-input" value="#ffffff" />
             </div>
-            <label for="fill-color-input" style="font-size: 12px; cursor: pointer;">Fill All</label>
+            <label for="fill-color-btn" style="font-size: 12px; cursor: pointer;">Fill All</label>
           </div>
 
           <div class="color-picker-wrapper" title="Brush Color Picker">
-            <label for="brush-color" style="font-size: 12px; cursor: pointer;">Brush:</label>
-            <div class="custom-color-btn">
+            <label for="brush-color-btn" style="font-size: 12px; cursor: pointer;">Brush:</label>
+            <div id="brush-color-btn" class="custom-color-btn">
               <div id="brush-color-preview" class="color-swatch-inner" style="background-color: #ff0000;"></div>
-              <input type="color" id="brush-color" class="custom-color-input" value="#ff0000" />
             </div>
+          </div>
+        </div>
+
+        <!-- Color Wheel Popup Container -->
+        <div id="color-wheel-popup">
+          <div class="color-wheel-container" id="color-wheel-wrapper">
+            <canvas id="color-wheel-canvas" width="160" height="160"></canvas>
+            <div id="wheel-pointer"></div>
+          </div>
+          <div class="wheel-info-bar">
+            <span id="wheel-selected-hex">#FFFFFF</span>
+            <span id="wheel-selected-name">White</span>
           </div>
         </div>
 
@@ -287,11 +379,10 @@
       </div>
     </div>
 
-    <div id="loading-screen">Loading model...</div>
+    <div id="loading-screen">Loading file...</div>
   </div>
 
   <script>
-    // --- Scene, Camera, Renderer Setup ---
     const container = document.getElementById('canvas-container');
     const loadingScreen = document.getElementById('loading-screen');
 
@@ -312,12 +403,10 @@
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
-    // --- Controls ---
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    // --- Lighting Setup ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
@@ -329,27 +418,32 @@
     dirLight2.position.set(-5, -5, -5);
     scene.add(dirLight2);
 
-    // --- Texture Painting Canvas Setup ---
     const drawCanvas = document.createElement('canvas');
     drawCanvas.width = 1024;
     drawCanvas.height = 1024;
     const drawCtx = drawCanvas.getContext('2d', { willReadFrequently: true });
 
     let hasBeenInitialized = false;
-    let hasMadeEdits = false; // Tracks if user made any stroke/change
+    let hasMadeEdits = false; 
+    let isPhotoLoaded = false;
 
-    // Undo / Redo Stack
     let undoStack = [];
     let redoStack = [];
     const MAX_HISTORY = 20;
 
+    let mixer = null;
+    let animations = [];
+    let activeAction = null;
+    const clock = new THREE.Clock();
+
     function resetDrawCanvas() {
-      drawCtx.fillStyle = '#ffffff';
-      drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+      if (!isPhotoLoaded) {
+        drawCtx.fillStyle = '#ffffff';
+        drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+      }
       undoStack = [];
       redoStack = [];
       hasMadeEdits = false;
-      downloadBtn.style.display = 'none'; // Hide download until a change is made
       saveState();
       hasBeenInitialized = true;
     }
@@ -391,7 +485,6 @@
     const canvasTexture = new THREE.CanvasTexture(drawCanvas);
     canvasTexture.flipY = true;
 
-    // --- Variables ---
     let currentModel = null;
     let originalMaterials = new Map();
     let isDrawMode = false;
@@ -399,49 +492,247 @@
     let isDrawing = false;
     let lastUV = null;
 
+    let activeColorTarget = 'brush';
+    let brushColorVal = '#ff0000';
+    let fillColorVal = '#ffffff';
+
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // UI Controls
     const enterDrawBtn = document.getElementById('enter-draw-btn');
     const drawPanel = document.getElementById('draw-panel');
     const downloadBtn = document.getElementById('download-btn');
+    const moveBtn = document.getElementById('move-btn');
+    const animationList = document.getElementById('animation-list');
     const togglePaintBtn = document.getElementById('toggle-paint-btn');
     const closeDrawBtn = document.getElementById('close-draw-btn');
     const undoBtn = document.getElementById('undo-btn');
     const redoBtn = document.getElementById('redo-btn');
-    const brushColorInput = document.getElementById('brush-color');
+    const brushColorBtn = document.getElementById('brush-color-btn');
     const brushColorPreview = document.getElementById('brush-color-preview');
-    const fillColorInput = document.getElementById('fill-color-input');
+    const fillColorBtn = document.getElementById('fill-color-btn');
     const fillColorPreview = document.getElementById('fill-color-preview');
     const brushSizeInput = document.getElementById('brush-size');
+
+    const colorWheelPopup = document.getElementById('color-wheel-popup');
+    const colorWheelWrapper = document.getElementById('color-wheel-wrapper');
+    const colorWheelCanvas = document.getElementById('color-wheel-canvas');
+    const wheelCtx = colorWheelCanvas.getContext('2d', { willReadFrequently: true });
+    const wheelPointer = document.getElementById('wheel-pointer');
+    const wheelSelectedHex = document.getElementById('wheel-selected-hex');
+    const wheelSelectedName = document.getElementById('wheel-selected-name');
 
     undoBtn.addEventListener('click', undo);
     redoBtn.addEventListener('click', redo);
 
-    // Sync Custom UI Swatches with Inputs
-    brushColorInput.addEventListener('input', (e) => {
-      brushColorPreview.style.backgroundColor = e.target.value;
-    });
+    function renderColorWheel() {
+      const radius = colorWheelCanvas.width / 2;
+      const imgData = wheelCtx.createImageData(colorWheelCanvas.width, colorWheelCanvas.height);
+      const data = imgData.data;
 
-    fillColorInput.addEventListener('input', (e) => {
-      const selectedColor = e.target.value;
-      fillColorPreview.style.backgroundColor = selectedColor;
+      for (let y = 0; y < colorWheelCanvas.height; y++) {
+        for (let x = 0; x < colorWheelCanvas.width; x++) {
+          const dx = x - radius;
+          const dy = y - radius;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const index = (y * colorWheelCanvas.width + x) * 4;
 
-      // Fill full canvas with selected color
-      drawCtx.fillStyle = selectedColor;
-      drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-      canvasTexture.needsUpdate = true;
+          if (dist <= radius) {
+            const angle = Math.atan2(dy, dx);
+            let hue = (angle * 180 / Math.PI + 360) % 360;
+            let sat = dist / radius;
+            let light = 0.5;
 
-      if (!hasMadeEdits) {
-        hasMadeEdits = true;
-        downloadBtn.style.display = 'block';
+            let c = (1 - Math.abs(2 * light - 1)) * sat;
+            let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
+            let m = light - c / 2;
+            let r = 0, g = 0, b = 0;
+
+            if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
+            else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
+            else if (120 <= hue && hue < 180) { r = 0; g = c; b = xVal; }
+            else if (180 <= hue && hue < 240) { r = 0; g = xVal; b = c; }
+            else if (240 <= hue && hue < 300) { r = xVal; g = 0; b = c; }
+            else if (300 <= hue && hue < 360) { r = c; g = 0; b = xVal; }
+
+            data[index] = Math.round((r + m) * 255);
+            data[index + 1] = Math.round((g + m) * 255);
+            data[index + 2] = Math.round((b + m) * 255);
+            data[index + 3] = 255;
+          } else {
+            data[index + 3] = 0;
+          }
+        }
+      }
+      wheelCtx.putImageData(imgData, 0, 0);
+    }
+
+    renderColorWheel();
+
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+
+    function getColorName(r, g, b) {
+      if (r > 240 && g > 240 && b > 240) return "White";
+      if (r < 15 && g < 15 && b < 15) return "Black";
+      if (r > 200 && g < 50 && b < 50) return "Red";
+      if (r < 50 && g > 200 && b < 50) return "Green";
+      if (r < 50 && r < 50 && b > 200) return "Blue";
+      if (r > 200 && g > 200 && b < 50) return "Yellow";
+      if (r > 200 && g < 50 && b > 200) return "Magenta";
+      if (r < 50 && g > 200 && b > 200) return "Cyan";
+      if (r > 200 && g > 100 && b < 50) return "Orange";
+      if (r > 120 && g < 50 && b > 120) return "Purple";
+      if (r > 150 && g > 150 && b > 150) return "Gray";
+      if (r > 100 && g < 60 && b < 30) return "Brown";
+      
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let d = max - min;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r) h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h = Math.round(h * 60);
+        if (h < 0) h += 360;
       }
 
-      saveState();
+      if (max < 60) return "Dark Gray";
+      if (min > 190) return "Light Gray";
+      
+      if (h < 15 || h >= 345) return "Red";
+      if (h < 45) return "Amber";
+      if (h < 75) return "Yellow";
+      if (h < 105) return "Chartreuse";
+      if (h < 165) return "Green";
+      if (h < 195) return "Spring Green";
+      if (h < 255) return "Cyan/Blue";
+      if (h < 285) return "Indigo/Violet";
+      if (h < 315) return "Purple";
+      return "Rose";
+    }
+
+    function updatePointerPosition(x, y) {
+      const radius = colorWheelCanvas.width / 2;
+      const dx = x - radius;
+      const dy = y - radius;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      let px = x;
+      let py = y;
+
+      if (dist > radius) {
+        px = radius + (dx / dist) * radius;
+        py = radius + (dy / dist) * radius;
+      }
+
+      wheelPointer.style.left = px + 'px';
+      wheelPointer.style.top = py + 'px';
+      wheelPointer.style.display = 'block';
+
+      return { x: px, y: py };
+    }
+
+    function pickColorFromWheel(e) {
+      const rect = colorWheelCanvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      if (clientX === undefined || clientY === undefined) return;
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const radius = colorWheelCanvas.width / 2;
+      const dx = x - radius;
+      const dy = y - radius;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const constrained = updatePointerPosition(x, y);
+
+      let sampleX = Math.min(Math.max(Math.floor(constrained.x), 0), colorWheelCanvas.width - 1);
+      let sampleY = Math.min(Math.max(Math.floor(constrained.y), 0), colorWheelCanvas.height - 1);
+      
+      const pixel = wheelCtx.getImageData(sampleX, sampleY, 1, 1).data;
+      if (pixel[3] > 0) {
+        const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+        const colorName = getColorName(pixel[0], pixel[1], pixel[2]);
+        
+        wheelSelectedHex.innerText = hex;
+        wheelSelectedName.innerText = colorName;
+
+        if (activeColorTarget === 'brush') {
+          brushColorVal = hex;
+          brushColorPreview.style.backgroundColor = hex;
+        } else {
+          fillColorVal = hex;
+          fillColorPreview.style.backgroundColor = hex;
+
+          drawCtx.fillStyle = hex;
+          drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+          canvasTexture.needsUpdate = true;
+
+          hasMadeEdits = true;
+          downloadBtn.style.display = 'block';
+          saveState();
+        }
+      }
+    }
+
+    let isSelectingWheel = false;
+    colorWheelWrapper.addEventListener('mousedown', (e) => {
+      isSelectingWheel = true;
+      pickColorFromWheel(e);
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (isSelectingWheel) pickColorFromWheel(e);
+    });
+    window.addEventListener('mouseup', () => {
+      isSelectingWheel = false;
     });
 
-    // --- Loaders Setup (Including Draco Decoder) ---
+    colorWheelWrapper.addEventListener('touchstart', (e) => {
+      isSelectingWheel = true;
+      pickColorFromWheel(e);
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (isSelectingWheel) pickColorFromWheel(e);
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+      isSelectingWheel = false;
+    });
+
+    function initPointerForColor(hex) {
+      wheelPointer.style.left = '80px';
+      wheelPointer.style.top = '80px';
+      wheelPointer.style.display = 'block';
+      wheelSelectedHex.innerText = hex;
+      wheelSelectedName.innerText = "Custom";
+    }
+
+    brushColorBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeColorTarget = 'brush';
+      colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
+      if (colorWheelPopup.style.display === 'flex') {
+        initPointerForColor(brushColorVal);
+      }
+    });
+
+    fillColorBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeColorTarget = 'fill';
+      colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
+      if (colorWheelPopup.style.display === 'flex') {
+        initPointerForColor(fillColorVal);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!colorWheelPopup.contains(e.target) && !brushColorBtn.contains(e.target) && !fillColorBtn.contains(e.target)) {
+        colorWheelPopup.style.display = 'none';
+      }
+    });
+
     const dracoLoader = new THREE.DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     
@@ -451,13 +742,13 @@
     const objLoader = new THREE.OBJLoader();
     const exporter = new THREE.GLTFExporter();
 
-    // --- Load Default Model (Sachin.glb) ---
     function loadDefaultModel() {
       loadingScreen.style.display = 'block';
+      isPhotoLoaded = false;
       gltfLoader.load(
         'Sachin.glb',
         (gltf) => {
-          displayModel(gltf.scene);
+          displayModel(gltf.scene, gltf.animations);
         },
         undefined,
         (error) => {
@@ -469,14 +760,11 @@
 
     loadDefaultModel();
 
-    // --- File Input Handler ---
-    document.getElementById('file-input').addEventListener('change', function (event) {
-      const file = event.target.files[0];
+    document.getElementById('file-input').addEventListener('change', async function (event) {
+      let file = event.target.files[0];
       if (!file) return;
 
       const filename = file.name.toLowerCase();
-      const fileURL = URL.createObjectURL(file);
-
       loadingScreen.style.display = 'block';
 
       if (isDrawMode) exitDrawingMode();
@@ -485,33 +773,108 @@
       hasMadeEdits = false;
       downloadBtn.style.display = 'none';
 
+      if (filename.endsWith('.heic') || filename.endsWith('.heif')) {
+        try {
+          const convertedBlob = await heic2any({
+            blob: file,
+            toType: "image/jpeg",
+          });
+          file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch (err) {
+          console.error("HEIC conversion failed:", err);
+          alert("Could not decode HEIC image.");
+          loadingScreen.style.display = 'none';
+          return;
+        }
+      }
+
+      const fileURL = URL.createObjectURL(file);
+
       if (filename.endsWith('.glb') || filename.endsWith('.gltf')) {
+        isPhotoLoaded = false;
         gltfLoader.load(
           fileURL,
           (gltf) => {
-            displayModel(gltf.scene);
+            displayModel(gltf.scene, gltf.animations);
             URL.revokeObjectURL(fileURL);
           },
           undefined,
           (error) => handleError(error, fileURL)
         );
       } else if (filename.endsWith('.obj')) {
+        isPhotoLoaded = false;
         objLoader.load(
           fileURL,
           (obj) => {
-            displayModel(obj);
+            displayModel(obj, []);
             URL.revokeObjectURL(fileURL);
           },
           undefined,
           (error) => handleError(error, fileURL)
         );
+      } else if (
+        filename.endsWith('.png') || 
+        filename.endsWith('.jpg') || 
+        filename.endsWith('.jpeg') || 
+        filename.endsWith('.heic') || 
+        filename.endsWith('.heif')
+      ) {
+        isPhotoLoaded = true;
+        const img = new Image();
+        img.onload = () => {
+          const width = img.naturalWidth || img.width;
+          const height = img.naturalHeight || img.height;
+          
+          const maxSide = 3.0;
+          const aspect = width / height;
+          let planeW, planeH;
+          if (aspect >= 1) {
+            planeW = maxSide;
+            planeH = maxSide / aspect;
+          } else {
+            planeH = maxSide;
+            planeW = maxSide * aspect;
+          }
+
+          const geometry = new THREE.PlaneGeometry(planeW, planeH);
+
+          drawCanvas.width = width > 2048 ? 2048 : width;
+          drawCanvas.height = height > 2048 ? 2048 : height;
+          
+          drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+          drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+          
+          canvasTexture.image = drawCanvas;
+          canvasTexture.needsUpdate = true;
+
+          hasBeenInitialized = true;
+          hasMadeEdits = true;
+          downloadBtn.style.display = 'block';
+          saveState();
+
+          const material = new THREE.MeshStandardMaterial({
+            map: canvasTexture,
+            roughness: 0.5,
+            metalness: 0.1,
+            side: THREE.DoubleSide
+          });
+
+          const planeMesh = new THREE.Mesh(geometry, material);
+          const group = new THREE.Group();
+          group.add(planeMesh);
+
+          displayModel(group, []);
+          URL.revokeObjectURL(fileURL);
+        };
+        img.onerror = (error) => handleError(error, fileURL);
+        img.src = fileURL;
       } else {
-        alert('Unsupported file format! Please upload a .glb, .gltf, or .obj file.');
+        alert('Unsupported file format! Please upload a .glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, or .heif file.');
         loadingScreen.style.display = 'none';
+        URL.revokeObjectURL(fileURL);
       }
     });
 
-    // --- Enter Drawing Mode ---
     enterDrawBtn.addEventListener('click', () => {
       if (!currentModel) return;
 
@@ -519,10 +882,8 @@
       enterDrawBtn.style.display = 'none';
       drawPanel.style.display = 'flex';
 
-      // Keep download button visible if user previously drew on the model
-      if (hasMadeEdits) {
-        downloadBtn.style.display = 'block';
-      }
+      hasMadeEdits = true;
+      downloadBtn.style.display = 'block';
 
       if (!hasBeenInitialized) {
         resetDrawCanvas();
@@ -537,7 +898,8 @@
           child.material = new THREE.MeshStandardMaterial({
             map: canvasTexture,
             roughness: 0.5,
-            metalness: 0.1
+            metalness: 0.1,
+            side: THREE.DoubleSide
           });
         }
       });
@@ -545,19 +907,21 @@
       setPaintState(true);
     });
 
-    // --- Exit Drawing Mode ---
     function exitDrawingMode() {
       isDrawMode = false;
       setPaintState(false);
 
       drawPanel.style.display = 'none';
+      colorWheelPopup.style.display = 'none';
       enterDrawBtn.style.display = 'block';
 
-      // Restore original materials while preserving canvas texture in memory
       if (currentModel) {
         currentModel.traverse((child) => {
-          if (child.isMesh && originalMaterials.has(child.uuid)) {
-            child.material = originalMaterials.get(child.uuid);
+          if (child.isMesh) {
+            const origMat = originalMaterials.get(child.uuid);
+            if (origMat) {
+              child.material = origMat;
+            }
           }
         });
       }
@@ -565,7 +929,6 @@
 
     closeDrawBtn.addEventListener('click', exitDrawingMode);
 
-    // --- Toggle Paint vs Rotate ---
     function setPaintState(painting) {
       isPaintingState = painting;
       controls.enabled = !isPaintingState;
@@ -583,9 +946,24 @@
       setPaintState(!isPaintingState);
     });
 
-    // --- Fixed Download Painted Model Handler ---
     downloadBtn.addEventListener('click', () => {
       if (!currentModel) return;
+
+      currentModel.traverse((child) => {
+        if (child.isMesh) {
+          if (!child.material || child.material.map !== canvasTexture) {
+            if (!originalMaterials.has(child.uuid)) {
+              originalMaterials.set(child.uuid, child.material);
+            }
+            child.material = new THREE.MeshStandardMaterial({
+              map: canvasTexture,
+              roughness: 0.5,
+              metalness: 0.1,
+              side: THREE.DoubleSide
+            });
+          }
+        }
+      });
 
       const options = { binary: true };
 
@@ -597,7 +975,6 @@
             blob = new Blob([result], { type: 'application/octet-stream' });
           } else {
             const output = JSON.stringify(result, null, 2);
-            // Force application/octet-stream so browsers don't attach .json extension
             blob = new Blob([output], { type: 'application/octet-stream' });
           }
 
@@ -621,7 +998,56 @@
       );
     });
 
-    // --- Uniform Brush Stroke Drawing ---
+    moveBtn.addEventListener('click', () => {
+      if (animationList.style.display === 'flex') {
+        animationList.style.display = 'none';
+      } else {
+        animationList.style.display = 'flex';
+      }
+    });
+
+    function setupAnimations(animArray) {
+      animations = animArray || [];
+      animationList.innerHTML = '';
+      animationList.style.display = 'none';
+
+      if (animations.length > 0) {
+        moveBtn.style.display = 'block';
+        
+        animations.forEach((clip, index) => {
+          const animBtn = document.createElement('button');
+          animBtn.className = 'btn anim-btn';
+          animBtn.innerText = clip.name ? clip.name : `Action ${index + 1}`;
+          
+          animBtn.addEventListener('click', () => {
+            const allAnimBtns = animationList.querySelectorAll('.anim-btn');
+            allAnimBtns.forEach(b => b.classList.remove('active'));
+            animBtn.classList.add('active');
+
+            if (mixer) {
+              mixer.stopAllAction();
+            }
+            const action = mixer.clipAction(clip);
+            action.reset().play();
+            activeAction = action;
+          });
+
+          animationList.appendChild(animBtn);
+        });
+
+        if (animations.length > 0) {
+          const firstAction = mixer.clipAction(animations[0]);
+          firstAction.play();
+          activeAction = firstAction;
+          if (animationList.children[0]) {
+            animationList.children[0].classList.add('active');
+          }
+        }
+      } else {
+        moveBtn.style.display = 'none';
+      }
+    }
+
     function drawStroke(startUV, endUV, size, color) {
       drawCtx.strokeStyle = color;
       drawCtx.fillStyle = color;
@@ -634,7 +1060,6 @@
         drawCtx.moveTo(startUV.x, startUV.y);
         drawCtx.lineTo(endUV.x, endUV.y);
       } else {
-        // Uniform circle match for tap/start dots
         drawCtx.moveTo(endUV.x, endUV.y);
         drawCtx.lineTo(endUV.x, endUV.y);
       }
@@ -661,11 +1086,10 @@
         };
 
         const size = parseInt(brushSizeInput.value, 10);
-        const color = brushColorInput.value;
+        const color = brushColorVal;
 
         if (lastUV) {
           const distUV = Math.hypot(currentUV.x - lastUV.x, currentUV.y - lastUV.y);
-          // Protect crossing UV seams
           if (distUV < drawCanvas.width * 0.15) {
             drawStroke(lastUV, currentUV, size, color);
           } else {
@@ -675,11 +1099,8 @@
           drawStroke(null, currentUV, size, color);
         }
 
-        // Activate Download Button upon making the first stroke/edit
-        if (!hasMadeEdits) {
-          hasMadeEdits = true;
-          downloadBtn.style.display = 'block';
-        }
+        hasMadeEdits = true;
+        downloadBtn.style.display = 'block';
 
         lastUV = currentUV;
       } else {
@@ -687,7 +1108,6 @@
       }
     }
 
-    // --- Touch and Pointer Event Handlers ---
     function handleStart(clientX, clientY) {
       if (isDrawMode && isPaintingState) {
         isDrawing = true;
@@ -710,7 +1130,6 @@
       }
     }
 
-    // Mouse Controls
     renderer.domElement.addEventListener('mousedown', (e) => {
       if (e.button === 0) handleStart(e.clientX, e.clientY);
     });
@@ -721,9 +1140,8 @@
 
     window.addEventListener('mouseup', handleEnd);
 
-    // Screen Touch Controls
     renderer.domElement.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
+      if (e.touches.length === 1 && (!isDrawMode || isPaintingState)) {
         const touch = e.touches[0];
         handleStart(touch.clientX, touch.clientY);
       }
@@ -739,8 +1157,7 @@
 
     window.addEventListener('touchend', handleEnd);
 
-    // --- Display Model ---
-    function displayModel(model) {
+    function displayModel(model, anims) {
       if (currentModel) {
         scene.remove(currentModel);
       }
@@ -750,6 +1167,14 @@
       hasBeenInitialized = false;
       hasMadeEdits = false;
       downloadBtn.style.display = 'none';
+
+      mixer = new THREE.AnimationMixer(currentModel);
+
+      currentModel.traverse((child) => {
+        if (child.isMesh) {
+          originalMaterials.set(child.uuid, child.material);
+        }
+      });
 
       scene.add(currentModel);
 
@@ -767,26 +1192,32 @@
       controls.target.set(0, 0, 0);
       controls.update();
 
+      setupAnimations(anims);
+
       loadingScreen.style.display = 'none';
     }
 
     function handleError(error, url) {
-      console.error('Error loading model:', error);
-      alert('Failed to load the 3D model.');
+      console.error('Error loading file:', error);
+      alert('Failed to load the file.');
       loadingScreen.style.display = 'none';
       if (url) URL.revokeObjectURL(url);
     }
 
-    // --- Window Resize Handler ---
     window.addEventListener('resize', () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     });
 
-    // --- Animation Loop ---
     function animate() {
       requestAnimationFrame(animate);
+      
+      const delta = clock.getDelta();
+      if (mixer) {
+        mixer.update(delta);
+      }
+
       controls.update();
       renderer.render(scene, camera);
     }

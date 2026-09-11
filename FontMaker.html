@@ -773,38 +773,29 @@
             drawVerticalGuideline(dynamicMinX, '#2563eb', 'DYNAMIC LEFT SIDE EDGE');
             drawVerticalGuideline(dynamicMaxX, '#2563eb', 'DYNAMIC RIGHT SIDE EDGE');
 
+            // Render continuous solid strokes with round caps/joins to eliminate holes/artifacts
             ctx.fillStyle = '#000000';
+            ctx.strokeStyle = '#000000';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
             allStrokes.forEach(stroke => {
                 if (!stroke.points || stroke.points.length === 0) return;
-                const r = stroke.width / 2;
+                ctx.lineWidth = stroke.width;
 
                 if (stroke.points.length === 1) {
                     ctx.beginPath();
-                    ctx.arc(stroke.points[0].x, stroke.points[0].y, r, 0, Math.PI * 2);
+                    ctx.arc(stroke.points[0].x, stroke.points[0].y, stroke.width / 2, 0, Math.PI * 2);
                     ctx.fill();
                     return;
                 }
 
-                for (let i = 0; i < stroke.points.length - 1; i++) {
-                    const p1 = stroke.points[i];
-                    const p2 = stroke.points[i+1];
-
-                    const dx = p2.x - p1.x;
-                    const dy = p2.y - p1.y;
-                    const len = Math.sqrt(dx * dx + dy * dy);
-                    if (len === 0) continue;
-
-                    const nx = -dy / len;
-                    const ny = dx / len;
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x + nx * r, p1.y + ny * r);
-                    ctx.lineTo(p2.x + nx * r, p2.y + ny * r);
-                    ctx.arc(p2.x, p2.y, r, Math.atan2(ny, nx), Math.atan2(ny, nx) + Math.PI);
-                    ctx.lineTo(p1.x - nx * r, p1.y - ny * r);
-                    ctx.arc(p1.x, p1.y, r, Math.atan2(-ny, -nx), Math.atan2(-ny, -nx) + Math.PI);
-                    ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                for (let i = 1; i < stroke.points.length; i++) {
+                    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
                 }
+                ctx.stroke();
             });
         }
 
@@ -910,46 +901,61 @@
                     strokes.forEach(stroke => {
                         if (!stroke.points || stroke.points.length === 0) return;
                         const r = stroke.width / 2;
+                        const pts = stroke.points;
 
-                        if (stroke.points.length === 1) {
-                            const p = stroke.points[0];
+                        if (pts.length === 1) {
+                            const p = pts[0];
                             const cx = p.x + offsetShiftX;
                             const cy = BASELINE_Y - p.y;
                             ttfPath.moveTo(cx - r, cy);
-                            ttfPath.bezierCurveTo(cx - r, cy + r * 0.55, cx - r * 0.55, cy + r, cx, cy + r);
-                            ttfPath.bezierCurveTo(cx + r * 0.55, cy + r, cx + r, cy + r * 0.55, cx + r, cy);
-                            ttfPath.bezierCurveTo(cx + r, cy - r * 0.55, cx + r * 0.55, cy - r, cx, cy - r);
-                            ttfPath.bezierCurveTo(cx - r * 0.55, cy - r, cx - r, cy - r * 0.55, cx - r, cy);
+                            ttfPath.bezierCurveTo(cx - r, cy + r * 0.55228, cx - r * 0.5522, cy + r, cx, cy + r);
+                            ttfPath.bezierCurveTo(cx + r * 0.5522, cy + r, cx + r, cy + r * 0.5522, cx + r, cy);
+                            ttfPath.bezierCurveTo(cx + r, cy - r * 0.5522, cx + r * 0.5522, cy - r, cx, cy - r);
+                            ttfPath.bezierCurveTo(cx - r * 0.5522, cy - r, cx - r, cy - r * 0.5522, cx - r, cy);
+                            ttfPath.close();
                             return;
                         }
 
-                        for (let i = 0; i < stroke.points.length - 1; i++) {
-                            const p1 = stroke.points[i];
-                            const p2 = stroke.points[i+1];
+                        // Generate unified closed outline polygon per stroke to eliminate cracks and gaps at curves
+                        const leftPts = [];
+                        const rightPts = [];
 
-                            const dx = p2.x - p1.x;
-                            const dy = p2.y - p1.y;
-                            const len = Math.sqrt(dx * dx + dy * dy);
-                            if (len === 0) continue;
-
-                            const nx = -dy / len;
-                            const ny = dx / len;
-
-                            const ax = p1.x + nx * r + offsetShiftX;
-                            const ay = BASELINE_Y - (p1.y + ny * r);
-                            const bx = p2.x + nx * r + offsetShiftX;
-                            const by = BASELINE_Y - (p2.y + ny * r);
-                            const cx = p2.x - nx * r + offsetShiftX;
-                            const cy = BASELINE_Y - (p2.y - ny * r);
-                            const dx_ = p1.x - nx * r + offsetShiftX;
-                            const dy_ = BASELINE_Y - (p1.y - ny * r);
-
-                            ttfPath.moveTo(ax, ay);
-                            ttfPath.lineTo(bx, by);
-                            ttfPath.lineTo(cx, cy);
-                            ttfPath.lineTo(dx_, dy_);
-                            ttfPath.close();
+                        for (let i = 0; i < pts.length; i++) {
+                            let p1 = i > 0 ? pts[i-1] : pts[0];
+                            let p2 = i < pts.length - 1 ? pts[i+1] : pts[pts.length - 1];
+                            let dx = p2.x - p1.x;
+                            let dy = p2.y - p1.y;
+                            let len = Math.sqrt(dx * dx + dy * dy);
+                            let nx = 0, ny = 0;
+                            if (len > 0) {
+                                nx = -dy / len;
+                                ny = dx / len;
+                            }
+                            leftPts.push({
+                                x: pts[i].x + nx * r + offsetShiftX,
+                                y: BASELINE_Y - (pts[i].y + ny * r)
+                            });
+                            rightPts.push({
+                                x: pts[i].x - nx * r + offsetShiftX,
+                                y: BASELINE_Y - (pts[i].y - ny * r)
+                            });
                         }
+
+                        ttfPath.moveTo(leftPts[0].x, leftPts[0].y);
+                        for (let i = 1; i < leftPts.length; i++) {
+                            ttfPath.lineTo(leftPts[i].x, leftPts[i].y);
+                        }
+
+                        const lastR = rightPts[rightPts.length - 1];
+                        ttfPath.lineTo(lastR.x, lastR.y);
+
+                        for (let i = rightPts.length - 2; i >= 0; i--) {
+                            ttfPath.lineTo(rightPts[i].x, rightPts[i].y);
+                        }
+
+                        const firstL = leftPts[0];
+                        ttfPath.lineTo(firstL.x, firstL.y);
+                        ttfPath.close();
                     });
 
                     const glyph = new opentype.Glyph({

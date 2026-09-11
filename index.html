@@ -158,7 +158,6 @@
 <section class="hero">
   <h1>Happy Birthday Mom</h1>
   
-  
 <style>
 .mothers-day-marquee {
   position: relative;
@@ -186,7 +185,7 @@
   font-family: cursive;
   letter-spacing: 2px;
   white-space: nowrap;
-  margin-right: 100vw; /* huge gap */
+  margin-right: 100vw;
   transition: 0.3s;
 }
 
@@ -220,11 +219,11 @@
     Today, we celebrate the most loving, caring, and strongest woman in our lives.
   </p>
   <p class="hi">
-    आज हम अपनी ज़िंदगी की सबसे प्यारी, स्नेही और मजबूत महिला का जन्मदिन मना रहे हैं।
+    आज हम अपनी ज़िंदगी की सबसे प्यारी, स्नेही और मजबूत महिला का जन्मदिन मना रहे हैं.
   </p>
 </section>
 
-<section class=").html">
+<section>
   <h2>Best Wishes</h2>
   <p>
     Mom, you are our greatest blessing. Your love has shaped our lives, your strength
@@ -232,7 +231,7 @@
   </p>
   <p class="hi">
     माँ, आप हमारे जीवन का सबसे बड़ा आशीर्वाद हैं। आपका प्यार हमें जीवन की राह दिखाता है,
-    आपकी ताक़त हमें प्रेरित करती है और आपकी मुस्कान सब कुछ खूबसूरत बना देती है।
+    आपकी ताक़त हमें प्रेरित करती है और आपकी मुस्कान सब कुछ खूबसूरत बना देती है.
   </p>
 </section>
 
@@ -244,7 +243,7 @@
   </p>
   <p class="hi">
     आप हमारे परिवार का दिल हैं। आपकी दयालुता, धैर्य और निस्वार्थ सहयोग हमारे घर को
-    हमेशा प्यार और सुकून से भर देता है।
+    हमेशा प्यार और सुकून से भर देता है.
   </p>
 </section>
 
@@ -278,7 +277,7 @@
     “A strong woman stands up for herself. A stronger woman stands up for everybody else.”
   </div>
   <div class="quote-hi">
- हैवर गैवर सघन धन, छन्नपती की नारि। तास पटेतर ना तुलै, हरिजन की पनिहारी। (A queen with wealth and grandeur cannot match the water-carrier woman devoted to Truth.) 
+ हैवर गैवर सघन धन, छन्नपती की नारि। तास Pटेतर ना तुलै, हरिजन की पनिहारी। (A queen with wealth and grandeur cannot match the water-carrier woman devoted to Truth.)
   </div>
 </section>
 
@@ -356,9 +355,37 @@
 }
 .panel h2{text-align:center;color:#fff;margin:10px 0}
 .videoBtn{padding:10px;margin:6px 0;color:#fff;background:#0006;text-align:center;cursor:pointer}
-.videoBox{display:none;margin-bottom:20px}
+.videoBox{display:none;margin-bottom:20px; position:relative;}
 iframe{width:100%;height:180px;border:0}
 .yt{color:#ff7777;text-align:center;display:block;font-size:13px}
+
+/* LOADING LINE STYLES - AT TOP EDGE ONLY */
+.video-loading-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #ff0000, transparent);
+  background-size: 200% 100%;
+  animation: loadingMove 1.5s infinite linear, redPulse 1s infinite alternate;
+  z-index: 5;
+  display: none;
+}
+
+@keyframes loadingMove {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes redPulse {
+  0% {
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.4), 0 0 8px rgba(255, 0, 0, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.9), 0 0 24px rgba(255, 0, 0, 0.9);
+  }
+}
 
 /* LEFT – AUDIOBOOKS */
 #audio{left:-360px;background:#3b235c}
@@ -386,7 +413,7 @@ iframe{width:100%;height:180px;border:0}
 
 /* FOLDER STYLES - Light Brown color, only edge glow on active */
 .folderBtn {
-  background: indianred;  /* light brown / sienna color */
+  background: indianred;
   margin: 6px 0;
   transition: all 0.2s;
   color: #fff;
@@ -526,37 +553,42 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('a1')">Origin of Species</div>
 <div class="videoBox" id="a1">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/K6JX649vEXo?si=VOYLyDxiVDBUZSfb" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a2')">The Prince</div>
 <div class="videoBox" id="a2">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/Yb0T40VZUWc?si=b7L0BkSKNEKz9uop" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a3')">The Almanack of Ravikant</div>
 <div class="videoBox" id="a3">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/QJJeHtJC52g?si=SIW6XW3LgKSpVDOt" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a4')">Meditations</div>
 <div class="videoBox" id="a4">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/_8Ph6tJ3uwA?si=i423joBwf7K78yhO" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a5')">Brothers Karamazov</div>
 <div class="videoBox" id="a5">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/uPvcNp6Q4-8?si=trBuV8Qq02ArZ0i7" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a6')">Brothers Karamazov</div>
 <div class="videoBox" id="a6">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
   
   <div class="part-nav-container">
     <button class="partBtn activePart" onclick="switchKaramazovPart(1, 'JZDKv8y4PKo', 'https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB', this)">Part 1</button>
@@ -564,30 +596,35 @@ iframe{width:100%;height:180px;border:0}
     <button class="partBtn" onclick="switchKaramazovPart(3, 'myLuxzCmnvc', 'https://youtu.be/myLuxzCmnvc?si=KFo6Cb2AAWrKDvPk', this)">Part 3</button>
   </div>
 
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" id="a6YtLink" href="https://youtu.be/JZDKv8y4PKo?si=wg0VP3du2OktXOGB" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a7')">The Cthulhu Mythos</div>
 <div class="videoBox" id="a7">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/UJDIvebdG8U?si=3anBr9N9lUu6B2Pg" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a8')">Dhammapada</div>
 <div class="videoBox" id="a8">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/I5UcyuiKYFI?si=xEXFhN4qYjaHCGA6" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a9')">Das Kapital</div>
 <div class="videoBox" id="a9">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/WUW6cjZgi7Y?si=8W7EyT_N-b8KJzvq" target="_blank">Open on YouTube</a>
 </div>
 
 <div class="videoBtn" onclick="play('a10')">The Gay Science</div>
 <div class="videoBox" id="a10">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <a class="yt" href="https://youtu.be/Bb70lU1fSbA?si=q2VAWPaQKj3WL0xe" target="_blank">Open on YouTube</a>
 </div>
 
@@ -632,7 +669,8 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('s1')">India Unravel</div>
 <div class="videoBox" id="s1">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -644,7 +682,8 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('s2')">Lo Lo</div>
 <div class="videoBox" id="s2">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <div class="permanentStars">★★★★★</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -656,7 +695,8 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('s3')">Blue Hawaii</div>
 <div class="videoBox" id="s3">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -668,7 +708,8 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('s4')">Bink's Sake Hindi</div>
 <div class="videoBox" id="s4">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <div class="permanentStars">★★★★★</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -680,7 +721,8 @@ iframe{width:100%;height:180px;border:0}
 
 <div class="videoBtn" onclick="play('s5')">Wasteland</div>
 <div class="videoBox" id="s5">
-  <iframe allowfullscreen></iframe>
+  <div class="video-loading-line"></div>
+  <iframe allowfullscreen onload="hideLoading(this)"></iframe>
   <div class="permanentStars">★★★★☆</div>
   <div class="userStars" onclick="rate(event,this)">
     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
@@ -741,13 +783,33 @@ function closePanels() {
 
 function stopAll() {
   document.querySelectorAll("iframe").forEach(i => i.src = "");
-  document.querySelectorAll(".videoBox").forEach(b => b.style.display = "none");
+  document.querySelectorAll(".videoBox").forEach(b => {
+    b.style.display = "none";
+    const line = b.querySelector('.video-loading-line');
+    if(line) line.style.display = 'none';
+  });
+}
+
+function showLoading(box) {
+  const line = box.querySelector('.video-loading-line');
+  if(line) line.style.display = 'block';
+}
+
+function hideLoading(iframe) {
+  const box = iframe.closest('.videoBox');
+  if(box) {
+    const line = box.querySelector('.video-loading-line');
+    if(line) line.style.display = 'none';
+  }
 }
 
 function play(id) {
   stopAll();
   let box = document.getElementById(id);
-  if(box) box.style.display = "block";
+  if(box) {
+    box.style.display = "block";
+    showLoading(box);
+  }
   
   const videoMap = {
     's1': '8iCxEzYcRRM', 's2': '8AmQ99-ZN2Y', 's3': 'pGe2KQ30mYM',
@@ -759,7 +821,6 @@ function play(id) {
   if (videoMap[id] && box) {
     box.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoMap[id] + "?autoplay=1";
     
-    // Reset specific toggler parameters back to default configuration when starting up
     if (id === 'a6') {
       const btns = box.querySelectorAll('.partBtn');
       btns.forEach((btn, idx) => {
@@ -772,15 +833,14 @@ function play(id) {
   }
 }
 
-// Custom handler configuration for multi-part Brothers Karamazov selection
 function switchKaramazovPart(partNum, videoId, youtubeUrl, element) {
-  event.stopPropagation(); // Avoid shutting down box
+  event.stopPropagation();
   const parentBox = document.getElementById('a6');
   if (parentBox) {
+    showLoading(parentBox);
     parentBox.querySelector("iframe").src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
     document.getElementById('a6YtLink').href = youtubeUrl;
     
-    // Toggle color classes safely
     parentBox.querySelectorAll('.partBtn').forEach(btn => btn.classList.remove('activePart'));
     element.classList.add('activePart');
   }
@@ -796,15 +856,12 @@ function submit(btn) {
   btn.nextElementSibling.style.display = "block";
 }
 
-// Track currently open folder
 let currentOpenFolder = null;
 
-// Build sub-container for folder songs (NO star ratings, uniform style)
 function buildSubContainer(folderId, songsArray) {
   const container = document.getElementById(`sub${folderId}`);
   if(!container) return;
   
-  // If already open, collapse it
   if(container.style.display === 'block') {
     container.style.display = 'none';
     const parentBtn = document.getElementById(`folder${folderId}`);
@@ -813,7 +870,6 @@ function buildSubContainer(folderId, songsArray) {
     return;
   }
   
-  // Close any other open folder first
   if(currentOpenFolder !== null && currentOpenFolder !== folderId) {
     const prevContainer = document.getElementById(`sub${currentOpenFolder}`);
     if(prevContainer) prevContainer.style.display = 'none';
@@ -821,7 +877,6 @@ function buildSubContainer(folderId, songsArray) {
     if(prevBtn) prevBtn.classList.remove('activeFolder');
   }
   
-  // Populate and expand
   container.innerHTML = '';
   songsArray.forEach(songItem => {
     const songDiv = document.createElement('div');
@@ -832,24 +887,37 @@ function buildSubContainer(folderId, songsArray) {
     boxDiv.className = 'videoBox';
     boxDiv.id = subBoxId;
     boxDiv.style.marginLeft = '0';
+    
+    const loadingLine = document.createElement('div');
+    loadingLine.className = 'video-loading-line';
+    boxDiv.appendChild(loadingLine);
+
     const iframeEl = document.createElement('iframe');
     iframeEl.setAttribute('allowfullscreen', '');
+    iframeEl.setAttribute('onload', 'hideLoading(this)');
     iframeEl.src = '';
+    
     const ytLink = document.createElement('a');
     ytLink.className = 'yt';
     ytLink.href = songItem.url;
     ytLink.innerText = 'Open on YouTube';
     ytLink.target = '_blank';
+    
     boxDiv.appendChild(iframeEl);
     boxDiv.appendChild(ytLink);
     
     songDiv.onclick = (e) => {
       e.stopPropagation();
-      document.querySelectorAll('#song .videoBox').forEach(vb => vb.style.display = 'none');
+      document.querySelectorAll('#song .videoBox').forEach(vb => {
+        vb.style.display = 'none';
+        const line = vb.querySelector('.video-loading-line');
+        if(line) line.style.display = 'none';
+      });
       document.querySelectorAll('#song iframe').forEach(ifr => ifr.src = '');
       const targetBox = document.getElementById(subBoxId);
       if(targetBox) {
         targetBox.style.display = 'block';
+        showLoading(targetBox);
         const vidId = extractYouTubeId(songItem.url);
         if(vidId) {
           targetBox.querySelector('iframe').src = `https://www.youtube.com/embed/${vidId}?autoplay=1`;
@@ -862,7 +930,6 @@ function buildSubContainer(folderId, songsArray) {
   container.style.display = 'block';
   currentOpenFolder = folderId;
   
-  // Update active glow on folder buttons
   document.querySelectorAll('.folderBtn').forEach(btn => btn.classList.remove('activeFolder'));
   const folderBtn = document.getElementById(`folder${folderId}`);
   if(folderBtn) folderBtn.classList.add('activeFolder');
@@ -881,7 +948,6 @@ function extractYouTubeId(url) {
   return null;
 }
 
-// Folder song data
 const liveSongs = [
   { id: 'live1', name: 'Aishite', url: 'https://youtu.be/HmkbBdD8044?si=PkuhcJ5zui1y4jep' },
   { id: 'live2', name: 'Fairytale', url: 'https://youtu.be/ogM3TRhdWUc?si=SX2YMjcHAAyb3H-m' },
@@ -910,14 +976,12 @@ const dragonsSongs = [
   { id: 'drag3', name: 'Radioactive Remix', url: 'https://youtu.be/s3KhD2-9AOE?si=6OWO0GoTqV6YVyFL' }
 ];
 
-// Attach folder click handlers
 document.getElementById('folderLive').onclick = () => buildSubContainer('Live', liveSongs);
 document.getElementById('folderVibes').onclick = () => buildSubContainer('Vibes', vibesSongs);
 document.getElementById('folderNostalgia').onclick = () => buildSubContainer('Nostalgia', nostalgiaSongs);
 document.getElementById('folderAMV').onclick = () => buildSubContainer('AMV', amvSongs);
 document.getElementById('folderDragons').onclick = () => buildSubContainer('Dragons', dragonsSongs);
 
-// Extend stopAll to also close any open folder sub-containers
 const originalStopAll = stopAll;
 window.stopAll = function() {
   originalStopAll();
@@ -988,34 +1052,32 @@ stopAll = window.stopAll;
   font-weight: 700;
 }
 
-/* HAMBURGER */
-.icon {
+/* HAMBURGER / MORPH ICON */
+.movie-wrapper .icon {
   background: none;
   border: none;
   cursor: pointer;
   height: 30px;
   width: 30px;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.icon .line {
-  background-color: white;
-  height: 2px;
-  width: 20px;
-  position: absolute;
-  left: 5px;
-  transition: transform 0.6s;
+.movie-wrapper .icon svg {
+  width: 22px;
+  height: 22px;
+  overflow: visible;
 }
 
-.line1 { top: 10px; }
-.line2 { bottom: 10px; }
-
-nav.active .line1 {
-  transform: rotate(-45deg) translateY(5.5px);
-}
-
-nav.active .line2 {
-  transform: rotate(45deg) translateY(-5.5px);
+.movie-wrapper .icon path {
+  fill: none;
+  stroke: white;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: d 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
 }
 
 /* PLAYER */
@@ -1045,6 +1107,7 @@ nav.active .line2 {
   inset: 0;
   width: 100%;
   height: 100%;
+  border: 0;
 }
 
 .watch {
@@ -1071,20 +1134,27 @@ nav.active .line2 {
 <div class="movie-wrapper">
   <nav id="nav">
     <ul>
-      <li><a onclick="openVimeo()">Movie1</a></li>
-      <li><a onclick="openOK('1244085094959')">Movie2</a></li>
-      <li><a onclick="openVideoLiberta()">Movie3</a></li>
-      <li><a onclick="openOK('7675742325479')">Movie4</a></li>
+      <li><a onclick="openMovie1()">1(Real)</a></li>
+      <li><a onclick="openVideoLiberta()">2(Art)</a></li>
+      <li><a onclick="openMovie3()">3(Raw)</a></li>
+      <li><a onclick="openOK('7675742325479')">4(Erotic)</a></li>
     </ul>
     <button class="icon" id="toggle">
-      <div class="line line1"></div>
-      <div class="line line2"></div>
+      <svg viewBox="0 0 100 100">
+        <path id="m-leg-left" d="M 15 15 L 15 85" />
+        <path id="m-diag1" d="M 15 15 L 50 65" />
+        <path id="m-diag2" d="M 85 15 L 50 65" />
+        <path id="m-leg-right" d="M 85 15 L 85 85" />
+      </svg>
     </button>
   </nav>
   <div class="player" id="player">
-    <div class="enjoy-simple">⬇️ Enjoy ⬇️</div>
-    <div class="video-box" id="videoBox"></div>
+    <div class="enjoy-simple" id="movieEnjoy">⬇️ Enjoy ⬇️</div>
+    <div class="video-box" id="videoBox">
+      <div class="video-loading-line" id="movieLoadingLine"></div>
+    </div>
     <a class="watch" id="watchLink" target="_blank"></a>
+    <div id="movieExtra"></div>
     <button class="close" onclick="closeMovie()">Close</button>
   </div>
 </div>
@@ -1096,38 +1166,145 @@ const toggle = document.getElementById('toggle');
 const player = document.getElementById('player');
 const videoBox = document.getElementById('videoBox');
 const watchLink = document.getElementById('watchLink');
+const movieEnjoy = document.getElementById('movieEnjoy');
+const movieExtra = document.getElementById('movieExtra');
 
-toggle.onclick = () => nav.classList.toggle('active');
+let isMovieX = false;
+const pathM = {
+  legLeftDefault: "M 15 15 L 15 85",
+  legLeftX: "M 15 15 L 85 85",
+  legRightDefault: "M 85 15 L 85 85",
+  legRightX: "M 85 15 L 15 85",
+  diag1Default: "M 15 15 L 50 65",
+  diag1X: "M 15 15 L 85 85",
+  diag2Default: "M 85 15 L 50 65",
+  diag2X: "M 85 15 L 15 85"
+};
 
-function openVimeo() {
+toggle.onclick = () => {
+  nav.classList.toggle('active');
+  isMovieX = nav.classList.contains('active');
+
+  document.getElementById('m-diag1').setAttribute('d', isMovieX ? pathM.diag1X : pathM.diag1Default);
+  document.getElementById('m-diag2').setAttribute('d', isMovieX ? pathM.diag2X : pathM.diag2Default);
+  
+  const legLeft = document.getElementById('m-leg-left');
+  const legRight = document.getElementById('m-leg-right');
+
+  legLeft.setAttribute('d', isMovieX ? pathM.legLeftX : pathM.legLeftDefault);
+  legRight.setAttribute('d', isMovieX ? pathM.legRightX : pathM.legRightDefault);
+
+  legLeft.style.opacity = isMovieX ? "0" : "1";
+  legRight.style.opacity = isMovieX ? "0" : "1";
+};
+
+function showMovieContainer() {
   nav.style.display = 'none';
   player.style.display = 'block';
-  videoBox.innerHTML = `<iframe src="https://player.vimeo.com/video/98811524?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  movieExtra.innerHTML = '';
+}
+
+function handleMainIframeLoad(iframe) {
+  const box = iframe.closest('.video-box') || iframe.closest('.anime-video-box');
+  if(box) {
+    const line = box.querySelector('.video-loading-line');
+    if(line) line.style.display = 'none';
+  }
+}
+
+function openMovie1() {
+  showMovieContainer();
+  const b1 = document.createElement('button'); 
+  b1.className = 'anime-season-btn s1'; 
+  b1.innerText = 'Button 1'; 
+  b1.onclick = loadMovie1Vimeo; 
+  
+  const b2 = document.createElement('button'); 
+  b2.className = 'anime-season-btn s2'; 
+  b2.innerText = 'Button 2'; 
+  b2.onclick = loadMovie1Ok; 
+  
+  movieExtra.appendChild(b1); 
+  movieExtra.appendChild(b2); 
+  loadMovie1Vimeo();
+}
+
+function loadMovie1Vimeo() {
+  movieEnjoy.innerHTML = `<span style="color:blue">⬇️ Part 1 ⬇️</span>`;
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://player.vimeo.com/video/98811524?autoplay=1" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
   watchLink.textContent = "Watch / Download on Vimeo";
   watchLink.href = "https://vimeo.com/98811524";
 }
 
+function loadMovie1Ok() {
+  movieEnjoy.innerHTML = `<span style="color:red">⬇️ Part 2 ⬇️</span>`;
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://ok.ru/videoembed/1244085094959" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
+  watchLink.textContent = "Watch on ok.ru";
+  watchLink.href = "https://ok.ru/video/1244085094959";
+}
+
+function openMovie3() {
+  showMovieContainer();
+  const b1 = document.createElement('button');
+  b1.className = 'anime-season-btn s1';
+  b1.innerText = 'Film 1';
+  b1.onclick = loadMovie3Film1;
+
+  const b2 = document.createElement('button');
+  b2.className = 'anime-season-btn s2';
+  b2.innerText = 'Film 2';
+  b2.onclick = loadMovie3Film2;
+
+  movieExtra.appendChild(b1);
+  movieExtra.appendChild(b2);
+  loadMovie3Film1();
+}
+
+function loadMovie3Film1() {
+  movieEnjoy.innerHTML = `<span style="color:blue">⬇️ Film 1 ⬇️</span>`;
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://vk.com/video_ext.php?oid=-219966194&id=456241541&hd=2" allow="autoplay; encrypted-media; fullscreen; picture-in-picture;" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
+  watchLink.textContent = "Watch on VK Video";
+  watchLink.href = "https://m.vkvideo.ru/video-219966194_456241541";
+}
+
+function loadMovie3Film2() {
+  movieEnjoy.innerHTML = `<span style="color:red">⬇️ Film 2 ⬇️</span>`;
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://vk.com/video_ext.php?oid=-212299032&id=456239155&hd=2" allow="autoplay; encrypted-media; fullscreen; picture-in-picture;" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
+  watchLink.textContent = "Watch on VK Video";
+  watchLink.href = "https://m.vkvideo.ru/video-212299032_456239155";
+}
+
 function openOK(id) {
-  nav.style.display = 'none';
-  player.style.display = 'block';
-  videoBox.innerHTML = `<iframe src="https://ok.ru/videoembed/${id}" allowfullscreen></iframe>`;
+  showMovieContainer();
+  movieEnjoy.innerHTML = "⬇️ Enjoy ⬇️";
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://ok.ru/videoembed/${id}" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
   watchLink.textContent = "Watch on ok.ru";
   watchLink.href = `https://ok.ru/video/${id}`;
 }
 
 function openVideoLiberta() {
-  nav.style.display = 'none';
-  player.style.display = 'block';
-  videoBox.innerHTML = `<iframe src="https://video.liberta.vip/videos/embed/oazhEfHTgJDpP4r4eAKLCN" allow="fullscreen" allowfullscreen></iframe>`;
+  showMovieContainer();
+  movieEnjoy.innerHTML = "⬇️ Enjoy ⬇️";
+  videoBox.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://video.liberta.vip/videos/embed/oazhEfHTgJDpP4r4eAKLCN" allow="fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`;
   watchLink.textContent = "Watch / Download on Liberta video";
   watchLink.href = "https://video.liberta.vip/w/oazhEfHTgJDpP4r4eAKLCN";
 }
 
 function closeMovie() {
-  videoBox.innerHTML = "";
+  videoBox.innerHTML = `<div class="video-loading-line" id="movieLoadingLine"></div>`;
+  movieExtra.innerHTML = "";
   player.style.display = 'none';
   nav.style.display = 'flex';
   nav.classList.remove('active');
+  isMovieX = false;
+  document.getElementById('m-diag1').setAttribute('d', pathM.diag1Default);
+  document.getElementById('m-diag2').setAttribute('d', pathM.diag2Default);
+  const legLeft = document.getElementById('m-leg-left');
+  const legRight = document.getElementById('m-leg-right');
+  legLeft.setAttribute('d', pathM.legLeftDefault);
+  legRight.setAttribute('d', pathM.legRightDefault);
+  legLeft.style.opacity = "1";
+  legRight.style.opacity = "1";
 }
 </script>
 <br><br>
@@ -1180,19 +1357,23 @@ function closeMovie() {
   position: relative;
   width: 30px;
   height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.anime-icon .line {
-  position: absolute;
-  width: 20px;
-  height: 2px;
-  background: white;
-  left: 5px;
-  transition: transform 0.6s linear;
+.anime-icon svg {
+  width: 22px;
+  height: 22px;
+  overflow: visible;
 }
-.anime-icon .line1 { top: 10px; }
-.anime-icon .line2 { bottom: 10px; }
-.anime-nav.active .line1 { transform: rotate(-45deg) translateY(5px); }
-.anime-nav.active .line2 { transform: rotate(45deg) translateY(-5px); }
+.anime-icon path {
+  fill: none;
+  stroke: white;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: d 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+}
 .anime-player {
   display: none;
   width: 100%;
@@ -1201,7 +1382,7 @@ function closeMovie() {
 }
 .anime-enjoy { font-size: 26px; font-weight: 800; color: red; margin-bottom: 15px; }
 .anime-video-box { position: relative; padding-top: 56.25%; }
-.anime-video-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 2px; }
+.anime-video-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 2px; border: 0; }
 .anime-watch { display: block; margin: 20px 0; font-size: 22px; font-weight: 700; color: red; text-decoration: none; }
 .anime-season-btn { padding: 10px 20px; margin: 10px; border-radius: 20px; border: none; font-weight: 700; color: white; cursor: pointer; }
 .s1 { background: blue; }
@@ -1212,19 +1393,24 @@ function closeMovie() {
 <div class="anime-nav-wrapper">
   <nav class="anime-nav" id="animeNav">
     <ul>
-      <li><a onclick="anime1()">Anime1</a></li>
-      <li><a onclick="anime2()">Anime2</a></li>
-      <li><a onclick="anime3()">Anime3</a></li>
-      <li><a onclick="anime4()">Anime4</a></li>
+      <li><a onclick="anime1()">(Ghibli)</a></li>
+      <li><a onclick="anime2()">(Epic)</a></li>
+      <li><a onclick="anime3()">(Mecha)</a></li>
+      <li><a onclick="anime4()">(Shounen)</a></li>
     </ul>
     <button class="anime-icon" id="animeToggle">
-      <div class="line line1"></div>
-      <div class="line line2"></div>
+      <svg viewBox="0 0 100 100">
+        <path id="a-stroke1" d="M 50 15 L 15 85" />
+        <path id="a-stroke2" d="M 50 15 L 85 85" />
+        <path id="a-crossbar" d="M 28 60 L 72 60" />
+      </svg>
     </button>
   </nav>
   <div class="anime-player" id="animePlayer">
     <div class="anime-enjoy" id="animeEnjoy">⬇️ Enjoy ⬇️</div>
-    <div class="anime-video-box" id="animeVideo"></div>
+    <div class="anime-video-box" id="animeVideo">
+      <div class="video-loading-line" id="animeLoadingLine"></div>
+    </div>
     <a class="anime-watch" id="animeWatch" target="_blank"></a>
     <div id="animeExtra"></div>
     <button class="anime-close" onclick="closeAnime()">Close</button>
@@ -1238,20 +1424,116 @@ const animeVideo = document.getElementById('animeVideo');
 const animeWatch = document.getElementById('animeWatch');
 const animeEnjoy = document.getElementById('animeEnjoy');
 const animeExtra = document.getElementById('animeExtra');
-document.getElementById('animeToggle').onclick = () => animeNav.classList.toggle('active');
-function showAnime() { animeNav.style.display = 'none'; animePlayer.style.display = 'block'; animeVideo.innerHTML = ''; animeExtra.innerHTML = ''; }
-function anime1() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Enjoy all on Internet Archives"; animeWatch.href = "https://archive.org/details/bobobo-bo_bo-bobo/01+-+Bo-nafide+Soulful+Bo-tector+of+Hair.mkv"; }
-function anime2() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Enjoy all Ghibli Films here"; animeWatch.href = "https://archive.org/details/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4"; }
-function anime3() { showAnime(); animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/anime-yu-yu-hakusho/Yu+Yu+Hakusho+-+001+-+Surprised+To+Be+Dead+++%5BDarkDream%5D.mkv?start=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "All episodes Here"; animeWatch.href = "https://archive.org/details/anime-yu-yu-hakusho"; const note = document.createElement('div'); note.style.marginTop = "10px"; note.style.fontWeight = "700"; note.innerHTML = `Starting from Surprised to be dead<br>(Eizou Hakusho Fillers ❌)`; animeExtra.appendChild(note); }
-function anime4() { showAnime(); const b1 = document.createElement('button'); b1.className = 'anime-season-btn s1'; b1.innerText = 'Season 1'; b1.onclick = loadS1; const b2 = document.createElement('button'); b2.className = 'anime-season-btn s2'; b2.innerText = 'Season 2'; b2.onclick = loadS2; animeExtra.appendChild(b1); animeExtra.appendChild(b2); loadS1(); }
-function loadS1() { animeEnjoy.innerHTML = `<span style="color:blue">⬇️ Season 1 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/6_20210210_20210210_1925" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 1 here"; animeWatch.href = "https://archive.org/details/6_20210210_20210210_1925"; }
-function loadS2() { animeEnjoy.innerHTML = `<span style="color:red">⬇️ Season 2 ⬇️</span>`; animeVideo.innerHTML = `<iframe src="https://archive.org/embed/11_20210430/2.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`; animeWatch.textContent = "Full season 2 here"; animeWatch.href = "https://archive.org/details/11_20210430/2.mp4"; }
-function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = 'none'; animeNav.style.display = 'flex'; animeNav.classList.remove('active'); }
+
+let isAnimeX = false;
+const pathA = {
+  stroke1Default: "M 50 15 L 15 85",
+  stroke1X: "M 85 15 L 15 85",
+  stroke2Default: "M 50 15 L 85 85",
+  stroke2X: "M 15 15 L 85 85",
+  crossbarDefault: "M 28 60 L 72 60",
+  crossbarX: "M 50 50 L 50 50"
+};
+
+document.getElementById('animeToggle').onclick = () => {
+  animeNav.classList.toggle('active');
+  isAnimeX = animeNav.classList.contains('active');
+
+  document.getElementById('a-stroke1').setAttribute('d', isAnimeX ? pathA.stroke1X : pathA.stroke1Default);
+  document.getElementById('a-stroke2').setAttribute('d', isAnimeX ? pathA.stroke2X : pathA.stroke2Default);
+  
+  const crossbar = document.getElementById('a-crossbar');
+  crossbar.setAttribute('d', isAnimeX ? pathA.crossbarX : pathA.crossbarDefault);
+  crossbar.style.opacity = isAnimeX ? "0" : "1";
+};
+
+function showAnime() { 
+  animeNav.style.display = 'none'; 
+  animePlayer.style.display = 'block'; 
+  animeExtra.innerHTML = ''; 
+}
+
+function anime1() { 
+  showAnime(); 
+  animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; 
+  animeVideo.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://archive.org/embed/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`; 
+  animeWatch.textContent = "Enjoy all on Internet Archives"; 
+  animeWatch.href = "https://archive.org/details/the-cat-returns_202508/1+-+Nausica%C3%A4+of+the+Valley+of+the+Wind.mp4"; 
+}
+
+function anime2() { 
+  showAnime(); 
+  animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; 
+  animeVideo.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://archive.org/embed/LOGH-LD-CA" frameborder="0" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`; 
+  animeWatch.textContent = "Enjoy all on Internet Archives"; 
+  animeWatch.href = "https://archive.org/details/LOGH-LD-CA"; 
+  
+  const note = document.createElement('div'); 
+  note.style.marginTop = "10px"; 
+  note.style.fontWeight = "700"; 
+  note.style.color = "#000000"; 
+  note.innerHTML = `watch order: My conquest is the sea ➡ Overture to a neo war ➡ 003 the 13th fleet <a href="quote.jpg" download style="color:red; text-decoration:underline; cursor:pointer;">(Quote)</a>`; 
+  animeExtra.appendChild(note); 
+}
+
+function anime3() { 
+  showAnime(); 
+  const b1 = document.createElement('button'); 
+  b1.className = 'anime-season-btn s1'; 
+  b1.innerText = 'Season 1'; 
+  b1.onclick = loadS1; 
+  const b2 = document.createElement('button'); 
+  b2.className = 'anime-season-btn s2'; 
+  b2.innerText = 'Season 2'; 
+  b2.onclick = loadS2; 
+  animeExtra.appendChild(b1); 
+  animeExtra.appendChild(b2); 
+  loadS1(); 
+}
+
+function anime4() { 
+  showAnime(); 
+  animeEnjoy.innerHTML = "⬇️ Enjoy ⬇️"; 
+  animeVideo.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://archive.org/embed/anime-yu-yu-hakusho/Yu+Yu+Hakusho+-+001+-+Surprised+To+Be+Dead+++%5BDarkDream%5D.mkv?start=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`; 
+  animeWatch.textContent = "All episodes Here"; 
+  animeWatch.href = "https://archive.org/details/anime-yu-yu-hakusho"; 
+  const note = document.createElement('div'); 
+  note.style.marginTop = "10px"; 
+  note.style.fontWeight = "700"; 
+  note.innerHTML = `Starting from Surprised to be dead<br>(Eizou Hakusho Fillers ❌)`; 
+  animeExtra.appendChild(note); 
+}
+
+function loadS1() { 
+  animeEnjoy.innerHTML = `<span style="color:blue">⬇️ Season 1 ⬇️</span>`; 
+  animeVideo.innerHTML = `<div class="video-loading-line" style="display:block;"></div><iframe src="https://archive.org/embed/6_20210210_20210210_1925" frameborder="0" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`; 
+  animeWatch.textContent = "Full season 1 here"; 
+  animeWatch.href = "https://archive.org/details/6_20210210_20210210_1925"; 
+}
+
+function loadS2() { 
+  animeEnjoy.innerHTML = `<span style="color:red">⬇️ Season 2 ⬇️</span>`; 
+  animeVideo.innerHTML = `<div class="video-loading-line" style="display:block;">` + `<iframe src="https://archive.org/embed/11_20210430/2.mp4" frameborder="0" allow="autoplay; fullscreen" allowfullscreen onload="handleMainIframeLoad(this)"></iframe>`; 
+  animeWatch.textContent = "Full season 2 here"; 
+  animeWatch.href = "https://archive.org/details/11_20210430/2.mp4"; 
+}
+
+function closeAnime() { 
+  animeVideo.innerHTML = `<div class="video-loading-line" id="animeLoadingLine"></div>`; 
+  animePlayer.style.display = 'none'; 
+  animeNav.style.display = 'flex'; 
+  animeNav.classList.remove('active');
+  isAnimeX = false;
+  document.getElementById('a-stroke1').setAttribute('d', pathA.stroke1Default);
+  document.getElementById('a-stroke2').setAttribute('d', pathA.stroke2Default);
+  const crossbar = document.getElementById('a-crossbar');
+  crossbar.setAttribute('d', pathA.crossbarDefault);
+  crossbar.style.opacity = "1";
+}
 </script>
 
 <script>
 (function() {
-  // Mobile-and-Desktop secure click counter engine for double tap
   function configureDoubleTap(element, actionCallback) {
     let tapCount = 0;
     let tapTimeout;
@@ -1267,7 +1549,6 @@ function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = '
     });
   }
 
-  // --- 1. MOTHER PICTURE CONFIGURATION ---
   const motherImg = document.getElementById('motherImg');
   const motherVideo = document.getElementById('motherVideo');
   const momAudio = document.getElementById('momAudio');
@@ -1288,12 +1569,9 @@ function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = '
 
   motherVideo.onended = restoreMotherStatic;
 
-  // Bind double tap listeners to both elements so it handles interrupts flawlessly
   configureDoubleTap(motherImg, triggerMotherEffect);
   configureDoubleTap(motherVideo, triggerMotherEffect);
 
-
-  // --- 2. QR CODE CONFIGURATION ---
   const qrImg = document.getElementById('qrImg');
   const qrVideo = document.getElementById('qrVideo');
 
@@ -1311,19 +1589,16 @@ function closeAnime() { animeVideo.innerHTML = ""; animePlayer.style.display = '
 
   qrVideo.onended = restoreQrStatic;
 
-  // Bind double tap listeners to both elements so it handles interrupts flawlessly
   configureDoubleTap(qrImg, triggerQrEffect);
   configureDoubleTap(qrVideo, triggerQrEffect);
 })();
 
-// Simple Footer Toggle Controller
 function toggleOshoText() {
   const infoBlock = document.getElementById('oshoInfoBlock');
   const toggleBtn = document.getElementById('oshoToggleBtn');
   const fontBlock = document.getElementById('fontPlayInfoBlock');
   const fontBtn = document.getElementById('fontPlayToggleBtn');
 
-  // Close Font Play block if open
   fontBlock.style.display = 'none';
   fontBtn.textContent = 'Font Play';
   fontBtn.classList.remove('back-mode');
@@ -1345,7 +1620,6 @@ function toggleFontPlayText() {
   const infoBlock = document.getElementById('oshoInfoBlock');
   const toggleBtn = document.getElementById('oshoToggleBtn');
 
-  // Close Osho block if open
   infoBlock.style.display = 'none';
   toggleBtn.textContent = 'About';
   toggleBtn.classList.remove('back-mode');
@@ -1361,7 +1635,6 @@ function toggleFontPlayText() {
   }
 }
 
-// Dynamic Font Switching Logic
 function applyCustomFont(fontName, fontUrl) {
   let fontStyle = document.getElementById('dynamicCustomFont');
   if (!fontStyle) {
@@ -1381,7 +1654,6 @@ function applyCustomFont(fontName, fontUrl) {
   `;
 }
 
-// User File Upload Font Reader
 function handleFontUpload(event) {
   const file = event.target.files[0];
   if (!file) return;

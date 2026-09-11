@@ -51,8 +51,8 @@
 
     <style>
         :root {
-            --primary: #6366f1;
-            --card-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --primary: #f43f5e;
+            --card-bg: #f43f5e;
             --text-main: #ffffff;
         }
 
@@ -76,34 +76,44 @@
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             width: 100%;
         }
 
         .header h1 {
             font-size: 2.5rem;
-            background: linear-gradient(to right, #818cf8, #c084fc);
+            background: linear-gradient(to right, #fb7185, var(--card-bg));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
             margin-bottom: 15px;
+            transition: background 0.3s ease;
         }
 
+        /* Container for all 4 navigation buttons left to right */
         .maker-btn-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
+            max-width: 650px;
+            margin: 0 auto 30px auto;
+            position: relative;
+            z-index: 210;
+        }
+
+        .custom-dropdown-wrapper {
+            position: relative;
+            display: inline-flex;
+            flex: 1;
         }
 
         .maker-nav-btn {
-            flex: 1;
+            width: 100%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 20px;
+            padding: 12px 15px;
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
             font-size: 0.95rem;
@@ -114,18 +124,84 @@
             border-radius: 12px;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .maker-nav-btn:hover {
-            background: var(--primary);
+            background: var(--card-bg);
             border-color: transparent;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 15px rgba(244, 63, 94, 0.4);
         }
 
         .maker-nav-btn:active {
             transform: translateY(0);
         }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) scaleY(0);
+            transform-origin: top;
+            background: rgba(30, 41, 59, 0.96);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 10px;
+            min-width: 160px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            z-index: 200;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .dropdown-menu.open {
+            transform: translateX(-50%) scaleY(1);
+            pointer-events: auto;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .dropdown-menu a {
+            color: #f1f5f9;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            transition: all 0.25s ease;
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdown-menu a:hover {
+            background: var(--card-bg);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(3px);
+            z-index: 150;
+            display: none;
+        }
+
+        .menu-overlay.active { display: block; }
 
         .main-layout {
             display: flex;
@@ -144,6 +220,7 @@
             width: 350px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             border: 1px solid #334155;
+            position: relative;
         }
 
         .input-group {
@@ -171,27 +248,190 @@
         }
 
         input[type="text"]:focus {
-            border-color: var(--primary);
+            border-color: var(--card-bg);
         }
 
-        .theme-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        /* Side-by-side Color Pickers Container */
+        .color-pickers-container {
+            display: flex;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        .theme-btn {
-            height: 40px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: 0.2s;
+        .color-picker-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #334155;
+            position: relative;
         }
 
-        .theme-btn.active {
-            border-color: white;
-            transform: scale(1.1);
+        .color-picker-column span {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .color-picker-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-color-btn {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+        }
+
+        .custom-color-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .color-swatch-inner {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        /* Interactive Color Wheel Popup centered directly above the picker wrapper column */
+        .color-wheel-popup {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 16px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.98);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 12px;
+            z-index: 300;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 190px;
+        }
+
+        .wheel-top-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 2px;
+            gap: 4px;
+        }
+
+        .wheel-shortcut-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 6px;
+            cursor: pointer;
+            flex: 1;
+            margin-bottom: 0;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .wheel-shortcut-btn:hover {
+            background: #555;
+        }
+
+        .color-wheel-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            cursor: crosshair;
+        }
+
+        .color-wheel-canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: none;
+        }
+
+        .wheel-info-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            font-size: 10px;
+            font-family: monospace;
+            color: #ddd;
+            padding: 2px 4px;
+            gap: 4px;
+        }
+
+        .wheel-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 4px;
+        }
+
+        .wheel-hex-input {
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            width: 75px;
+            text-align: center;
+            outline: none;
+        }
+
+        .wheel-hex-input:focus {
+            border-color: #f43f5e;
+        }
+
+        .wheel-color-name {
+            font-size: 10px;
+            color: #94a3b8;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
         .upload-btn {
@@ -246,7 +486,7 @@
             right: -2px;
             bottom: -2px;
             background: linear-gradient(45deg, 
-                #ffffff, #60a5fa, #ffffff, #3b82f6, #ffffff, #2563eb, #ffffff);
+                #ffffff, #f43f5e, #ffffff, #e11d48, #ffffff, #be123c, #ffffff);
             background-size: 400%;
             border-radius: 14px;
             filter: blur(8px);
@@ -278,147 +518,10 @@
             transition: transform 0.2s;
         }
 
-        .hamburger-nav-wrapper {
-            margin-top: -5px;
-            margin-bottom: -5px;
-            text-align: center;
-        }
-
-        .hamburger-nav {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #3a415d, #4b5378, #5a6288);
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,.10);
-            box-shadow: 0 0 14px rgba(0,180,255,.20), 0 0 30px rgba(127,92,255,.16);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            padding: 14px 34px;
-            min-width: 140px;
-        }
-
-        .hamburger-nav:hover {
-            transform: scale(1.04);
-        }
-
-        .ham-btn-text {
-            position: relative;
-            z-index: 5;
-            font-family: 'Quicksand', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 1px;
-        }
-
-        .ham-wave {
-            position: absolute;
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            filter: blur(10px);
-            opacity: .6;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .ham-left-wave {
-            left: -70px;
-            background: radial-gradient(circle, rgba(0,229,255,.9), transparent 70%);
-            animation: hamLeftFlow 4s ease-in-out infinite;
-        }
-
-        .ham-right-wave {
-            right: -70px;
-            background: radial-gradient(circle, rgba(127,92,255,.9), transparent 70%);
-            animation: hamRightFlow 4s ease-in-out infinite;
-        }
-
-        @keyframes hamLeftFlow {
-            0% { transform: translateX(0) scale(1); }
-            50% { transform: translateX(85px) scale(1.25); }
-            100% { transform: translateX(0) scale(1); }
-        }
-
-        @keyframes hamRightFlow {
-            0% { transform: translateX(0) scale(1); }
-            50% { transform: translateX(-85px) scale(1.25); }
-            100% { transform: translateX(0) scale(1); }
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%) scaleY(0);
-            transform-origin: top;
-            background: rgba(30, 41, 59, 0.96);
-            backdrop-filter: blur(16px);
-            border-radius: 24px;
-            padding: 12px 8px;
-            min-width: 220px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.15);
-            transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            z-index: 200;
-            pointer-events: none;
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .dropdown-menu.open {
-            transform: translateX(-50%) scaleY(1);
-            pointer-events: auto;
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .dropdown-menu a {
-            color: #f1f5f9;
-            text-decoration: none;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            padding: 12px 20px;
-            border-radius: 40px;
-            background: rgba(255,255,255,0.05);
-            transition: all 0.25s ease;
-            text-align: center;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-            backdrop-filter: blur(4px);
-        }
-
-        .dropdown-menu a:hover {
-            background: rgba(99, 102, 241, 0.7);
-            color: white;
-            transform: translateX(5px);
-        }
-
-        .menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(3px);
-            z-index: 150;
-            display: none;
-        }
-
-        .menu-overlay.active { display: block; }
-
         @media (max-width: 700px) {
-            .dropdown-menu { min-width: 190px; }
-            .ham-btn-text { font-size: 18px; }
-            .hamburger-nav { padding: 12px 28px; }
-            .maker-btn-container { max-width: 90vw; padding: 0 10px; }
+            .maker-btn-container { max-width: 95vw; gap: 8px; padding: 0 5px; }
+            .maker-nav-btn { font-size: 0.8rem; padding: 10px 8px; }
+            .dropdown-menu { min-width: 140px; }
         }
 
         .card-canvas {
@@ -452,7 +555,7 @@
             text-transform: uppercase;
             letter-spacing: 4px;
             margin-bottom: 10px;
-            color: rgba(255,255,255,0.9);
+            color: var(--text-color-main, #ffffff);
         }
 
         .photo-frame {
@@ -472,14 +575,14 @@
             font-size: 1.2rem;
             font-style: italic;
             margin-top: 10px;
-            opacity: 0.8;
+            color: var(--text-color-main, #ffffff);
         }
 
         .name-text {
             font-family: 'Dancing Script', cursive;
             font-size: 3.5rem;
             margin-top: -10px;
-            color: #fff;
+            color: var(--text-color-main, #ffffff);
             text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
         }
 
@@ -488,7 +591,7 @@
             bottom: 20px;
             font-size: 0.8rem;
             letter-spacing: 2px;
-            opacity: 0.6;
+            color: var(--text-color-main, #ffffff);
         }
 
         @media (max-width: 850px) {
@@ -511,11 +614,40 @@
 
     <div class="header">
         <h1>GIFT CARD MAKER</h1>
+        
+        <!-- Four Top Navigation Buttons Arranged Left to Right matching the Original Style -->
         <div class="maker-btn-container">
-            <a href="Tools.html" class="maker-nav-btn">Tools</a>
-            <a href="Fun.html" class="maker-nav-btn">Fun</a>
+            <!-- Games Button (behaves like menu dropdown) -->
+            <div class="custom-dropdown-wrapper">
+                <button type="button" class="maker-nav-btn dropdown-trigger" data-target="gamesDropdown">Games ▾</button>
+                <div class="dropdown-menu" id="gamesDropdown">
+                    <a href="game1.html">Board</a>
+                    <a href="game2.html">Casino</a>
+                    <a href="game3.html">Gta</a>
+                </div>
+            </div>
+
+            <!-- Idea Button (behaves like menu dropdown) -->
+            <div class="custom-dropdown-wrapper">
+                <button type="button" class="maker-nav-btn dropdown-trigger" data-target="ideaDropdown">Idea ▾</button>
+                <div class="dropdown-menu" id="ideaDropdown">
+                    <a href="MothersDay.html">Mday</a>
+                    <a href="index.html">Bday</a>
+                </div>
+            </div>
+
+            <!-- Fun Button -->
+            <div class="custom-dropdown-wrapper">
+                <a href="Fun.html" class="maker-nav-btn">Fun</a>
+            </div>
+
+            <!-- Tools Button -->
+            <div class="custom-dropdown-wrapper">
+                <a href="Tools.html" class="maker-nav-btn">Tools</a>
+            </div>
         </div>
     </div>
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <div class="main-layout">
 
@@ -531,15 +663,71 @@
                 <input type="text" id="inputOccasion" placeholder="e.g. Happy Birthday" maxlength="25">
             </div>
 
-            <label>Choose Card Theme</label>
+            <!-- Side-by-side Color Pickers Container -->
+            <div class="color-pickers-container">
+                <!-- Background Color Column -->
+                <div class="color-picker-column">
+                    <div class="color-picker-wrapper" title="Background Color">
+                        <div id="bg-color-btn" class="custom-color-btn">
+                            <div id="bg-color-preview" class="color-swatch-inner" style="background-color: #f43f5e;"></div>
+                        </div>
 
-            <div class="theme-selector">
-                <div class="theme-btn active" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-theme="neon"></div>
-                <div class="theme-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" data-theme="gold"></div>
-                <div class="theme-btn" style="background: linear-gradient(135deg, #ec4899, #be185d);" data-theme="rose"></div>
-                <div class="theme-btn" style="background: linear-gradient(135deg, #10b981, #059669);" data-theme="emerald"></div>
-                <div class="theme-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b);" data-theme="crimson"></div>
-                <div class="theme-btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2);" data-theme="ocean"></div>
+                        <!-- Background Color Wheel Popup positioned directly over the individual picker button -->
+                        <div id="bg-color-wheel-popup" class="color-wheel-popup">
+                          <div class="wheel-top-actions">
+                            <button type="button" id="bg-wheel-btn-black" class="wheel-shortcut-btn">BL</button>
+                            <button type="button" id="bg-wheel-btn-edit" class="wheel-shortcut-btn">Edit</button>
+                            <button type="button" id="bg-wheel-btn-white" class="wheel-shortcut-btn">WH</button>
+                            <!-- Hidden native color input for normal color editor -->
+                            <input type="color" id="bg-native-color-picker" style="display:none;" value="#F43F5E">
+                          </div>
+                          <div class="color-wheel-container" id="bg-color-wheel-wrapper">
+                            <canvas class="color-wheel-canvas" width="160" height="160"></canvas>
+                            <div class="wheel-pointer"></div>
+                          </div>
+                          <div class="wheel-info-bar">
+                            <div class="wheel-row">
+                                <input type="text" id="bg-wheel-hex-input" class="wheel-hex-input" value="#F43F5E" maxlength="7">
+                                <span style="font-size:9px; color:#aaa;">HEX</span>
+                            </div>
+                            <div id="bg-color-name" class="wheel-color-name">Sunset Rose</div>
+                          </div>
+                        </div>
+                    </div>
+                    <span>background</span>
+                </div>
+
+                <!-- Text Color Column -->
+                <div class="color-picker-column">
+                    <div class="color-picker-wrapper" title="Text Color">
+                        <div id="text-color-btn" class="custom-color-btn">
+                            <div id="text-color-preview" class="color-swatch-inner" style="background-color: #ffffff;"></div>
+                        </div>
+
+                        <!-- Text Color Wheel Popup positioned directly over the individual picker button -->
+                        <div id="text-color-wheel-popup" class="color-wheel-popup">
+                          <div class="wheel-top-actions">
+                            <button type="button" id="text-wheel-btn-black" class="wheel-shortcut-btn">BL</button>
+                            <button type="button" id="text-wheel-btn-edit" class="wheel-shortcut-btn">Edit</button>
+                            <button type="button" id="text-wheel-btn-white" class="wheel-shortcut-btn">WH</button>
+                            <!-- Hidden native color input for normal color editor -->
+                            <input type="color" id="text-native-color-picker" style="display:none;" value="#FFFFFF">
+                          </div>
+                          <div class="color-wheel-container" id="text-color-wheel-wrapper">
+                            <canvas class="color-wheel-canvas" width="160" height="160"></canvas>
+                            <div class="wheel-pointer"></div>
+                          </div>
+                          <div class="wheel-info-bar">
+                            <div class="wheel-row">
+                                <input type="text" id="text-wheel-hex-input" class="wheel-hex-input" value="#FFFFFF" maxlength="7">
+                                <span style="font-size:9px; color:#aaa;">HEX</span>
+                            </div>
+                            <div id="text-color-name" class="wheel-color-name">Pure White</div>
+                          </div>
+                        </div>
+                    </div>
+                    <span>text</span>
+                </div>
             </div>
 
             <label for="fileUpload" class="upload-btn">📸 UPLOAD PHOTO</label>
@@ -556,24 +744,8 @@
 
         </div>
         
-        <div class="hamburger-nav-wrapper">
-            <div class="hamburger-nav" id="hamburgerMenuBtn">
-                <div class="ham-wave ham-left-wave"></div>
-                <div class="ham-wave ham-right-wave"></div>
-                <span class="ham-btn-text">☰ MENU</span>
-            </div>
-            <div class="dropdown-menu" id="dropdownMenu">
-                <a href="game1.html">🧩 Board</a>
-                <a href="game2.html">🎲 Casino</a>
-                <a href="game3.html">🕹️ GTA</a>
-                <a href="index.html">🏠 B Day</a>
-                <a href="MothersDay.html">🌸 M Day</a>
-            </div>
-        </div>
-        <div class="menu-overlay" id="menuOverlay"></div>
-        
         <div id="giftCardArea">
-            <div class="card-canvas" id="captureTarget">
+            <div class="card-canvas" id="captureTarget" style="background: #f43f5e;">
                 <div class="occasion-text" id="displayOccasion">
                     HAPPY BIRTHDAY
                 </div>
@@ -613,7 +785,6 @@
         const fileUpload = document.getElementById('fileUpload');
         const displayPhoto = document.getElementById('displayPhoto');
         const downloadBtn = document.getElementById('downloadBtn');
-        const themeBtns = document.querySelectorAll('.theme-btn');
         const captureTarget = document.getElementById('captureTarget');
         const installBtn = document.getElementById('installBtn');
 
@@ -625,12 +796,278 @@
             displayOccasion.innerText = inputOccasion.value || "THE OCCASION";
         });
 
-        themeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                themeBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                captureTarget.style.background = btn.style.background;
-            });
+        // Simple approximate color name mapping function
+        function getColorName(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length !== 6) return "Custom Color";
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+
+            // Basic checks for black/white/grays
+            if (r < 20 && g < 20 && b < 20) return "Absolute Black";
+            if (r > 235 && g > 235 && b > 235) return "Pure White";
+            if (Math.abs(r - g) < 15 && Math.abs(g - b) < 15) {
+                if (r > 180) return "Light Silver";
+                if (r > 100) return "Cool Gray";
+                return "Dark Charcoal";
+            }
+
+            // Dominant color checks
+            if (r > g && r > b) {
+                if (g > 150 && b < 100) return "Golden Yellow";
+                if (g > 100) return "Coral Peach";
+                if (b > 120) return "Deep Magenta";
+                return "Crimson Red";
+            } else if (g > r && g > b) {
+                if (r > 120) return "Lime Chartreuse";
+                if (b > 120) return "Emerald Teal";
+                return "Vibrant Green";
+            } else if (b > r && b > g) {
+                if (r > 120) return "Royal Purple";
+                if (g > 150) return "Cyan Blue";
+                return "Midnight Blue";
+            }
+            return "Custom Hue";
+        }
+
+        // Reusable Color Wheel Setup Function
+        function setupColorWheel(canvasElement) {
+            const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
+            const radius = canvasElement.width / 2;
+            const imgData = ctx.createImageData(canvasElement.width, canvasElement.height);
+            const data = imgData.data;
+
+            for (let y = 0; y < canvasElement.height; y++) {
+                for (let x = 0; x < canvasElement.width; x++) {
+                    const dx = x - radius;
+                    const dy = y - radius;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const index = (y * canvasElement.width + x) * 4;
+
+                    if (dist <= radius) {
+                        const angle = Math.atan2(dy, dx);
+                        let hue = (angle * 180 / Math.PI + 360) % 360;
+                        let sat = dist / radius;
+                        let light = 0.5;
+
+                        let c = (1 - Math.abs(2 * light - 1)) * sat;
+                        let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
+                        let m = light - c / 2;
+                        let r = 0, g = 0, b = 0;
+
+                        if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
+                        else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
+                        else if (120 <= hue && hue < 180) { r = 0; g = c; b = xVal; }
+                        else if (180 <= hue && hue < 240) { r = 0; g = xVal; b = c; }
+                        else if (240 <= hue && hue < 300) { r = xVal; g = 0; b = c; }
+                        else if (300 <= hue && hue < 360) { r = c; g = 0; b = xVal; }
+
+                        data[index] = Math.round((r + m) * 255);
+                        data[index + 1] = Math.round((g + m) * 255);
+                        data[index + 2] = Math.round((b + m) * 255);
+                        data[index + 3] = 255;
+                    } else {
+                        data[index + 3] = 0;
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+
+        // Initialize Background Wheel
+        const bgPopup = document.getElementById('bg-color-wheel-popup');
+        const bgWrapper = document.getElementById('bg-color-wheel-wrapper');
+        const bgCanvas = bgWrapper.querySelector('.color-wheel-canvas');
+        const bgPointer = bgWrapper.querySelector('.wheel-pointer');
+        const bgHexInput = document.getElementById('bg-wheel-hex-input');
+        const bgNameDisplay = document.getElementById('bg-color-name');
+        const bgPreview = document.getElementById('bg-color-preview');
+        const bgNativePicker = document.getElementById('bg-native-color-picker');
+        setupColorWheel(bgCanvas);
+
+        function updateBgPointer(x, y) {
+            const radius = bgCanvas.width / 2;
+            const dx = x - radius;
+            const dy = y - radius;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            let px = x, py = y;
+            if (dist > radius) {
+                px = radius + (dx / dist) * radius;
+                py = radius + (dy / dist) * radius;
+            }
+            bgPointer.style.left = px + 'px';
+            bgPointer.style.top = py + 'px';
+            bgPointer.style.display = 'block';
+            return { x: px, y: py };
+        }
+
+        function applyBgColor(hex) {
+            bgHexInput.value = hex;
+            bgNameDisplay.innerText = getColorName(hex);
+            bgPreview.style.backgroundColor = hex;
+            captureTarget.style.background = hex;
+            document.documentElement.style.setProperty('--card-bg', hex);
+            bgNativePicker.value = hex;
+        }
+
+        function pickBgColor(e) {
+            const rect = bgCanvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if (clientX === undefined || clientY === undefined) return;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const constrained = updateBgPointer(x, y);
+            const ctx = bgCanvas.getContext('2d', { willReadFrequently: true });
+            const pixel = ctx.getImageData(Math.floor(constrained.x), Math.floor(constrained.y), 1, 1).data;
+            if (pixel[3] > 0) {
+                applyBgColor(rgbToHex(pixel[0], pixel[1], pixel[2]));
+            }
+        }
+
+        document.getElementById('bg-wheel-btn-black').addEventListener('click', (e) => { e.stopPropagation(); applyBgColor('#000000'); });
+        document.getElementById('bg-wheel-btn-white').addEventListener('click', (e) => { e.stopPropagation(); applyBgColor('#FFFFFF'); });
+        document.getElementById('bg-wheel-btn-edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            bgNativePicker.click();
+        });
+        bgNativePicker.addEventListener('input', (e) => {
+            applyBgColor(e.target.value.toUpperCase());
+        });
+
+        bgHexInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) {
+                val = '#' + val;
+            }
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                applyBgColor(val.toUpperCase());
+            }
+        });
+        bgHexInput.addEventListener('click', (e) => { e.stopPropagation(); });
+
+        let isBgSelecting = false;
+        bgWrapper.addEventListener('mousedown', (e) => { isBgSelecting = true; pickBgColor(e); });
+        window.addEventListener('mousemove', (e) => { if (isBgSelecting) pickBgColor(e); });
+        window.addEventListener('mouseup', () => { isBgSelecting = false; });
+        bgWrapper.addEventListener('touchstart', (e) => { isBgSelecting = true; pickBgColor(e); }, { passive: true });
+        window.addEventListener('touchmove', (e) => { if (isBgSelecting) pickBgColor(e); }, { passive: true });
+        window.addEventListener('touchend', () => { isBgSelecting = false; });
+
+        document.getElementById('bg-color-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('text-color-wheel-popup').style.display = 'none';
+            bgPopup.style.display = bgPopup.style.display === 'flex' ? 'none' : 'flex';
+            if (bgPopup.style.display === 'flex') {
+                bgPointer.style.left = '80px';
+                bgPointer.style.top = '80px';
+                bgPointer.style.display = 'block';
+            }
+        });
+
+        // Initialize Text Wheel
+        const textPopup = document.getElementById('text-color-wheel-popup');
+        const textWrapper = document.getElementById('text-color-wheel-wrapper');
+        const textCanvas = textWrapper.querySelector('.color-wheel-canvas');
+        const textPointer = textWrapper.querySelector('.wheel-pointer');
+        const textHexInput = document.getElementById('text-wheel-hex-input');
+        const textNameDisplay = document.getElementById('text-color-name');
+        const textPreview = document.getElementById('text-color-preview');
+        const textNativePicker = document.getElementById('text-native-color-picker');
+        setupColorWheel(textCanvas);
+
+        function updateTextPointer(x, y) {
+            const radius = textCanvas.width / 2;
+            const dx = x - radius;
+            const dy = y - radius;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            let px = x, py = y;
+            if (dist > radius) {
+                px = radius + (dx / dist) * radius;
+                py = radius + (dy / dist) * radius;
+            }
+            textPointer.style.left = px + 'px';
+            textPointer.style.top = py + 'px';
+            textPointer.style.display = 'block';
+            return { x: px, y: py };
+        }
+
+        function applyTextColor(hex) {
+            textHexInput.value = hex;
+            textNameDisplay.innerText = getColorName(hex);
+            textPreview.style.backgroundColor = hex;
+            captureTarget.style.setProperty('--text-color-main', hex);
+            textNativePicker.value = hex;
+        }
+
+        function pickTextColor(e) {
+            const rect = textCanvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if (clientX === undefined || clientY === undefined) return;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const constrained = updateTextPointer(x, y);
+            const ctx = textCanvas.getContext('2d', { willReadFrequently: true });
+            const pixel = ctx.getImageData(Math.floor(constrained.x), Math.floor(constrained.y), 1, 1).data;
+            if (pixel[3] > 0) {
+                applyTextColor(rgbToHex(pixel[0], pixel[1], pixel[2]));
+            }
+        }
+
+        document.getElementById('text-wheel-btn-black').addEventListener('click', (e) => { e.stopPropagation(); applyTextColor('#000000'); });
+        document.getElementById('text-wheel-btn-white').addEventListener('click', (e) => { e.stopPropagation(); applyTextColor('#FFFFFF'); });
+        document.getElementById('text-wheel-btn-edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            textNativePicker.click();
+        });
+        textNativePicker.addEventListener('input', (e) => {
+            applyTextColor(e.target.value.toUpperCase());
+        });
+
+        textHexInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (!val.startsWith('#')) {
+                val = '#' + val;
+            }
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                applyTextColor(val.toUpperCase());
+            }
+        });
+        textHexInput.addEventListener('click', (e) => { e.stopPropagation(); });
+
+        let isTextSelecting = false;
+        textWrapper.addEventListener('mousedown', (e) => { isTextSelecting = true; pickTextColor(e); });
+        window.addEventListener('mousemove', (e) => { if (isTextSelecting) pickTextColor(e); });
+        window.addEventListener('mouseup', () => { isTextSelecting = false; });
+        textWrapper.addEventListener('touchstart', (e) => { isTextSelecting = true; pickTextColor(e); }, { passive: true });
+        window.addEventListener('touchmove', (e) => { if (isTextSelecting) pickTextColor(e); }, { passive: true });
+        window.addEventListener('touchend', () => { isTextSelecting = false; });
+
+        document.getElementById('text-color-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            bgPopup.style.display = 'none';
+            textPopup.style.display = textPopup.style.display === 'flex' ? 'none' : 'flex';
+            if (textPopup.style.display === 'flex') {
+                textPointer.style.left = '80px';
+                textPointer.style.top = '80px';
+                textPointer.style.display = 'block';
+            }
+        });
+
+        // Close popups on outside click
+        document.addEventListener('click', (e) => {
+            if (!bgPopup.contains(e.target) && !document.getElementById('bg-color-btn').contains(e.target)) {
+                bgPopup.style.display = 'none';
+            }
+            if (!textPopup.contains(e.target) && !document.getElementById('text-color-btn').contains(e.target)) {
+                textPopup.style.display = 'none';
+            }
         });
 
         fileUpload.addEventListener('change', function() {
@@ -675,14 +1112,15 @@
         downloadBtn.addEventListener('click', () => {
             downloadBtn.innerText = "Generating...";
             html2canvas(captureTarget, {
-                scale: 2,
+                scale: 3,
                 useCORS: true,
-                backgroundColor: null
+                backgroundColor: null,
+                logging: false
             })
             .then(canvas => {
                 const link = document.createElement('a');
                 link.download = `GiftCard_${displayName.innerText}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
                 downloadBtn.innerText = "✨ DOWNLOAD GIFT CARD";
             })
@@ -720,60 +1158,53 @@ Click install icon in address bar`
             }
         });
 
-        const hamburgerBtn = document.getElementById('hamburgerMenuBtn');
-        const dropdown = document.getElementById('dropdownMenu');
+        // Multi-dropdown behavior logic for Games and Idea buttons
+        const dropdownTriggers = document.querySelectorAll('.dropdown-trigger');
         const overlay = document.getElementById('menuOverlay');
-        
-        function closeMenu() {
-            if (dropdown.classList.contains('open')) {
-                dropdown.classList.remove('open');
-                overlay.classList.remove('active');
-            }
-        }
-        
-        function toggleMenu(e) {
-            e.stopPropagation();
-            if (dropdown.classList.contains('open')) {
-                dropdown.classList.remove('open');
-                overlay.classList.remove('active');
-            } else {
-                dropdown.classList.add('open');
-                overlay.classList.add('active');
-            }
-        }
-        
-        if (hamburgerBtn) {
-            hamburgerBtn.addEventListener('click', toggleMenu);
-        }
-        
-        if (overlay) {
-            overlay.addEventListener('click', closeMenu);
-        }
-        
-        const menuLinks = document.querySelectorAll('.dropdown-menu a');
-        menuLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                closeMenu();
+
+        function closeAllMenus() {
+            document.querySelectorAll('.dropdown-menu.open').forEach(menu => {
+                menu.classList.remove('open');
             });
-        });
-        
-        if (dropdown) {
-            dropdown.addEventListener('click', function(e) {
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        dropdownTriggers.forEach(trigger => {
+            const targetId = trigger.getAttribute('data-target');
+            const dropdown = document.getElementById(targetId);
+
+            trigger.addEventListener('click', function(e) {
                 e.stopPropagation();
+                const isOpen = dropdown.classList.contains('open');
+                closeAllMenus();
+                if (!isOpen) {
+                    dropdown.classList.add('open');
+                    if (overlay) overlay.classList.add('active');
+                }
             });
-        }
-        
-        window.addEventListener('resize', function() {
-            if (dropdown && dropdown.classList.contains('open')) {
-                closeMenu();
+
+            if (dropdown) {
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
             }
         });
-        
+
+        if (overlay) {
+            overlay.addEventListener('click', closeAllMenus);
+        }
+
+        document.querySelectorAll('.dropdown-menu a').forEach(link => {
+            link.addEventListener('click', function() {
+                closeAllMenus();
+            });
+        });
+
+        window.addEventListener('resize', closeAllMenus);
+
         document.addEventListener('click', function(event) {
-            if (dropdown && dropdown.classList.contains('open')) {
-                if (!hamburgerBtn.contains(event.target) && !dropdown.contains(event.target)) {
-                    closeMenu();
-                }
+            if (!event.target.closest('.custom-dropdown-wrapper')) {
+                closeAllMenus();
             }
         });
     </script>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PPT Maker Pro</title>
+    <title>Project Maker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Lobster&family=Montserrat:wght@400;500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Sacramento&family=Parisienne&family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -55,17 +55,140 @@
         .thumb { width: 60px; height: 40px; background: #ddd; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
         .active-thumb { border: 2px solid #4f46e5; }
         
-        .tool-panel { flex: 1; min-width: 300px; background: white; padding: 24px; border-radius: 20px; }
+        .tool-panel { flex: 1; min-width: 300px; background: white; padding: 24px; border-radius: 20px; position: relative; }
         input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; }
         button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; width: 100%; }
-        
-        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; }
-        .theme-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
         
         #imageInput, #fontFileInput { display: none; }
 
         .btn-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
         .btn-row button, .btn-row select { margin-bottom: 0; width: 50%; }
+
+        /* Customized Color Picker Controls & Wheels */
+        .color-picker-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .color-picker-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .custom-color-btn {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+        }
+
+        .custom-color-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .color-swatch-inner {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        /* Interactive Color Wheel Popup */
+        #color-wheel-popup {
+            display: none;
+            position: absolute;
+            bottom: 140px;
+            left: 24px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wheel-top-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .wheel-shortcut-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 8px;
+            cursor: pointer;
+            width: auto;
+            margin-bottom: 0;
+            transition: background 0.2s;
+        }
+
+        .wheel-shortcut-btn:hover {
+            background: #555;
+        }
+
+        .color-wheel-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            cursor: crosshair;
+        }
+
+        #color-wheel-canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        #wheel-pointer {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: none;
+        }
+
+        .wheel-info-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 11px;
+            font-family: monospace;
+            color: #ddd;
+            padding: 2px 4px;
+        }
 
         /* Style for the Image PDF Maker panel at the bottom */
         .pdf-maker-panel { width: 100%; max-width: 1200px; margin: 40px auto 0 auto; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
@@ -229,8 +352,10 @@
         
         <div class="btn-row">
             <button onclick="openSizeModal()" style="background:#4b5563; color:white;"><i class="fas fa-expand"></i> Size (<span id="sizeDisplay">960x540</span>)</button>
-            <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;">Upload Image</button>
+            <button onclick="openTextSizeModal()" style="background:#0284c7; color:white;"><i class="fas fa-text-height"></i> Text Size (<span id="textSizeDisplay">28/14pt</span>)</button>
         </div>
+
+        <button onclick="document.getElementById('imageInput').click()" style="background:#6366f1; color:white;"><i class="fas fa-image"></i> Upload Image</button>
         <input type="file" id="imageInput" accept="image/*,.heic,.heif">
         
         <p style="font-weight:bold; font-size: 14px; margin-bottom: 6px;">Font</p>
@@ -274,8 +399,45 @@
         <button onclick="exportPDF()" style="background:#b91c1c; color:white;">Download PDF</button>
         <button onclick="exportPPTX()" style="background:#2d6a4f; color:white;">Download PPTX</button>
 
-        <p style="margin-top:20px; font-weight:bold; font-size: 14px;">Select Theme:</p>
-        <div class="theme-grid" id="themeGrid"></div>
+        <p style="margin-top:20px; font-weight:bold; font-size: 14px; margin-bottom: 8px;">Slide Colors:</p>
+        <div class="color-picker-row">
+            <div class="color-picker-wrapper" title="Background Color">
+                <div id="bg-color-btn" class="custom-color-btn">
+                    <div id="bg-color-preview" class="color-swatch-inner" style="background-color: #ffffff;"></div>
+                </div>
+                <span style="font-size: 11px; font-weight: bold; color: #475569;">Background</span>
+            </div>
+
+            <div class="color-picker-wrapper" title="Title Color">
+                <div id="title-color-btn" class="custom-color-btn">
+                    <div id="title-color-preview" class="color-swatch-inner" style="background-color: #000000;"></div>
+                </div>
+                <span style="font-size: 11px; font-weight: bold; color: #475569;">Title</span>
+            </div>
+
+            <div class="color-picker-wrapper" title="Text Color">
+                <div id="text-color-btn" class="custom-color-btn">
+                    <div id="text-color-preview" class="color-swatch-inner" style="background-color: #333333;"></div>
+                </div>
+                <span style="font-size: 11px; font-weight: bold; color: #475569;">Text</span>
+            </div>
+        </div>
+
+        <!-- Color Wheel Popup Container -->
+        <div id="color-wheel-popup">
+          <div class="wheel-top-actions">
+            <button type="button" id="wheel-btn-black" class="wheel-shortcut-btn">BL</button>
+            <button type="button" id="wheel-btn-white" class="wheel-shortcut-btn">WH</button>
+          </div>
+          <div class="color-wheel-container" id="color-wheel-wrapper">
+            <canvas id="color-wheel-canvas" width="160" height="160"></canvas>
+            <div id="wheel-pointer"></div>
+          </div>
+          <div class="wheel-info-bar">
+            <span id="wheel-selected-hex">#FFFFFF</span>
+            <span id="wheel-selected-name">White</span>
+          </div>
+        </div>
     </div>
 </div>
 
@@ -294,6 +456,7 @@
     <div class="pdf-thumb-grid" id="pdfThumbGrid"></div>
 </div>
 
+<!-- Modal Popup for Slide Dimensions -->
 <div class="modal-overlay" id="sizeModalOverlay">
     <div class="modal-content">
         <div class="modal-title"><i class="fas fa-ruler-combined"></i> Set Slide Dimensions</div>
@@ -321,29 +484,50 @@
     </div>
 </div>
 
+<!-- Modal Popup for Export Text Sizes -->
+<div class="modal-overlay" id="textSizeModalOverlay">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fas fa-text-height"></i> Set Export Text Sizes</div>
+        <div class="size-inputs-wrapper">
+            <div class="size-field">
+                <label for="modalTitleSizeInput">Title Size</label>
+                <div class="size-input-box">
+                    <input type="number" id="modalTitleSizeInput" placeholder="28" min="8" max="120">
+                    <span>pt</span>
+                </div>
+            </div>
+            <div class="size-separator">/</div>
+            <div class="size-field">
+                <label for="modalTextSizeInput">Text Size</label>
+                <div class="size-input-box">
+                    <input type="number" id="modalTextSizeInput" placeholder="14" min="6" max="72">
+                    <span>pt</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeTextSizeModal()">Cancel</button>
+            <button class="btn-apply" onclick="applyCustomTextSize()">Apply Sizes</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // 10 Themes: Background, Title Color, Text Color
-    const themes = [
-        { bg: "#ffffff", title: "#000000", text: "#333333" },
-        { bg: "#1e293b", title: "#ffffff", text: "#cbd5e1" },
-        { bg: "#fff1f2", title: "#9f1239", text: "#881337" },
-        { bg: "#f0fdf4", title: "#166534", text: "#16a34a" },
-        { bg: "#eff6ff", title: "#1e3a8a", text: "#2563eb" },
-        { bg: "#111827", title: "#fbbf24", text: "#f3f4f6" },
-        { bg: "#fef3c7", title: "#92400e", text: "#d97706" },
-        { bg: "#f5f3ff", title: "#5b21b6", text: "#7c3aed" },
-        { bg: "#1a1a1a", title: "#e5e7eb", text: "#9ca3af" },
-        { bg: "#fef2f2", title: "#991b1b", text: "#b91c1c" }
-    ];
+    // Color State variables (Background, Title, Text)
+    let slideBg = "#ffffff";
+    let slideTitleColor = "#000000";
+    let slideTextColor = "#333333";
+    let activeColorTarget = 'bg'; // 'bg', 'title', or 'text'
 
     let slides = [{ title: "Welcome", description: "Start your presentation.", img: null }];
     let current = 0;
-    let activeThemeIdx = 0;
     let pdfImages = []; // Stores DataURLs for the Image PDF Maker
     
-    // Global dimension settings (in px) - Default set to 960x540
     let slideWidthPx = 960;
     let slideHeightPx = 540;
+    let exportTitleSizePt = 28;
+    let exportTextSizePt = 14;
+
     let currentFont = "Arial";
     let customFontData = null; // Stores Base64 string for uploaded fonts
 
@@ -363,7 +547,6 @@
         "Tangerine": "https://cdn.jsdelivr.net/fontsource/fonts/tangerine@latest/latin-400-normal.ttf"
     };
 
-    // Font family fallbacks and target mapped TTF font family for non-standard web options
     const fontFallbacks = {
         "Arrowlicious": "'Dancing Script', 'Great Vibes', cursive",
         "Berson Dream": "'Playfair Display', 'Georgia', serif",
@@ -388,7 +571,6 @@
         "Endless and Sunshine Olivia": "Great Vibes"
     };
 
-    // Font mapping specifically for PPTX to map web fonts to standard cross-platform desktop system fonts
     const fontToPPTXMap = {
         "Arial": "Arial",
         "Montserrat": "Arial",
@@ -416,18 +598,217 @@
 
     const fetchedFontCache = {};
 
-    function initThemes() {
-        const grid = document.getElementById("themeGrid");
-        themes.forEach((t, i) => {
-            const btn = document.createElement("div");
-            btn.className = "theme-swatch";
-            btn.style.background = t.bg;
-            btn.onclick = () => { activeThemeIdx = i; updateView(); };
-            grid.appendChild(btn);
-        });
+    // --- Color Wheel Implementation ---
+    const colorWheelPopup = document.getElementById('color-wheel-popup');
+    const colorWheelWrapper = document.getElementById('color-wheel-wrapper');
+    const colorWheelCanvas = document.getElementById('color-wheel-canvas');
+    const wheelCtx = colorWheelCanvas.getContext('2d', { willReadFrequently: true });
+    const wheelPointer = document.getElementById('wheel-pointer');
+    const wheelSelectedHex = document.getElementById('wheel-selected-hex');
+    const wheelSelectedName = document.getElementById('wheel-selected-name');
+
+    function renderColorWheel() {
+      const radius = colorWheelCanvas.width / 2;
+      const imgData = wheelCtx.createImageData(colorWheelCanvas.width, colorWheelCanvas.height);
+      const data = imgData.data;
+
+      for (let y = 0; y < colorWheelCanvas.height; y++) {
+        for (let x = 0; x < colorWheelCanvas.width; x++) {
+          const dx = x - radius;
+          const dy = y - radius;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const index = (y * colorWheelCanvas.width + x) * 4;
+
+          if (dist <= radius) {
+            const angle = Math.atan2(dy, dx);
+            let hue = (angle * 180 / Math.PI + 360) % 360;
+            let sat = dist / radius;
+            let light = 0.5;
+
+            let c = (1 - Math.abs(2 * light - 1)) * sat;
+            let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
+            let m = light - c / 2;
+            let r = 0, g = 0, b = 0;
+
+            if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
+            else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
+            else if (120 <= hue && hue < 180) { r = 0; g = c; b = xVal; }
+            else if (180 <= hue && hue < 240) { r = 0; g = xVal; b = c; }
+            else if (240 <= hue && hue < 300) { r = xVal; g = 0; b = c; }
+            else if (300 <= hue && hue < 360) { r = c; g = 0; b = xVal; }
+
+            data[index] = Math.round((r + m) * 255);
+            data[index + 1] = Math.round((g + m) * 255);
+            data[index + 2] = Math.round((b + m) * 255);
+            data[index + 3] = 255;
+          } else {
+            data[index + 3] = 0;
+          }
+        }
+      }
+      wheelCtx.putImageData(imgData, 0, 0);
+    }
+    renderColorWheel();
+
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
     }
 
-    // Modal popup size controls
+    function getColorName(r, g, b) {
+      if (r > 240 && g > 240 && b > 240) return "White";
+      if (r < 15 && g < 15 && b < 15) return "Black";
+      if (r > 200 && g < 50 && b < 50) return "Red";
+      if (r < 50 && g > 200 && b < 50) return "Green";
+      if (r < 50 && g < 50 && b > 200) return "Blue";
+      if (r > 200 && g > 200 && b < 50) return "Yellow";
+      if (r > 200 && g < 50 && b > 200) return "Magenta";
+      if (r < 50 && g > 200 && b > 200) return "Cyan";
+      if (r > 200 && g > 100 && b < 50) return "Orange";
+      if (r > 120 && g < 50 && b > 120) return "Purple";
+      if (r > 150 && g > 150 && b > 150) return "Gray";
+      if (r > 100 && g < 60 && b < 30) return "Brown";
+      
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let d = max - min;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r) h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h = Math.round(h * 60);
+        if (h < 0) h += 360;
+      }
+
+      if (max < 60) return "Dark Gray";
+      if (min > 190) return "Light Gray";
+      
+      if (h < 15 || h >= 345) return "Red";
+      if (h < 45) return "Amber";
+      if (h < 75) return "Yellow";
+      if (h < 105) return "Chartreuse";
+      if (h < 165) return "Green";
+      if (h < 195) return "Spring Green";
+      if (h < 255) return "Cyan/Blue";
+      if (h < 285) return "Indigo/Violet";
+      if (h < 315) return "Purple";
+      return "Rose";
+    }
+
+    function updatePointerPosition(x, y) {
+      const radius = colorWheelCanvas.width / 2;
+      const dx = x - radius;
+      const dy = y - radius;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      let px = x;
+      let py = y;
+
+      if (dist > radius) {
+        px = radius + (dx / dist) * radius;
+        py = radius + (dy / dist) * radius;
+      }
+
+      wheelPointer.style.left = px + 'px';
+      wheelPointer.style.top = py + 'px';
+      wheelPointer.style.display = 'block';
+
+      return { x: px, y: py };
+    }
+
+    function applySelectedColor(hex, name) {
+        wheelSelectedHex.innerText = hex;
+        wheelSelectedName.innerText = name;
+
+        if (activeColorTarget === 'bg') {
+          slideBg = hex;
+          document.getElementById('bg-color-preview').style.backgroundColor = hex;
+        } else if (activeColorTarget === 'title') {
+          slideTitleColor = hex;
+          document.getElementById('title-color-preview').style.backgroundColor = hex;
+        } else if (activeColorTarget === 'text') {
+          slideTextColor = hex;
+          document.getElementById('text-color-preview').style.backgroundColor = hex;
+        }
+        updateView();
+    }
+
+    function pickColorFromWheel(e) {
+      const rect = colorWheelCanvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      if (clientX === undefined || clientY === undefined) return;
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const constrained = updatePointerPosition(x, y);
+
+      let sampleX = Math.min(Math.max(Math.floor(constrained.x), 0), colorWheelCanvas.width - 1);
+      let sampleY = Math.min(Math.max(Math.floor(constrained.y), 0), colorWheelCanvas.height - 1);
+      
+      const pixel = wheelCtx.getImageData(sampleX, sampleY, 1, 1).data;
+      if (pixel[3] > 0) {
+        const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+        const colorName = getColorName(pixel[0], pixel[1], pixel[2]);
+        applySelectedColor(hex, colorName);
+      }
+    }
+
+    // Direct BL and WH shortcut button event handlers
+    document.getElementById('wheel-btn-black').addEventListener('click', (e) => {
+      e.stopPropagation();
+      applySelectedColor('#000000', 'Black');
+    });
+
+    document.getElementById('wheel-btn-white').addEventListener('click', (e) => {
+      e.stopPropagation();
+      applySelectedColor('#FFFFFF', 'White');
+    });
+
+    let isSelectingWheel = false;
+    colorWheelWrapper.addEventListener('mousedown', (e) => { isSelectingWheel = true; pickColorFromWheel(e); });
+    window.addEventListener('mousemove', (e) => { if (isSelectingWheel) pickColorFromWheel(e); });
+    window.addEventListener('mouseup', () => { isSelectingWheel = false; });
+
+    colorWheelWrapper.addEventListener('touchstart', (e) => { isSelectingWheel = true; pickColorFromWheel(e); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { if (isSelectingWheel) pickColorFromWheel(e); }, { passive: true });
+    window.addEventListener('touchend', () => { isSelectingWheel = false; });
+
+    function initPointerForColor(hex) {
+      wheelPointer.style.left = '80px';
+      wheelPointer.style.top = '80px';
+      wheelPointer.style.display = 'block';
+      wheelSelectedHex.innerText = hex;
+      wheelSelectedName.innerText = "Custom";
+    }
+
+    document.getElementById('bg-color-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeColorTarget = 'bg';
+      colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
+      if (colorWheelPopup.style.display === 'flex') initPointerForColor(slideBg);
+    });
+
+    document.getElementById('title-color-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeColorTarget = 'title';
+      colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
+      if (colorWheelPopup.style.display === 'flex') initPointerForColor(slideTitleColor);
+    });
+
+    document.getElementById('text-color-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeColorTarget = 'text';
+      colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
+      if (colorWheelPopup.style.display === 'flex') initPointerForColor(slideTextColor);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!colorWheelPopup.contains(e.target) && !document.getElementById('bg-color-btn').contains(e.target) && !document.getElementById('title-color-btn').contains(e.target) && !document.getElementById('text-color-btn').contains(e.target)) {
+        colorWheelPopup.style.display = 'none';
+      }
+    });
+
+    // Modal popup slide dimension controls
     function openSizeModal() {
         document.getElementById("modalWidthInput").value = slideWidthPx;
         document.getElementById("modalHeightInput").value = slideHeightPx;
@@ -455,7 +836,6 @@
         }
     }
 
-    // Close modal when clicking outer backdrop area
     document.getElementById("sizeModalOverlay").onclick = function(e) {
         if (e.target === this) closeSizeModal();
     };
@@ -463,13 +843,46 @@
     document.getElementById("modalWidthInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomSize(); });
     document.getElementById("modalHeightInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomSize(); });
 
+    // Modal popup export text size controls
+    function openTextSizeModal() {
+        document.getElementById("modalTitleSizeInput").value = exportTitleSizePt;
+        document.getElementById("modalTextSizeInput").value = exportTextSizePt;
+        const overlay = document.getElementById("textSizeModalOverlay");
+        overlay.classList.add("active");
+        setTimeout(() => document.getElementById("modalTitleSizeInput").focus(), 150);
+    }
+
+    function closeTextSizeModal() {
+        document.getElementById("textSizeModalOverlay").classList.remove("active");
+    }
+
+    function applyCustomTextSize() {
+        const tSize = parseFloat(document.getElementById("modalTitleSizeInput").value);
+        const dSize = parseFloat(document.getElementById("modalTextSizeInput").value);
+
+        if (!isNaN(tSize) && tSize > 0 && !isNaN(dSize) && dSize > 0) {
+            exportTitleSizePt = tSize;
+            exportTextSizePt = dSize;
+            document.getElementById("textSizeDisplay").innerText = `${exportTitleSizePt}/${exportTextSizePt}pt`;
+            closeTextSizeModal();
+        } else {
+            alert("Please enter valid positive font sizes.");
+        }
+    }
+
+    document.getElementById("textSizeModalOverlay").onclick = function(e) {
+        if (e.target === this) closeTextSizeModal();
+    };
+
+    document.getElementById("modalTitleSizeInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomTextSize(); });
+    document.getElementById("modalTextSizeInput").addEventListener("keyup", (e) => { if (e.key === "Enter") applyCustomTextSize(); });
+
     function applyFont(fontName) {
         currentFont = fontName;
         const fallback = fontFallbacks[fontName] || "sans-serif";
         document.getElementById("slideDisplay").style.fontFamily = `'${fontName}', ${fallback}`;
     }
 
-    // Process custom font uploads (.ttf, .otf, .woff, .woff2)
     document.getElementById("fontFileInput").onchange = function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -515,16 +928,15 @@
     }
 
     function updateView() {
-        const theme = themes[activeThemeIdx];
         const display = document.getElementById("slideDisplay");
-        display.style.background = theme.bg;
+        display.style.background = slideBg;
         
         const fallback = fontFallbacks[currentFont] || "sans-serif";
         display.style.fontFamily = `'${currentFont}', ${fallback}`;
         display.style.aspectRatio = `${slideWidthPx} / ${slideHeightPx}`;
 
-        document.getElementById("dTitle").style.color = theme.title;
-        document.getElementById("dDesc").style.color = theme.text;
+        document.getElementById("dTitle").style.color = slideTitleColor;
+        document.getElementById("dDesc").style.color = slideTextColor;
         
         document.getElementById("dTitle").innerText = slides[current].title;
         document.getElementById("dDesc").innerText = slides[current].description;
@@ -596,7 +1008,6 @@
         }
     }
 
-    // Renders text lines with word wrapping onto a HTML5 canvas context
     function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
         const words = text.split(' ');
         let line = '';
@@ -618,17 +1029,15 @@
         return currentY + lineHeight;
     }
 
-    // Helper: High quality canvas rendering for flat PDF export when custom font is active
-    async function renderSlideToCanvas(slide, theme, fontName) {
+    async function renderSlideToCanvas(slide, fontName, titleFontSize, descFontSize) {
         const canvas = document.createElement('canvas');
-        const scale = 2; // High resolution rendering for sharp text & graphics
+        const scale = 2;
         canvas.width = slideWidthPx * scale;
         canvas.height = slideHeightPx * scale;
         const ctx = canvas.getContext('2d');
         ctx.scale(scale, scale);
 
-        // Fill background
-        ctx.fillStyle = theme.bg;
+        ctx.fillStyle = slideBg;
         ctx.fillRect(0, 0, slideWidthPx, slideHeightPx);
 
         const margin = 40;
@@ -638,25 +1047,22 @@
         const fallback = fontFallbacks[fontName] || "sans-serif";
         const fontStack = `'${fontName}', ${fallback}`;
 
-        // Render Title
         if (slide.title) {
-            ctx.font = `bold 40px ${fontStack}`;
-            ctx.fillStyle = theme.title;
+            ctx.font = `bold ${titleFontSize}px ${fontStack}`;
+            ctx.fillStyle = slideTitleColor;
             ctx.textBaseline = "top";
-            currentY = wrapCanvasText(ctx, slide.title, margin, currentY, maxTextWidth, 48);
+            currentY = wrapCanvasText(ctx, slide.title, margin, currentY, maxTextWidth, titleFontSize * 1.2);
             currentY += 15;
         }
 
-        // Render Description
         if (slide.description) {
-            ctx.font = `20px ${fontStack}`;
-            ctx.fillStyle = theme.text;
+            ctx.font = `${descFontSize}px ${fontStack}`;
+            ctx.fillStyle = slideTextColor;
             ctx.textBaseline = "top";
-            currentY = wrapCanvasText(ctx, slide.description, margin, currentY, maxTextWidth, 30);
+            currentY = wrapCanvasText(ctx, slide.description, margin, currentY, maxTextWidth, descFontSize * 1.5);
             currentY += 20;
         }
 
-        // Render Image
         if (slide.img) {
             try {
                 const img = new Image();
@@ -689,9 +1095,11 @@
     async function exportPDF() {
         const { jsPDF } = window.jspdf;
         
-        // Exact 1:1 Pixel-to-Point scaling for accuracy
         const slideWidthPt = slideWidthPx * 0.75;
         const slideHeightPt = slideHeightPx * 0.75;
+
+        const titleFontSize = exportTitleSizePt;
+        const descFontSize = exportTextSizePt;
 
         const pdf = new jsPDF({
             orientation: slideWidthPt >= slideHeightPt ? 'l' : 'p',
@@ -699,20 +1107,15 @@
             format: [slideWidthPt, slideHeightPt]
         });
         
-        const theme = themes[activeThemeIdx];
-
-        // Checks if an uploaded custom font is active
         const isCustomUploadedFontActive = customFontData && customFontData.name === currentFont;
 
         if (isCustomUploadedFontActive) {
-            // Render High Quality FLAT (Non Copy-Paste) PDF using HTML5 Canvas rendering
             for (let i = 0; i < slides.length; i++) {
                 if (i !== 0) pdf.addPage([slideWidthPt, slideHeightPt], slideWidthPt >= slideHeightPt ? 'l' : 'p');
-                const imgData = await renderSlideToCanvas(slides[i], theme, currentFont);
+                const imgData = await renderSlideToCanvas(slides[i], currentFont, titleFontSize, descFontSize);
                 pdf.addImage(imgData, 'PNG', 0, 0, slideWidthPt, slideHeightPt);
             }
         } else {
-            // Vector (Copy-Paste) standard rendering for built-in system and web fonts
             let pdfFontName = "helvetica";
             let targetFontKey = fontToTTFMap[currentFont] || currentFont;
 
@@ -730,42 +1133,36 @@
                 pdfFontName = "courier";
             }
 
-            const margin = 30; // 30pt padding
+            const margin = 30;
             const maxTextWidth = slideWidthPt - (margin * 2);
-            const titleFontSize = 28;
-            const descFontSize = 14;
 
             for (let i = 0; i < slides.length; i++) {
                 if (i !== 0) pdf.addPage([slideWidthPt, slideHeightPt], slideWidthPt >= slideHeightPt ? 'l' : 'p');
                 
-                // Background
-                pdf.setFillColor(theme.bg); 
+                pdf.setFillColor(slideBg); 
                 pdf.rect(0, 0, slideWidthPt, slideHeightPt, 'F');
                 
                 pdf.setFont(pdfFontName, 'normal');
                 let currentY = margin;
 
-                // Draw Vector Selectable Title
                 if (slides[i].title) {
                     pdf.setFontSize(titleFontSize);
-                    pdf.setTextColor(theme.title); 
+                    pdf.setTextColor(slideTitleColor); 
                     const titleLines = pdf.splitTextToSize(slides[i].title, maxTextWidth);
                     const titleLineHeight = titleFontSize * 1.25;
                     pdf.text(titleLines, margin, currentY + titleFontSize);
                     currentY += (titleLines.length * titleLineHeight) + 15;
                 }
 
-                // Draw Vector Selectable Description
                 if (slides[i].description) {
                     pdf.setFontSize(descFontSize);
-                    pdf.setTextColor(theme.text); 
+                    pdf.setTextColor(slideTextColor); 
                     const descLines = pdf.splitTextToSize(slides[i].description, maxTextWidth);
                     const descLineHeight = descFontSize * 1.4;
                     pdf.text(descLines, margin, currentY + descFontSize);
                     currentY += (descLines.length * descLineHeight) + 20;
                 }
 
-                // Draw Image maintaining strict aspect ratio
                 if (slides[i].img) {
                     try {
                         const img = new Image(); 
@@ -799,7 +1196,6 @@
     async function exportPPTX() {
         let pptx = new PptxGenJS();
         
-        // Convert screen pixel dimensions to PPT Inches
         pptx.defineLayout({
             name: 'CUSTOM_LAYOUT',
             width: slideWidthPx / 96,
@@ -807,42 +1203,40 @@
         });
         pptx.layout = 'CUSTOM_LAYOUT';
 
-        const theme = themes[activeThemeIdx];
-        
-        // Map custom/web fonts to standard desktop system fonts so PowerPoint and Keynote display them properly
         let fontFaceToUse = fontToPPTXMap[currentFont] || currentFont;
         if (customFontData && customFontData.name === currentFont) {
             fontFaceToUse = customFontData.name;
         }
 
+        const titleFontSize = exportTitleSizePt;
+        const descFontSize = exportTextSizePt;
+
         for (let i = 0; i < slides.length; i++) {
             const s = slides[i];
             let slide = pptx.addSlide();
-            slide.background = { color: theme.bg.replace('#','') };
+            
+            slide.background = { color: slideBg.replace('#','') };
             
             let currentY = 0.5;
 
-            // Add Title Box
             if (s.title) {
                 slide.addText(s.title, { 
                     x: 0.5, y: currentY, w: (slideWidthPx / 96) - 1.0, 
-                    fontSize: 32, bold: true, color: theme.title.replace('#',''), 
+                    fontSize: titleFontSize, bold: true, color: slideTitleColor.replace('#',''), 
                     fontFace: fontFaceToUse, wrap: true 
                 });
-                currentY += 1.2;
+                currentY += (titleFontSize / 72) * 1.5 + 0.3;
             }
             
-            // Add Description Box
             if (s.description) {
                 slide.addText(s.description, { 
                     x: 0.5, y: currentY, w: (slideWidthPx / 96) - 1.0, 
-                    fontSize: 18, color: theme.text.replace('#',''), 
+                    fontSize: descFontSize, color: slideTextColor.replace('#',''), 
                     fontFace: fontFaceToUse, wrap: true 
                 });
-                currentY += 1.0;
+                currentY += (descFontSize / 72) * 2.0 + 0.2;
             }
             
-            // Add Image Box preserving aspect ratio
             if (s.img) {
                 try {
                     const img = new Image(); 
@@ -869,7 +1263,6 @@
         pptx.writeFile({ fileName: "Presentation.pptx" });
     }
 
-    // Logic for Image PDF Maker
     document.getElementById("bulkImageInput").onchange = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
@@ -969,7 +1362,6 @@
         pdf.save(filename);
     }
 
-    initThemes();
     updateView();
 </script>
 </body>

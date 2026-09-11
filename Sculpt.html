@@ -67,7 +67,7 @@
       flex-shrink: 0;
     }
 
-    /* Left Toolbar: Brush Sliders (Shifted down to prevent collisions) */
+    /* Left Toolbar: Brush Sliders */
     #left-toolbar {
       top: 115px;
       left: 8px;
@@ -99,13 +99,11 @@
       transition: top 0.3s ease, bottom 0.3s ease;
     }
 
-    /* Default Anchored at Bottom */
     #bottom-container.dock-bottom {
       top: auto;
       bottom: calc(52px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* Shifted Directly Below Top Panel */
     #bottom-container.dock-top {
       bottom: auto;
       top: 54px;
@@ -230,19 +228,97 @@
 
     .btn-primary { background-color: #007bff; border: none; }
     .btn-success { background-color: #28a745; border: none; }
+    .btn-danger { background-color: #dc3545; border: none; }
 
-    input[type="color"] {
-      -webkit-appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+    /* Color Wheel Widget Styles */
+    .color-module-container { 
+      position: relative; 
+      display: flex; 
+      align-items: center; 
+    }
+    .native-wheel-proxy {
+      width: 26px; 
+      height: 26px; 
+      border-radius: 50%; 
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      position: relative; 
       cursor: pointer;
-      background: none;
+      background: #00d2ff;
     }
 
-    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    #color-wheel-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20, 20, 24, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 16px;
+      z-index: 1200;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wheel-top-actions {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      gap: 6px;
+    }
+
+    .wheel-shortcut-btn {
+      background: #2a2a38;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 10px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+    }
+    .wheel-shortcut-btn:hover { background: #00d2ff; color: #121212; }
+
+    .color-wheel-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      cursor: crosshair;
+    }
+
+    #color-wheel-canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    #wheel-pointer {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 3px rgba(0,0,0,0.8);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+    }
+
+    .wheel-info-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 11px;
+      font-family: monospace;
+      color: #8e8e9f;
+      padding: 2px 4px;
+    }
 
     input[type="file"] { display: none; }
 
@@ -261,7 +337,7 @@
     }
 
     /* Modal Overlay */
-    #modal-overlay {
+    #modal-overlay, #shape-modal-overlay {
       position: absolute;
       top: 0;
       left: 0;
@@ -273,6 +349,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    #shape-modal-overlay {
+      display: none;
     }
 
     .modal-card {
@@ -345,6 +425,8 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
+  <!-- HEIC decoder library -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
 <body>
 
@@ -352,6 +434,13 @@
     <div class="modal-card">
       <div class="modal-title">Choose 3D Canvas Shape</div>
       
+      <div class="modal-group" style="gap: 8px;">
+        <label for="file-input-modal" class="btn-icon btn-success" style="padding: 10px; font-weight: bold; text-align: center; justify-content: center; cursor: pointer;">
+          📁 Load Model / Photos
+        </label>
+        <input type="file" id="file-input-modal" accept=".glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, .heif" />
+      </div>
+
       <div class="modal-group">
         <span class="modal-label">Base Primitive</span>
         <div class="shape-grid">
@@ -367,13 +456,68 @@
       <div class="modal-group">
         <div class="modal-color-row">
           <span class="modal-label">Initial Color</span>
-          <input type="color" id="start-color" value="#ffffff" />
+          <div class="color-module-container">
+            <div class="native-wheel-proxy" id="start-color-preview" title="Select Initial Color" style="background: #FFFFFF;"></div>
+          </div>
         </div>
       </div>
 
-      <button id="start-create-btn" class="btn-icon btn-primary" style="padding: 10px; font-weight: bold;">
-        Create Canvas
-      </button>
+      <div class="modal-group" style="gap: 8px;">
+        <button id="start-create-btn" class="btn-icon btn-primary" style="padding: 10px; font-weight: bold;">
+          Create Canvas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shape Selector Modal for Add -> Shapes -->
+  <div id="shape-modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title">Add Shape to Scene</div>
+      
+      <div class="modal-group">
+        <span class="modal-label">Select Primitive Shape</span>
+        <div class="shape-grid">
+          <div class="shape-option popup-shape selected" data-shape="cube">Cube</div>
+          <div class="shape-option popup-shape" data-shape="sphere">Sphere</div>
+          <div class="shape-option popup-shape" data-shape="pyramid">Pyramid</div>
+          <div class="shape-option popup-shape" data-shape="cylinder">Cylinder</div>
+          <div class="shape-option popup-shape" data-shape="torus">Torus</div>
+          <div class="shape-option popup-shape" data-shape="cone">Cone</div>
+        </div>
+      </div>
+
+      <div class="modal-group">
+        <div class="modal-color-row">
+          <span class="modal-label">Shape Color</span>
+          <div class="color-module-container">
+            <div class="native-wheel-proxy" id="popup-color-preview" title="Select Shape Color" style="background: #00d2ff;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button id="popup-cancel-btn" class="btn-icon" style="flex: 1; padding: 10px;">Cancel</button>
+        <button id="popup-add-btn" class="btn-icon btn-primary" style="flex: 1; padding: 10px; font-weight: bold;">Add Shape</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Centered Color Wheel Popup -->
+  <div id="color-wheel-popup">
+    <div class="wheel-top-actions">
+      <button type="button" id="wheel-btn-black" class="wheel-shortcut-btn">BL</button>
+      <button type="button" id="wheel-btn-edit" class="wheel-shortcut-btn">Edit</button>
+      <button type="button" id="wheel-btn-white" class="wheel-shortcut-btn">WH</button>
+      <input type="color" id="native-color-picker-input" style="display:none;">
+    </div>
+    <div class="color-wheel-container" id="color-wheel-wrapper">
+      <canvas id="color-wheel-canvas" width="160" height="160"></canvas>
+      <div id="wheel-pointer"></div>
+    </div>
+    <div class="wheel-info-bar">
+      <span id="wheel-selected-hex">#00D2FF</span>
+      <span id="wheel-selected-name">Turquoise Cyan</span>
     </div>
   </div>
 
@@ -390,7 +534,7 @@
 
       <div class="top-group">
         <label for="file-input" class="btn-icon btn-primary">📁 Load</label>
-        <input type="file" id="file-input" accept=".glb, .gltf, .obj" />
+        <input type="file" id="file-input" accept=".glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, .heif" />
         <button id="export-btn" class="btn-icon btn-success">💾 Save</button>
       </div>
     </div>
@@ -407,7 +551,9 @@
       </div>
 
       <div class="slider-container" title="Paint Color">
-        <input type="color" id="brush-color" value="#00d2ff" />
+        <div class="color-module-container">
+          <div class="native-wheel-proxy" id="color-indicator-preview" title="Open Art Wheel"></div>
+        </div>
       </div>
     </div>
 
@@ -422,17 +568,26 @@
         <button id="sculpt-shape-box" class="btn-icon">⬛ Box</button>
       </div>
 
-      <div id="select-options" class="sub-bar">
-        <button id="sel-point" class="btn-icon active">📍 Point</button>
-        <button id="sel-line" class="btn-icon">📏 Line</button>
-        <button id="sel-side" class="btn-icon">🔷 Side</button>
+      <div id="direction-options" class="sub-bar">
+        <button id="dir-front" class="btn-icon">⬆️ View Front</button>
+        <button id="dir-change" class="btn-icon">⚙️ Set New Axis</button>
       </div>
 
-      <div id="gizmo-options" class="sub-bar">
-        <button id="toggle-gizmo-btn" class="btn-icon">🏹 Axis Arrows</button>
-        <button id="gizmo-translate" class="btn-icon active">Move</button>
-        <button id="gizmo-rotate" class="btn-icon">Rotate</button>
-        <button id="gizmo-scale" class="btn-icon">Scale</button>
+      <!-- Move Sub-bar Options -->
+      <div id="move-options" class="sub-bar">
+        <button id="toggle-move-gizmo-btn" class="btn-icon">🏹 Axis Arrows</button>
+        <button id="move-translate" class="btn-icon active">Move</button>
+        <button id="move-rotate" class="btn-icon">Rotate</button>
+        <button id="move-scale" class="btn-icon">Scale</button>
+      </div>
+
+      <!-- Add Sub-bar -->
+      <div id="add-options" class="sub-bar">
+        <button id="add-move-btn" class="btn-icon active">🚀 Move</button>
+        <button id="add-copy-btn" class="btn-icon">📋 Copy</button>
+        <button id="add-shapes-btn" class="btn-icon">🔷 Shapes</button>
+        <label for="file-input-add" class="btn-icon btn-primary" style="margin:0; cursor:pointer;">📥 Import</label>
+        <input type="file" id="file-input-add" accept=".glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, .heif" />
       </div>
 
       <div id="bottom-bar">
@@ -440,19 +595,19 @@
         <button id="tool-sculpt" class="btn-icon">🌋 Sculpt</button>
         <button id="tool-smooth" class="btn-icon">💧 Smooth</button>
         <button id="tool-paint" class="btn-icon">🖌️ Paint</button>
-        <button id="tool-select" class="btn-icon">📐 Select</button>
-        <button id="tool-transform" class="btn-icon">🎯 Transform</button>
+        <button id="tool-direction" class="btn-icon">🧭 Direction</button>
+        <button id="tool-add" class="btn-icon">➕ Add</button>
+        <button id="tool-subtract" class="btn-icon btn-danger">➖ Subtract</button>
       </div>
     </div>
 
-    <div id="loading-screen">Processing Model...</div>
+    <div id="loading-screen">Processing Model/Photo...</div>
   </div>
 
   <script>
     // --- State Engine ---
     const STATE = {
       activeTool: 'view',
-      selectSubMode: 'point',
       sculptAction: 'build',
       sculptShape: 'sphere',
       symmetry: true,
@@ -460,10 +615,229 @@
       brushSize: 0.4,
       brushStrength: 0.1,
       brushColor: '#00d2ff',
+      startColor: '#ffffff',
+      popupShapeColor: '#00d2ff',
       isInteracting: false,
-      showGizmo: false,
-      dragStartPoint: null
+      showMoveGizmo: false
     };
+
+    // --- Universal Color Wheel Controller ---
+    const ArtWheelController = {
+      init() {
+        const canvas = document.getElementById('color-wheel-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const wrapper = document.getElementById('color-wheel-wrapper');
+        const pointer = document.getElementById('wheel-pointer');
+        const hexLabel = document.getElementById('wheel-selected-hex');
+        const nameLabel = document.getElementById('wheel-selected-name');
+        const nativeColorInput = document.getElementById('native-color-picker-input');
+        const colorPopup = document.getElementById('color-wheel-popup');
+
+        const radius = canvas.width / 2;
+        const imgData = ctx.createImageData(canvas.width, canvas.height);
+        const data = imgData.data;
+
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            const dx = x - radius;
+            const dy = y - radius;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const index = (y * canvas.width + x) * 4;
+
+            if (dist <= radius) {
+              const angle = Math.atan2(dy, dx);
+              let hue = (angle * 180 / Math.PI + 360) % 360;
+              let sat = dist / radius;
+              let light = 0.5;
+
+              let c = (1 - Math.abs(2 * light - 1)) * sat;
+              let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
+              let m = light - c / 2;
+              let r = 0, g = 0, b = 0;
+
+              if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
+              else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
+              else if (120 <= hue && hue < 180) { r = 0; g = c; b = xVal; }
+              else if (180 <= hue && hue < 240) { r = 0; g = xVal; b = c; }
+              else if (240 <= hue && hue < 300) { r = xVal; g = 0; b = c; }
+              else if (300 <= hue && hue < 360) { r = c; g = 0; b = xVal; }
+
+              data[index] = Math.round((r + m) * 255);
+              data[index + 1] = Math.round((g + m) * 255);
+              data[index + 2] = Math.round((b + m) * 255);
+              data[index + 3] = 255;
+            } else {
+              data[index + 3] = 0;
+            }
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        const rgbToHex = (r, g, b) => "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+
+        const getColorName = (r, g, b) => {
+          if (r === 0 && g === 0 && b === 0) return 'Lamp Black';
+          if (r === 255 && g === 255 && b === 255) return 'Titanium White';
+
+          let rf = r / 255, gf = g / 255, bf = b / 255;
+          let max = Math.max(rf, gf, bf), min = Math.min(rf, gf, bf);
+          let h, s, l = (max + min) / 2;
+
+          if (max === min) {
+            h = s = 0;
+          } else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case rf: h = (gf - bf) / d + (gf < bf ? 6 : 0); break;
+              case gf: h = (bf - rf) / d + 2; break;
+              case bf: h = (rf - gf) / d + 4; break;
+            }
+            h /= 6;
+          }
+
+          const hue = Math.round(h * 360);
+          const sat = Math.round(s * 100);
+          const light = Math.round(l * 100);
+
+          if (light < 15) return 'Dark Shade';
+          if (light > 85 && sat < 15) return 'Light Tint';
+          if (sat < 15) return 'Neutral Gray';
+
+          if (hue < 15 || hue >= 345) return 'Crimson Red';
+          if (hue < 45) return 'Warm Orange';
+          if (hue < 70) return 'Golden Yellow';
+          if (hue < 150) return 'Emerald Green';
+          if (hue < 190) return 'Turquoise Cyan';
+          if (hue < 260) return 'Cobalt Blue';
+          if (hue < 315) return 'Deep Violet';
+          return 'Magenta Pink';
+        };
+
+        let activeTargetCallback = null;
+
+        const pickColor = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+          if (clientX === undefined) return;
+
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          const dx = x - radius;
+          const dy = y - radius;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          let px = x, py = y;
+          if (dist > radius) {
+            px = radius + (dx / dist) * radius;
+            py = radius + (dy / dist) * radius;
+          }
+
+          pointer.style.left = px + 'px';
+          pointer.style.top = py + 'px';
+          pointer.style.display = 'block';
+
+          const sx = Math.min(Math.max(Math.floor(px), 0), canvas.width - 1);
+          const sy = Math.min(Math.max(Math.floor(py), 0), canvas.height - 1);
+          const pixel = ctx.getImageData(sx, sy, 1, 1).data;
+
+          if (pixel[3] > 0) {
+            const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+            const name = getColorName(pixel[0], pixel[1], pixel[2]);
+            hexLabel.innerText = hex;
+            nameLabel.innerText = name;
+            if (activeTargetCallback) activeTargetCallback(hex);
+          }
+        };
+
+        let selecting = false;
+        wrapper.addEventListener('mousedown', (e) => { selecting = true; pickColor(e); });
+        window.addEventListener('mousemove', (e) => { if (selecting) pickColor(e); });
+        window.addEventListener('mouseup', () => { selecting = false; });
+
+        wrapper.addEventListener('touchstart', (e) => { selecting = true; pickColor(e); }, { passive: true });
+        window.addEventListener('touchmove', (e) => { if (selecting) pickColor(e); }, { passive: true });
+        window.addEventListener('touchend', () => { selecting = false; });
+
+        document.getElementById('wheel-btn-black').addEventListener('click', (e) => {
+          e.stopPropagation();
+          hexLabel.innerText = '#000000';
+          nameLabel.innerText = 'Lamp Black';
+          pointer.style.display = 'none';
+          if (activeTargetCallback) activeTargetCallback('#000000');
+        });
+
+        document.getElementById('wheel-btn-white').addEventListener('click', (e) => {
+          e.stopPropagation();
+          hexLabel.innerText = '#FFFFFF';
+          nameLabel.innerText = 'Titanium White';
+          pointer.style.display = 'none';
+          if (activeTargetCallback) activeTargetCallback('#FFFFFF');
+        });
+
+        document.getElementById('wheel-btn-edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          nativeColorInput.click();
+        });
+
+        nativeColorInput.addEventListener('input', (e) => {
+          const hex = e.target.value.toUpperCase();
+          const bigint = parseInt(hex.slice(1), 16);
+          const r = (bigint >> 16) & 255;
+          const g = (bigint >> 8) & 255;
+          const b = bigint & 255;
+          const name = getColorName(r, g, b);
+          hexLabel.innerText = hex;
+          nameLabel.innerText = name;
+          pointer.style.display = 'none';
+          if (activeTargetCallback) activeTargetCallback(hex);
+        });
+
+        // Bind triggers
+        const setupTrigger = (elId, callback) => {
+          const el = document.getElementById(elId);
+          if (el) {
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              activeTargetCallback = callback;
+              colorPopup.style.display = 'flex';
+            });
+          }
+        };
+
+        setupTrigger('color-indicator-preview', (hex) => {
+          STATE.brushColor = hex;
+          document.getElementById('color-indicator-preview').style.backgroundColor = hex;
+        });
+
+        setupTrigger('start-color-preview', (hex) => {
+          STATE.startColor = hex;
+          document.getElementById('start-color-preview').style.backgroundColor = hex;
+        });
+
+        setupTrigger('popup-color-preview', (hex) => {
+          STATE.popupShapeColor = hex;
+          document.getElementById('popup-color-preview').style.backgroundColor = hex;
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!colorPopup.contains(e.target) && 
+              !document.getElementById('color-indicator-preview').contains(e.target) &&
+              !document.getElementById('start-color-preview').contains(e.target) &&
+              !document.getElementById('popup-color-preview').contains(e.target)) {
+            colorPopup.style.display = 'none';
+          }
+        });
+      }
+    };
+    ArtWheelController.init();
+
+    // Set initial preview backgrounds
+    document.getElementById('color-indicator-preview').style.backgroundColor = STATE.brushColor;
+    document.getElementById('start-color-preview').style.backgroundColor = STATE.startColor;
+    document.getElementById('popup-color-preview').style.backgroundColor = STATE.popupShapeColor;
 
     // --- Scene Setup ---
     const container = document.getElementById('canvas-container');
@@ -503,26 +877,17 @@
 
     transformControls.addEventListener('dragging-changed', (event) => {
       orbitControls.enabled = !event.value;
+      if (!event.value && currentMesh) {
+        saveHistoryState(currentMesh);
+      }
     });
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // Canvas Texture & Painting Setup
+    // Multi-Model Management
+    let meshes = [];
     let currentMesh = null;
-    const drawCanvas = document.createElement('canvas');
-    drawCanvas.width = 1024;
-    drawCanvas.height = 1024;
-    const drawCtx = drawCanvas.getContext('2d', { willReadFrequently: true });
-
-    function resetCanvas(color = '#ffffff') {
-      drawCtx.fillStyle = color;
-      drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-    }
-    resetCanvas();
-
-    const canvasTexture = new THREE.CanvasTexture(drawCanvas);
-    canvasTexture.flipY = true;
 
     // Loaders
     const dracoLoader = new THREE.DRACOLoader();
@@ -532,49 +897,83 @@
     const objLoader = new THREE.OBJLoader();
     const exporter = new THREE.GLTFExporter();
 
-    // History Engine
-    let undoStack = [];
-    let redoStack = [];
-    const MAX_HISTORY = 15;
+    // History Engine per mesh
+    const historyMap = new Map();
 
-    function saveHistoryState() {
-      if (!currentMesh) return;
-      if (undoStack.length >= MAX_HISTORY) undoStack.shift();
+    function saveHistoryState(mesh = currentMesh) {
+      if (!mesh) return;
+      if (!historyMap.has(mesh)) {
+        historyMap.set(mesh, { undo: [], redo: [] });
+      }
+      const hist = historyMap.get(mesh);
+      if (hist.undo.length >= 15) hist.undo.shift();
 
-      const geoState = currentMesh.geometry.attributes.position.clone();
-      const textureState = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      const geoState = mesh.geometry.attributes.position.clone();
+      const posState = mesh.position.clone();
+      const rotState = mesh.rotation.clone();
+      const scaleState = mesh.scale.clone();
+
+      let textureState = null;
+      if (mesh.material.map && mesh.material.map.image) {
+        const img = mesh.material.map.image;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.width || 1024;
+        tempCanvas.height = img.height || 1024;
+        const tCtx = tempCanvas.getContext('2d');
+        tCtx.drawImage(img, 0, 0);
+        textureState = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      }
       
-      undoStack.push({ geometry: geoState, texture: textureState });
-      redoStack = [];
+      hist.undo.push({ 
+        geometry: geoState, 
+        texture: textureState,
+        position: posState,
+        rotation: rotState,
+        scale: scaleState
+      });
+      hist.redo = [];
     }
 
     function undo() {
-      if (undoStack.length <= 1) return;
-      redoStack.push(undoStack.pop());
-      const state = undoStack[undoStack.length - 1];
-      applyState(state);
+      if (!currentMesh || !historyMap.has(currentMesh)) return;
+      const hist = historyMap.get(currentMesh);
+      if (hist.undo.length <= 1) return;
+      hist.redo.push(hist.undo.pop());
+      const state = hist.undo[hist.undo.length - 1];
+      applyState(currentMesh, state);
     }
 
     function redo() {
-      if (redoStack.length === 0) return;
-      const state = redoStack.pop();
-      undoStack.push(state);
-      applyState(state);
+      if (!currentMesh || !historyMap.has(currentMesh)) return;
+      const hist = historyMap.get(currentMesh);
+      if (hist.redo.length === 0) return;
+      const state = hist.redo.pop();
+      hist.undo.push(state);
+      applyState(currentMesh, state);
     }
 
-    function applyState(state) {
-      if (!currentMesh || !state) return;
-      currentMesh.geometry.attributes.position.copy(state.geometry);
-      currentMesh.geometry.attributes.position.needsUpdate = true;
-      currentMesh.geometry.computeVertexNormals();
+    function applyState(mesh, state) {
+      if (!mesh || !state) return;
+      mesh.geometry.attributes.position.copy(state.geometry);
+      mesh.geometry.attributes.position.needsUpdate = true;
+      mesh.geometry.computeVertexNormals();
 
-      drawCtx.putImageData(state.texture, 0, 0);
-      canvasTexture.needsUpdate = true;
+      if (state.position) mesh.position.copy(state.position);
+      if (state.rotation) mesh.rotation.copy(state.rotation);
+      if (state.scale) mesh.scale.copy(state.scale);
+      mesh.updateMatrix();
+
+      if (state.texture && mesh.material.map) {
+        const ctx = mesh.userData.ctx;
+        ctx.putImageData(state.texture, 0, 0);
+        mesh.material.map.needsUpdate = true;
+      }
     }
 
-    // Modal Selector
+    // Modal Selector for initial canvas
     let selectedShape = 'cube';
-    const shapeOptions = document.querySelectorAll('.shape-option');
+    let initialLoadHandled = false;
+    const shapeOptions = document.querySelectorAll('#modal-overlay .shape-option');
     shapeOptions.forEach(opt => {
       opt.addEventListener('click', () => {
         shapeOptions.forEach(o => o.classList.remove('selected'));
@@ -584,79 +983,197 @@
     });
 
     document.getElementById('start-create-btn').addEventListener('click', () => {
-      const color = document.getElementById('start-color').value;
-      initShape(selectedShape || 'cube', color);
+      if (initialLoadHandled) return;
+      initShape(selectedShape || 'cube', STATE.startColor);
       document.getElementById('modal-overlay').style.display = 'none';
+      initialLoadHandled = true;
     });
+
+    document.getElementById('file-input-modal').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      initialLoadHandled = true;
+      document.getElementById('modal-overlay').style.display = 'none';
+      await handleFileLoad(file);
+    });
+
+    function createDrawCanvas(colorHex = '#ffffff') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.fillStyle = colorHex;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.flipY = true;
+      return { canvas, ctx, texture };
+    }
 
     function initShape(shapeType, colorHex) {
       let geometry;
       switch (shapeType) {
-        case 'sphere': 
-          geometry = new THREE.SphereGeometry(1, 64, 64); 
-          break;
-        case 'pyramid': 
-          geometry = new THREE.ConeGeometry(1.2, 1.5, 4, 32); 
-          break;
-        case 'cylinder': 
-          geometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32, 32); 
-          break;
-        case 'torus': 
-          geometry = new THREE.TorusGeometry(0.8, 0.3, 32, 48); 
-          break;
-        case 'cone': 
-          geometry = new THREE.ConeGeometry(0.9, 1.5, 32, 32); 
-          break;
+        case 'sphere': geometry = new THREE.SphereGeometry(1, 64, 64); break;
+        case 'pyramid': geometry = new THREE.ConeGeometry(1.2, 1.5, 4, 32); break;
+        case 'cylinder': geometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32, 32); break;
+        case 'torus': geometry = new THREE.TorusGeometry(0.8, 0.3, 32, 48); break;
+        case 'cone': geometry = new THREE.ConeGeometry(0.9, 1.5, 32, 32); break;
         case 'cube':
-        default: 
-          geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5, 32, 32, 32); 
-          break;
+        default: geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5, 32, 32, 32); break;
       }
 
-      resetCanvas(colorHex);
+      const { canvas, ctx, texture } = createDrawCanvas(colorHex);
 
       const material = new THREE.MeshStandardMaterial({
-        map: canvasTexture,
+        map: texture,
         roughness: 0.4,
         metalness: 0.1,
         side: THREE.DoubleSide
       });
       const mesh = new THREE.Mesh(geometry, material);
+      mesh.userData = { canvas, ctx };
       setupModel(mesh);
     }
 
-    function setupModel(mesh) {
-      if (currentMesh) {
-        scene.remove(currentMesh);
-        transformControls.detach();
+    function setupModel(mesh, isAddition = false) {
+      if (mesh.geometry.index) {
+        mesh.geometry = mesh.geometry.toNonIndexed();
       }
 
-      currentMesh = mesh;
+      scene.add(mesh);
+      meshes.push(mesh);
       
-      if (currentMesh.geometry.index) {
-        currentMesh.geometry = currentMesh.geometry.toNonIndexed();
+      if (!isAddition && meshes.length === 1) {
+        selectModel(mesh);
+      } else if (isAddition) {
+        mesh.position.set((Math.random() - 0.5) * 1.5, 0, (Math.random() - 0.5) * 1.5);
+        mesh.updateMatrix();
+        selectModel(mesh);
       }
 
-      scene.add(currentMesh);
-      transformControls.attach(currentMesh);
-      transformControls.enabled = false;
-
-      undoStack = [];
-      redoStack = [];
-      saveHistoryState();
-      
+      saveHistoryState(mesh);
       loadingScreen.style.display = 'none';
     }
 
-    initShape('cube', '#ffffff');
+    function selectModel(mesh) {
+      currentMesh = mesh;
+      transformControls.attach(mesh);
+      transformControls.enabled = (STATE.activeTool === 'add' && STATE.showMoveGizmo);
+    }
 
-    // File Importer
-    document.getElementById('file-input').addEventListener('change', (e) => {
-      const file = e.target.files[0];
+    // Shape Modal Popup for Add -> Shapes
+    let popupSelectedShape = 'cube';
+    const popupShapeOptions = document.querySelectorAll('.popup-shape');
+    popupShapeOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        popupShapeOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        popupSelectedShape = opt.dataset.shape;
+      });
+    });
+
+    document.getElementById('add-shapes-btn').addEventListener('click', () => {
+      document.getElementById('shape-modal-overlay').style.display = 'flex';
+    });
+
+    document.getElementById('popup-cancel-btn').addEventListener('click', () => {
+      document.getElementById('shape-modal-overlay').style.display = 'none';
+    });
+
+    document.getElementById('popup-add-btn').addEventListener('click', () => {
+      let geometry;
+      switch (popupSelectedShape) {
+        case 'sphere': geometry = new THREE.SphereGeometry(1, 64, 64); break;
+        case 'pyramid': geometry = new THREE.ConeGeometry(1.2, 1.5, 4, 32); break;
+        case 'cylinder': geometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32, 32); break;
+        case 'torus': geometry = new THREE.TorusGeometry(0.8, 0.3, 32, 48); break;
+        case 'cone': geometry = new THREE.ConeGeometry(0.9, 1.5, 32, 32); break;
+        case 'cube':
+        default: geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5, 32, 32, 32); break;
+      }
+
+      const { canvas, ctx, texture } = createDrawCanvas(STATE.popupShapeColor);
+      const material = new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.4,
+        metalness: 0.1,
+        side: THREE.DoubleSide
+      });
+      const newMesh = new THREE.Mesh(geometry, material);
+      newMesh.userData = { canvas, ctx };
+      
+      setupModel(newMesh, true);
+      document.getElementById('shape-modal-overlay').style.display = 'none';
+    });
+
+    // Copy Button functionality
+    document.getElementById('add-copy-btn').addEventListener('click', () => {
+      if (!currentMesh) return;
+      const clonedGeo = currentMesh.geometry.clone();
+      
+      const origCanvas = currentMesh.userData.canvas;
+      const canvas = document.createElement('canvas');
+      canvas.width = origCanvas.width;
+      canvas.height = origCanvas.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(origCanvas, 0, 0);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.flipY = true;
+
+      const material = currentMesh.material.clone();
+      material.map = texture;
+
+      const clonedMesh = new THREE.Mesh(clonedGeo, material);
+      clonedMesh.userData = { canvas, ctx };
+      
+      clonedMesh.position.copy(currentMesh.position).add(new THREE.Vector3(0.5, 0, 0.5));
+      clonedMesh.rotation.copy(currentMesh.rotation);
+      clonedMesh.scale.copy(currentMesh.scale);
+      clonedMesh.updateMatrix();
+
+      setupModel(clonedMesh, true);
+    });
+
+    // Subtract Button functionality
+    document.getElementById('tool-subtract').addEventListener('click', () => {
+      if (!currentMesh) return;
+      if (meshes.length <= 1) {
+        alert("Cannot remove the last remaining figure!");
+        return;
+      }
+
+      transformControls.detach();
+      scene.remove(currentMesh);
+      
+      currentMesh.geometry.dispose();
+      if (currentMesh.material.map) currentMesh.material.map.dispose();
+      currentMesh.material.dispose();
+
+      meshes = meshes.filter(m => m !== currentMesh);
+      historyMap.delete(currentMesh);
+
+      currentMesh = meshes[meshes.length - 1];
+      selectModel(currentMesh);
+    });
+
+    // Common file loading logic
+    async function handleFileLoad(file) {
       if (!file) return;
-
       loadingScreen.style.display = 'block';
-      const filename = file.name.toLowerCase();
+      let filename = file.name.toLowerCase();
+
+      if (filename.endsWith('.heic') || filename.endsWith('.heif')) {
+        try {
+          const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
+          file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch (err) {
+          console.error("HEIC conversion failed:", err);
+          alert("Could not decode HEIC image.");
+          loadingScreen.style.display = 'none';
+          return;
+        }
+      }
+
+      const fileURL = URL.createObjectURL(file);
 
       const handleLoadedObj = (objScene) => {
         let foundMesh = null;
@@ -665,26 +1182,101 @@
         });
 
         if (foundMesh) {
+          const { canvas, ctx, texture } = createDrawCanvas('#ffffff');
           foundMesh.material = new THREE.MeshStandardMaterial({
-            map: canvasTexture,
+            map: texture,
             roughness: 0.4,
-            metalness: 0.1
+            metalness: 0.1,
+            side: THREE.DoubleSide
           });
-          setupModel(foundMesh);
+          foundMesh.userData = { canvas, ctx };
+          setupModel(foundMesh, meshes.length > 0);
         } else {
           alert('No valid 3D mesh found.');
           loadingScreen.style.display = 'none';
         }
+        URL.revokeObjectURL(fileURL);
       };
 
       if (filename.endsWith('.glb') || filename.endsWith('.gltf')) {
-        gltfLoader.load(URL.createObjectURL(file), (gltf) => handleLoadedObj(gltf.scene));
+        gltfLoader.load(fileURL, (gltf) => handleLoadedObj(gltf.scene), undefined, (err) => {
+          console.error(err);
+          alert('Failed to load GLTF file.');
+          loadingScreen.style.display = 'none';
+          URL.revokeObjectURL(fileURL);
+        });
       } else if (filename.endsWith('.obj')) {
-        objLoader.load(URL.createObjectURL(file), (obj) => handleLoadedObj(obj));
-      }
-    });
+        objLoader.load(fileURL, (obj) => handleLoadedObj(obj), undefined, (err) => {
+          console.error(err);
+          alert('Failed to load OBJ file.');
+          loadingScreen.style.display = 'none';
+          URL.revokeObjectURL(fileURL);
+        });
+      } else if (
+        filename.endsWith('.png') || 
+        filename.endsWith('.jpg') || 
+        filename.endsWith('.jpeg') || 
+        filename.endsWith('.heic') || 
+        filename.endsWith('.heif')
+      ) {
+        const img = new Image();
+        img.onload = () => {
+          const width = img.naturalWidth || img.width;
+          const height = img.naturalHeight || img.height;
+          const maxSide = 3.0;
+          const aspect = width / height;
+          let planeW, planeH;
+          if (aspect >= 1) {
+            planeW = maxSide;
+            planeH = maxSide / aspect;
+          } else {
+            planeH = maxSide;
+            planeW = maxSide * aspect;
+          }
 
-    // Panel Position Docking Toggle (Up / Down)
+          const geometry = new THREE.PlaneGeometry(planeW, planeH, 32, 32);
+          const cWidth = width > 2048 ? 2048 : width;
+          const cHeight = height > 2048 ? 2048 : height;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = cWidth;
+          canvas.height = cHeight;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, cWidth, cHeight);
+          
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.flipY = true;
+
+          const material = new THREE.MeshStandardMaterial({
+            map: texture,
+            roughness: 0.4,
+            metalness: 0.1,
+            side: THREE.DoubleSide
+          });
+
+          const planeMesh = new THREE.Mesh(geometry, material);
+          planeMesh.userData = { canvas, ctx };
+          setupModel(planeMesh, meshes.length > 0);
+          URL.revokeObjectURL(fileURL);
+        };
+        img.onerror = (err) => {
+          console.error(err);
+          alert('Failed to load image file.');
+          loadingScreen.style.display = 'none';
+          URL.revokeObjectURL(fileURL);
+        };
+        img.src = fileURL;
+      } else {
+        alert('Unsupported file format!');
+        loadingScreen.style.display = 'none';
+        URL.revokeObjectURL(fileURL);
+      }
+    }
+
+    document.getElementById('file-input').addEventListener('change', (e) => handleFileLoad(e.target.files[0]));
+    document.getElementById('file-input-add').addEventListener('change', (e) => handleFileLoad(e.target.files[0]));
+
+    // Panel Position Docking Toggle
     const dockContainer = document.getElementById('bottom-container');
     const dockToggleBtn = document.getElementById('dock-toggle-btn');
     const leftToolbar = document.getElementById('left-toolbar');
@@ -696,7 +1288,7 @@
       if (STATE.dockedTop) {
         dockContainer.classList.remove('dock-bottom');
         dockContainer.classList.add('dock-top');
-        leftToolbar.style.top = '150px'; // Move sliders further down when panel is up
+        leftToolbar.style.top = '150px'; 
       } else {
         dockContainer.classList.remove('dock-top');
         dockContainer.classList.add('dock-bottom');
@@ -710,14 +1302,16 @@
       sculpt: document.getElementById('tool-sculpt'),
       smooth: document.getElementById('tool-smooth'),
       paint: document.getElementById('tool-paint'),
-      select: document.getElementById('tool-select'),
-      transform: document.getElementById('tool-transform')
+      direction: document.getElementById('tool-direction'),
+      add: document.getElementById('tool-add')
     };
 
     const sculptOptions = document.getElementById('sculpt-options');
-    const gizmoOptions = document.getElementById('gizmo-options');
-    const selectOptions = document.getElementById('select-options');
-    const toggleGizmoBtn = document.getElementById('toggle-gizmo-btn');
+    const directionOptions = document.getElementById('direction-options');
+    const addOptions = document.getElementById('add-options');
+    const moveOptions = document.getElementById('move-options');
+    const toggleMoveGizmoBtn = document.getElementById('toggle-move-gizmo-btn');
+    const addMoveBtn = document.getElementById('add-move-btn');
 
     function setActiveTool(tool) {
       STATE.activeTool = tool;
@@ -728,13 +1322,23 @@
       orbitControls.enabled = (tool === 'view');
       
       sculptOptions.style.display = (tool === 'sculpt') ? 'flex' : 'none';
-      selectOptions.style.display = (tool === 'select') ? 'flex' : 'none';
-      gizmoOptions.style.display = (tool === 'transform') ? 'flex' : 'none';
-      transformControls.enabled = (tool === 'transform' && STATE.showGizmo);
+      directionOptions.style.display = (tool === 'direction') ? 'flex' : 'none';
+      
+      const isAddTool = (tool === 'add');
+      addOptions.style.display = isAddTool ? 'flex' : 'none';
+      moveOptions.style.display = (isAddTool && addMoveBtn.classList.contains('active')) ? 'flex' : 'none';
+
+      transformControls.enabled = (tool === 'add' && addMoveBtn.classList.contains('active') && STATE.showMoveGizmo && currentMesh);
     }
 
     Object.keys(toolButtons).forEach((tool) => {
       toolButtons[tool].addEventListener('click', () => setActiveTool(tool));
+    });
+
+    addMoveBtn.addEventListener('click', () => {
+      const isActive = addMoveBtn.classList.toggle('active');
+      moveOptions.style.display = isActive ? 'flex' : 'none';
+      transformControls.enabled = (isActive && STATE.showMoveGizmo && currentMesh);
     });
 
     // Sculpt Action / Shapes
@@ -766,50 +1370,80 @@
       });
     });
 
-    // Select Sub Modes
-    const selectSubBtns = {
-      point: document.getElementById('sel-point'),
-      line: document.getElementById('sel-line'),
-      side: document.getElementById('sel-side')
-    };
-
-    Object.keys(selectSubBtns).forEach(mode => {
-      selectSubBtns[mode].addEventListener('click', () => {
-        STATE.selectSubMode = mode;
-        Object.keys(selectSubBtns).forEach(m => selectSubBtns[m].classList.toggle('active', m === mode));
-      });
+    // Move Sub-bar Controls
+    toggleMoveGizmoBtn.addEventListener('click', () => {
+      STATE.showMoveGizmo = !STATE.showMoveGizmo;
+      toggleMoveGizmoBtn.classList.toggle('active', STATE.showMoveGizmo);
+      transformControls.enabled = (STATE.activeTool === 'add' && addMoveBtn.classList.contains('active') && STATE.showMoveGizmo && currentMesh);
     });
 
-    // Gizmo Controls
-    toggleGizmoBtn.addEventListener('click', () => {
-      STATE.showGizmo = !STATE.showGizmo;
-      toggleGizmoBtn.classList.toggle('active', STATE.showGizmo);
-      transformControls.enabled = (STATE.activeTool === 'transform' && STATE.showGizmo);
-    });
-
-    document.getElementById('gizmo-translate').addEventListener('click', (e) => {
+    document.getElementById('move-translate').addEventListener('click', (e) => {
       transformControls.setMode('translate');
-      updateGizmoUI(e.target);
+      updateMoveGizmoUI(e.target);
     });
-    document.getElementById('gizmo-rotate').addEventListener('click', (e) => {
+    document.getElementById('move-rotate').addEventListener('click', (e) => {
       transformControls.setMode('rotate');
-      updateGizmoUI(e.target);
+      updateMoveGizmoUI(e.target);
     });
-    document.getElementById('gizmo-scale').addEventListener('click', (e) => {
+    document.getElementById('move-scale').addEventListener('click', (e) => {
       transformControls.setMode('scale');
-      updateGizmoUI(e.target);
+      updateMoveGizmoUI(e.target);
     });
 
-    function updateGizmoUI(activeBtn) {
-      document.querySelectorAll('#gizmo-options button').forEach(b => {
-        if (b !== toggleGizmoBtn) b.classList.remove('active');
+    function updateMoveGizmoUI(activeBtn) {
+      document.querySelectorAll('#move-options button').forEach(b => {
+        if (b !== toggleMoveGizmoBtn) b.classList.remove('active');
       });
       activeBtn.classList.add('active');
     }
 
+    // Direction Sub-bar Actions
+    const dirFrontBtn = document.getElementById('dir-front');
+    const dirChangeBtn = document.getElementById('dir-change');
+
+    dirFrontBtn.addEventListener('click', () => {
+      camera.position.set(0, 1.5, 4);
+      camera.lookAt(0, 0, 0);
+      orbitControls.target.set(0, 0, 0);
+      orbitControls.update();
+    });
+
+    dirChangeBtn.addEventListener('click', () => {
+      if (!currentMesh) return;
+      currentMesh.updateMatrixWorld(true);
+      const worldPos = new THREE.Vector3();
+      currentMesh.getWorldPosition(worldPos);
+
+      const targetMatrix = new THREE.Matrix4();
+      targetMatrix.copy(camera.matrixWorld).invert().multiply(currentMesh.matrixWorld);
+
+      const position = new THREE.Vector3();
+      const quaternion = new THREE.Quaternion();
+      const scale = new THREE.Vector3();
+      targetMatrix.decompose(position, quaternion, scale);
+
+      const rotOnlyMatrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion);
+      currentMesh.geometry.applyMatrix4(rotOnlyMatrix);
+
+      currentMesh.position.copy(worldPos);
+      currentMesh.rotation.set(0, 0, 0);
+      currentMesh.scale.set(1, 1, 1);
+      currentMesh.updateMatrix();
+      currentMesh.updateMatrixWorld(true);
+
+      transformControls.detach();
+      transformControls.attach(currentMesh);
+
+      currentMesh.geometry.computeVertexNormals();
+      currentMesh.geometry.computeBoundingBox();
+      currentMesh.geometry.computeBoundingSphere();
+
+      saveHistoryState(currentMesh);
+      alert('New axis successfully set!');
+    });
+
     document.getElementById('brush-size').addEventListener('input', (e) => STATE.brushSize = parseFloat(e.target.value));
     document.getElementById('brush-strength').addEventListener('input', (e) => STATE.brushStrength = parseFloat(e.target.value));
-    document.getElementById('brush-color').addEventListener('input', (e) => STATE.brushColor = e.target.value);
     
     const symmetryBtn = document.getElementById('symmetry-btn');
     symmetryBtn.addEventListener('click', () => {
@@ -822,6 +1456,7 @@
 
     document.getElementById('export-btn').addEventListener('click', () => {
       if (!currentMesh) return;
+      currentMesh.updateMatrix();
       exporter.parse(
         currentMesh,
         (result) => {
@@ -836,10 +1471,10 @@
     });
 
     // Engine Core Interactor
-    let selectedIndices = [];
+    let lastUV = null;
 
     function performSculptOrPaint(e) {
-      if (!currentMesh || STATE.activeTool === 'view' || STATE.activeTool === 'transform') return;
+      if (!currentMesh || STATE.activeTool === 'view' || STATE.activeTool === 'direction' || STATE.activeTool === 'add') return;
 
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -852,69 +1487,27 @@
         const hit = intersects[0];
 
         if (STATE.activeTool === 'paint' && hit.uv) {
-          paintTexture(hit.uv);
+          paintTexture(currentMesh, hit.uv);
           if (STATE.symmetry) {
             const symUV = new THREE.Vector2(1.0 - hit.uv.x, hit.uv.y);
-            paintTexture(symUV);
+            paintTexture(currentMesh, symUV);
           }
         } else if (STATE.activeTool === 'sculpt' || STATE.activeTool === 'smooth') {
-          sculptMesh(hit.point, hit.face.normal, STATE.activeTool === 'smooth');
+          sculptMesh(currentMesh, hit.point, hit.face.normal, STATE.activeTool === 'smooth');
           if (STATE.symmetry) {
             const symPoint = hit.point.clone();
             symPoint.x *= -1;
             const symNormal = hit.face.normal.clone();
             symNormal.x *= -1;
-            sculptMesh(symPoint, symNormal, STATE.activeTool === 'smooth');
+            sculptMesh(currentMesh, symPoint, symNormal, STATE.activeTool === 'smooth');
           }
-        } else if (STATE.activeTool === 'select') {
-          manipulateSelection(hit);
         }
       }
     }
 
-    function manipulateSelection(hit) {
-      const positions = currentMesh.geometry.attributes.position;
-      const radius = STATE.brushSize;
-      
-      if (!STATE.dragStartPoint) {
-        STATE.dragStartPoint = hit.point.clone();
-        selectedIndices = [];
-
-        const face = hit.face;
-        if (STATE.selectSubMode === 'point') {
-          selectedIndices.push(face.a);
-        } else if (STATE.selectSubMode === 'line') {
-          selectedIndices.push(face.a, face.b);
-        } else if (STATE.selectSubMode === 'side') {
-          const localCenter = currentMesh.worldToLocal(hit.point.clone());
-          for (let i = 0; i < positions.count; i++) {
-            const vx = positions.getX(i), vy = positions.getY(i), vz = positions.getZ(i);
-            if (Math.sqrt((vx - localCenter.x)**2 + (vy - localCenter.y)**2 + (vz - localCenter.z)**2) < radius) {
-              selectedIndices.push(i);
-            }
-          }
-        }
-      } else {
-        const delta = hit.point.distanceTo(STATE.dragStartPoint) * STATE.brushStrength * 0.5;
-        const normal = hit.face.normal;
-
-        selectedIndices.forEach(idx => {
-          positions.setXYZ(
-            idx,
-            positions.getX(idx) + normal.x * delta,
-            positions.getY(idx) + normal.y * delta,
-            positions.getZ(idx) + normal.z * delta
-          );
-        });
-
-        positions.needsUpdate = true;
-        currentMesh.geometry.computeVertexNormals();
-      }
-    }
-
-    function sculptMesh(centerPoint, normal, isSmooth) {
-      const positions = currentMesh.geometry.attributes.position;
-      const localCenter = currentMesh.worldToLocal(centerPoint.clone());
+    function sculptMesh(mesh, centerPoint, normal, isSmooth) {
+      const positions = mesh.geometry.attributes.position;
+      const localCenter = mesh.worldToLocal(centerPoint.clone());
       const radius = STATE.brushSize;
       const strength = STATE.brushStrength * (STATE.sculptAction === 'carve' ? -1 : 1);
 
@@ -927,7 +1520,6 @@
 
         if (dist < radius) {
           let falloff = 0;
-
           if (STATE.sculptShape === 'cone') {
             falloff = (1 - dist / radius);
           } else if (STATE.sculptShape === 'box') {
@@ -955,13 +1547,16 @@
       }
 
       positions.needsUpdate = true;
-      currentMesh.geometry.computeVertexNormals();
+      mesh.geometry.computeVertexNormals();
     }
 
-    let lastUV = null;
-    function paintTexture(uv) {
-      const x = uv.x * drawCanvas.width;
-      const y = (1 - uv.y) * drawCanvas.height;
+    function paintTexture(mesh, uv) {
+      const canvas = mesh.userData.canvas;
+      const drawCtx = mesh.userData.ctx;
+      const texture = mesh.material.map;
+
+      const x = uv.x * canvas.width;
+      const y = (1 - uv.y) * canvas.height;
       const radius = STATE.brushSize * 30;
 
       drawCtx.fillStyle = STATE.brushColor;
@@ -980,14 +1575,27 @@
       drawCtx.fill();
 
       lastUV = { x, y };
-      canvasTexture.needsUpdate = true;
+      texture.needsUpdate = true;
     }
 
-    // Pointer Events Listener
     window.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('.ui-panel') || e.target.closest('#bottom-container') || e.target.closest('#modal-overlay')) return;
+      if (e.target.closest('.ui-panel') || e.target.closest('#bottom-container') || e.target.closest('#modal-overlay') || e.target.closest('#shape-modal-overlay') || e.target.closest('#color-wheel-popup')) return;
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(meshes);
+
+      if (intersects.length > 0) {
+        const selected = intersects[0].object;
+        if (selected !== currentMesh) {
+          selectModel(selected);
+        }
+      }
+
       STATE.isInteracting = true;
-      STATE.dragStartPoint = null;
       lastUV = null;
       performSculptOrPaint(e);
     });
@@ -1001,9 +1609,8 @@
     window.addEventListener('pointerup', () => {
       if (STATE.isInteracting) {
         STATE.isInteracting = false;
-        STATE.dragStartPoint = null;
         lastUV = null;
-        saveHistoryState();
+        if (currentMesh) saveHistoryState(currentMesh);
       }
     });
 
