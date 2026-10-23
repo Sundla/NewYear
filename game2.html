@@ -108,6 +108,54 @@
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
         }
 
+        /* --- Tank Wars 2 In-Place Split Mechanism Styling --- */
+        .tank-zx-wrapper {
+            width: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 58px;
+            pointer-events: none;
+        }
+
+        #tankZxBtn {
+            position: absolute;
+            width: 100%;
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #tankZxBtn.split-out {
+            opacity: 0;
+            transform: scaleX(0);
+            pointer-events: none;
+        }
+
+        .split-container {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            opacity: 0;
+            transform: scaleX(0.2);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .split-container.active {
+            opacity: 1;
+            transform: scaleX(1);
+            pointer-events: auto;
+        }
+
+        .split-btn {
+            flex: 1;
+            padding: 16px 10px;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+
         .color-module-container { 
             position: fixed; 
             top: 34px;
@@ -214,9 +262,20 @@
 
     <div class="parallax-container">
         <div class="button-overlay">
+            <!-- 1st Place: Tank Wars -->
             <a href="TankWars.html" class="carrom-btn btn-tank1" id="btn1">Tank Wars</a>
-            <a href="TankWarz.html" class="carrom-btn btn-tank2" id="btn2">Tank Wars 2</a>
-            <a href="GTA.html" class="carrom-btn btn-gta" id="btn3">GTA</a>
+            
+            <!-- 2nd Place (Middle): White GTA Button that switches to score system upon first score -->
+            <a href="GTA.html" class="carrom-btn btn-gta" id="scoreDisplayBtn">GTA</a>
+
+            <!-- 3rd Place: Tank Wars 2 with In-Place Split Mechanism -->
+            <div class="tank-zx-wrapper">
+                <button id="tankZxBtn" class="carrom-btn btn-tank2">Tank Wars 2</button>
+                <div id="tankZxSplit" class="split-container">
+                    <a href="TankWarz.html" class="carrom-btn btn-tank2 split-btn">Tank Z</a>
+                    <a href="TankWarsx.html" class="carrom-btn btn-tank2 split-btn">Tank X</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -446,8 +505,7 @@
         ArtWheelController.init();
 
         const btn1 = document.getElementById('btn1');
-        const scoreButton = document.getElementById('btn2');
-        const btn3 = document.getElementById('btn3');
+        const scoreButton = document.getElementById('scoreDisplayBtn');
 
         let audioCtx = null;
         function initAudio() {
@@ -463,7 +521,6 @@
             const gain = audioCtx.createGain();
 
             if (type === 'slide') {
-                // Single smooth sliding sound when player moves by tap
                 const bufferSize = audioCtx.sampleRate * 0.10;
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -490,21 +547,18 @@
                 noise.stop(now + 0.10);
                 return;
             } else if (type === 'wall') {
-                // Single crisp sound when striking a wall/corner
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(320, now);
                 osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
                 gain.gain.setValueAtTime(0.25, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
             } else if (type === 'hit') {
-                // Single short wooden thud when striking a piece
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(180, now);
                 osc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
                 gain.gain.setValueAtTime(0.3, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
             } else if (type === 'pocket') {
-                // Single smooth suction/entry sound when going into black hole
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(220, now);
                 osc.frequency.exponentialRampToValueAtTime(500, now + 0.15);
@@ -591,10 +645,7 @@
             shotScoredAPieceThisTurn = false;
             btn1.textContent = "Tank Wars";
             btn1.style.color = '#ff4d4d';
-            scoreButton.textContent = "Tank Wars 2";
-            scoreButton.style.color = '#ff9900';
-            btn3.textContent = "GTA";
-            btn3.style.color = '#ffffff';
+            scoreButton.textContent = "GTA";
             initCarromStack();
             striker.x = canvas.width / 2;
             striker.y = canvas.height / 2;
@@ -823,8 +874,6 @@
                     if (!hasScored) {
                         hasScored = true;
                         btn1.textContent = "❤❤❤"; 
-                        btn3.style.color = 'transparent';
-                        btn3.style.textShadow = 'none';
                     }
 
                     if (coin.isQueen) {
@@ -904,6 +953,17 @@
 
             coins.forEach(c => c.y -= scrollDelta * 0.15);
             if (!striker.active) striker.y -= scrollDelta * 0.15;
+        });
+
+        // Tank Wars 2 In-Place Button Split Logic
+        const tankZxBtn = document.getElementById('tankZxBtn');
+        const tankZxSplit = document.getElementById('tankZxSplit');
+
+        tankZxBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            playSound('hit');
+            tankZxBtn.classList.add('split-out');
+            tankZxSplit.classList.add('active');
         });
     </script>
 </body>

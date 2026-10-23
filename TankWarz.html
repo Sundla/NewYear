@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TANK WAR ZONE</title>
+  <title>TANK WARZ</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
     * { box-sizing: border-box; padding: 0; margin: 0; user-select: none; font-family: 'Quicksand', sans-serif; }
@@ -307,54 +307,111 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function initAudio() {
+function getAudioContext() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+function createNoiseBuffer(ctx, duration = 3.0, color = 'white') {
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    
+    for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        if (color === 'pink') {
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            data[i] *= 0.11;
+            b6 = white * 0.115926;
+        } else {
+            data[i] = white;
+        }
+    }
+    return buffer;
+}
+
+function playTankShot() {
+    try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+
+        let baseFreq = 45;
+        let decay = 1.2;
+
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(baseFreq * 4, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+        oscGain.gain.setValueAtTime(1.0, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(oscGain); oscGain.connect(masterGain);
+        osc.start(now); osc.stop(now + 0.5);
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(ctx, decay, 'pink');
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1500, now);
+        filter.frequency.exponentialRampToValueAtTime(100, now + decay);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(1.5, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + decay);
+        noiseSource.connect(filter); filter.connect(noiseGain); noiseGain.connect(masterGain);
+        noiseSource.start(now); noiseSource.stop(now + decay);
+    } catch(e) {}
+}
+
+function playDestroySound() {
+    try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+
+        const duration = 1.0;
+
+        const subOsc = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(70, now);
+        subOsc.frequency.exponentialRampToValueAtTime(20, now + duration * 0.6);
+        subGain.gain.setValueAtTime(1.2, now);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        subOsc.connect(subGain); subGain.connect(masterGain);
+        subOsc.start(now); subOsc.stop(now + duration);
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(ctx, duration, 'pink');
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, now);
+        filter.frequency.linearRampToValueAtTime(80, now + duration);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(1.0, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        noiseSource.connect(filter); filter.connect(noiseGain); noiseGain.connect(masterGain);
+        noiseSource.start(now); noiseSource.stop(now + duration);
+    } catch(e) {}
 }
 
 function playSound(type) {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    if (type === 'shoot') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
-        osc.start(now);
-        osc.stop(now + 0.15);
-    } else if (type === 'explosion') {
-        const bufferSize = audioCtx.sampleRate * 0.5;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
-        }
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(300, now);
-        filter.frequency.linearRampToValueAtTime(50, now + 0.5);
-
-        noise.connect(filter);
-        filter.connect(gain);
-
-        gain.gain.setValueAtTime(0.7, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-
-        noise.start(now);
-        noise.stop(now + 0.5);
-    }
+    if (type === 'shoot') playTankShot();
+    else if (type === 'explosion') playDestroySound();
 }
 
 function init3D() {
@@ -670,10 +727,16 @@ function spawnEnemies(count) {
 
     for (let i = 0; i < count; i++) {
         let ex, ez;
+        let attempts = 0;
+        // Strictly verify spawn coordinates do not overlap with any house or player to prevent getting stuck
         do {
             ex = (Math.random() - 0.5) * halfW * 1.5;
             ez = (Math.random() - 0.5) * halfH * 1.5;
-        } while (Math.abs(ex - state.player.x) < 35 && Math.abs(ez - state.player.z) < 35);
+            attempts++;
+        } while (
+            (Math.abs(ex - state.player.x) < 35 && Math.abs(ez - state.player.z) < 35 || checkCollision(ex, ez, 6)) &&
+            attempts < 50
+        );
 
         let eTank;
         if (customEnemyGeometry) {
@@ -696,34 +759,58 @@ function spawnEnemies(count) {
     }
 }
 
-function createExplosion(x, z) {
+function createExplosion(x, z, withSmoke = false) {
     playSound('explosion');
-    const particleCount = 25;
-    const explosionGroup = new THREE.Group();
-    explosionGroup.position.set(x, 1.5, z);
-    
-    const particles = [];
-    for (let i = 0; i < particleCount; i++) {
-        let color = Math.random() > 0.6 ? 0xff3300 : (Math.random() > 0.3 ? 0xffcc00 : 0x111111);
-        const geometry = new THREE.SphereGeometry(0.4 + Math.random() * 0.4, 8, 8);
-        const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
-        const mesh = new THREE.Mesh(geometry, material);
 
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        const speed = 0.15 + Math.random() * 0.45;
+    // 1. Soft glowing light flash effect
+    const flashLight = new THREE.PointLight(0xffaa22, 3.0, 20);
+    flashLight.position.set(x, 2.0, z);
+    scene.add(flashLight);
+
+    let explosionGroup = null;
+    let particles = [];
+
+    // Only create smoke/particle animations if explicitly requested
+    if (withSmoke) {
+        const particleCount = 10; 
+        explosionGroup = new THREE.Group();
+        explosionGroup.position.set(x, 1.0, z);
         
-        particles.push({
-            mesh: mesh,
-            vx: Math.sin(phi) * Math.cos(theta) * speed,
-            vy: Math.cos(phi) * speed + 0.05,
-            vz: Math.sin(phi) * Math.sin(theta) * speed
-        });
-        explosionGroup.add(mesh);
+        const smokeGeo = new THREE.SphereGeometry(0.5, 6, 6);
+
+        for (let i = 0; i < particleCount; i++) {
+            const shade = Math.floor(60 + Math.random() * 80);
+            const smokeColor = (shade << 16) | (shade << 8) | shade;
+            
+            const material = new THREE.MeshBasicMaterial({ 
+                color: smokeColor, 
+                transparent: true, 
+                opacity: 0.65 
+            });
+            const mesh = new THREE.Mesh(smokeGeo, material);
+
+            mesh.scale.set(
+                0.8 + Math.random() * 1.0,
+                0.5 + Math.random() * 0.8,
+                0.8 + Math.random() * 1.0
+            );
+
+            const theta = Math.random() * Math.PI * 2;
+            const speed = 0.05 + Math.random() * 0.12;
+            
+            particles.push({
+                mesh: mesh,
+                vx: Math.cos(theta) * speed,
+                vy: 0.08 + Math.random() * 0.12,
+                vz: Math.sin(theta) * speed
+            });
+            explosionGroup.add(mesh);
+        }
+        
+        scene.add(explosionGroup);
     }
-    
-    scene.add(explosionGroup);
-    state.explosions.push({ group: explosionGroup, particles: particles, life: 35 });
+
+    state.explosions.push({ group: explosionGroup, particles: particles, light: flashLight, life: 25 });
 }
 
 function updateUI() {
@@ -778,7 +865,7 @@ function drawMinimap() {
 }
 
 function startGame() {
-    initAudio();
+    getAudioContext();
     if (!scene) init3D();
     document.getElementById('overlay').classList.add('d-none');
     state.active = true;
@@ -858,14 +945,27 @@ function gameLoop() {
     for (let i = state.explosions.length - 1; i >= 0; i--) {
         let exp = state.explosions[i];
         exp.life--;
-        exp.particles.forEach(p => {
-            p.mesh.position.x += p.vx;
-            p.mesh.position.y += p.vy;
-            p.mesh.position.z += p.vz;
-            p.mesh.scale.multiplyScalar(0.94);
-        });
+        
+        if (exp.light) {
+            exp.light.intensity *= 0.8;
+            if (exp.life <= 8) {
+                scene.remove(exp.light);
+                exp.light = null;
+            }
+        }
+
+        if (exp.group) {
+            exp.particles.forEach(p => {
+                p.mesh.position.x += p.vx;
+                p.mesh.position.y += p.vy;
+                p.mesh.position.z += p.vz;
+                p.mesh.scale.multiplyScalar(1.025);
+                p.mesh.material.opacity *= 0.92;
+            });
+        }
+
         if (exp.life <= 0) {
-            scene.remove(exp.group);
+            if (exp.group) scene.remove(exp.group);
             state.explosions.splice(i, 1);
         }
     }
@@ -912,7 +1012,7 @@ function gameLoop() {
         }
 
         if (Math.abs(en.x - state.player.x) < 4 && Math.abs(en.z - state.player.z) < 4) {
-            createExplosion(state.player.x, state.player.z);
+            createExplosion(state.player.x, state.player.z, false);
             endGame("TANK DESTROYED!");
         }
     });
@@ -937,7 +1037,16 @@ function gameLoop() {
 
         if (blockIndex !== -1) {
             let bl = state.blocks[blockIndex];
-            createExplosion(bl.x, bl.z);
+            
+            // Enemy bullets and contact cannot blow up houses; only player bullets can!
+            if (b.isEnemy) {
+                scene.remove(b.mesh);
+                state.bullets.splice(i, 1);
+                continue;
+            }
+
+            // Player bullet hits a house: trigger explosion with smoke and remove the house structure
+            createExplosion(bl.x, bl.z, true);
             if (!bl.isBorder) {
                 scene.remove(bl.mesh);
                 state.blocks.splice(blockIndex, 1);
@@ -949,7 +1058,7 @@ function gameLoop() {
 
         if (b.isEnemy) {
             if (Math.abs(b.x - state.player.x) < 3 && Math.abs(b.z - state.player.z) < 3) {
-                createExplosion(state.player.x, state.player.z);
+                createExplosion(state.player.x, state.player.z, false);
                 scene.remove(b.mesh);
                 state.bullets.splice(i, 1);
                 endGame("TANK DESTROYED!");
@@ -958,7 +1067,8 @@ function gameLoop() {
         } else {
             let hitIndex = state.enemies.findIndex(en => Math.abs(b.x - en.x) < 3 && Math.abs(b.z - en.z) < 3);
             if (hitIndex !== -1) {
-                createExplosion(state.enemies[hitIndex].x, state.enemies[hitIndex].z);
+                // Smoke and particle animation triggers when an enemy tank gets blasted by the player
+                createExplosion(state.enemies[hitIndex].x, state.enemies[hitIndex].z, true);
                 scene.remove(state.enemies[hitIndex].group);
                 state.enemies.splice(hitIndex, 1);
                 scene.remove(b.mesh);
@@ -1304,7 +1414,6 @@ function sculptStop() {
 
 function confirmCustomEnemy() {
     if (sculptMesh) {
-        // Corrected orientation mapping: applies a 180-degree offset so front setter aligns with gameplay forward vector
         sculptMesh.rotation.y += Math.PI;
         customEnemyGeometry = sculptMesh.clone();
     }

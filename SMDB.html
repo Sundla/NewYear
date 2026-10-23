@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMDB</title>
+  <style>
+    :root {
+      --primary: #8c6d46;
+      --primary-dark: #684f31;
+      --accent-purple: #a67c52;
+      --accent-purple-dark: #825f3c;
+      --bg: #fdfbf7;
+      --card-bg: #f4ebd0;
+      --card-inner: #eae1c0;
+      --text: #3d3324;
+      --text-muted: #786a55;
+      --border: #d4c4a8;
+      --success: #3b7a57;
+      --danger: #a63a3a;
+      --warning: #d99b00;
+      --glow: 0 4px 12px rgba(140, 109, 70, 0.15);
+      --glow-strong: 0 6px 18px rgba(140, 109, 70, 0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); padding: 10px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
+
+    h1, h2, h3 { color: var(--text); margin-bottom: 15px; }
+    .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: var(--glow); }
+    
+    .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: var(--glow); outline: none; }
+    .btn:hover { background: var(--primary-dark); box-shadow: var(--glow-strong); }
+    .btn-secondary { background: #dfd3b2; border: 1px solid var(--border); color: var(--text); }
+    .btn-secondary:hover { background: #d0c29d; }
+    .btn-success { background: #3b7a57; border: 1px solid var(--success); color: #fff; }
+    .btn-success:hover { background: #2e5f43; }
+    .btn-danger { background: #a63a3a; border: 1px solid var(--danger); color: #fff; }
+    .btn-danger:hover { background: #822d2d; }
+    .btn-warning { background: #c68b00; border: 1px solid var(--warning); color: #fff; }
+    .btn-warning:hover { background: #9f6f00; }
+    .btn-purple { background: var(--accent-purple); color: white; border: none; }
+    .btn-purple:hover { background: var(--accent-purple-dark); }
+    .btn-sm { padding: 5px 10px; font-size: 13px; }
+
+    input[type="text"], textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-inner); color: var(--text); font-size: 14px; margin-bottom: 12px; outline: none; transition: border 0.2s; }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: var(--glow); }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .d-none { display: none !important; }
+
+    .profile-header-preview { text-align: center; margin-bottom: 25px; }
+    .profile-pic-container { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 15px; overflow: hidden; background: var(--card-inner); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; box-shadow: var(--glow); }
+    .profile-pic-container img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-pic-placeholder { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px; }
+
+    .link-builder-row { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; position: relative; }
+    .optional-field { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border); }
+    .thumbnail-preview-box { width: 80px; height: 80px; border-radius: 6px; border: 1px solid var(--border); object-fit: cover; margin-top: 5px; display: block; }
+    
+    .view-profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin: 0 auto 10px; display: block; cursor: pointer; box-shadow: var(--glow); transition: transform 0.2s; }
+    .view-profile-pic:hover { transform: scale(1.05); }
+    .view-name { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 5px; color: var(--text); }
+    .view-bio { text-align: center; color: var(--text-muted); margin-bottom: 25px; font-size: 15px; }
+    
+    /* Standard Link Card */
+    .link-card { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 20px 20px 0 20px; margin-bottom: 20px; box-shadow: var(--glow); display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap; overflow: hidden; }
+    .link-card-inner-flex { display: flex; gap: 15px; align-items: flex-start; width: 100%; }
+    .link-card-thumb { width: 90px; height: 90px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+    .link-card-content { flex-grow: 1; min-width: 0; }
+
+    /* Home Category Sections */
+    .home-category-section { margin-top: 25px; border-top: 1px dashed var(--border); padding-top: 15px; display: none; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .category-title { font-size: 18px; font-weight: bold; color: var(--text); margin: 0; }
+
+    /* Side Scroll Container & Cards */
+    .side-scroll-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .side-scroll-container::-webkit-scrollbar {
+      height: 8px;
+    }
+    .side-scroll-container::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .side-scroll-card {
+      flex: 0 0 160px;
+      scroll-snap-align: start;
+      background: var(--card-inner);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--glow);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-scroll-card:hover {
+      transform: translateY(-3px);
+    }
+    .side-scroll-card.active-selected {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 12px rgba(140, 109, 70, 0.4);
+    }
+    .side-scroll-thumb-box {
+      width: 100%;
+      height: 200px;
+      background: #d8cca6;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      color: var(--text);
+      overflow: hidden;
+    }
+    .side-scroll-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .side-scroll-title {
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Expanded Details Panel for Side Scroll Items */
+    .side-scroll-details {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 20px 0 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--glow);
+      display: none;
+    }
+    .side-scroll-details.active {
+      display: block;
+    }
+
+    /* Grid View Styles (Two per row) */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .grid-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .grid-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--glow-strong);
+    }
+    .grid-thumb-box {
+      width: 100%;
+      height: 200px;
+      background: #d8cca6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      color: var(--text);
+      overflow: hidden;
+    }
+    .grid-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .grid-title {
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Grid Details Modal (Centered Popup) */
+    .grid-modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(61, 51, 36, 0.75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 15px;
+    }
+    .grid-modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .grid-modal-box {
+      position: relative;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      animation: popIn 0.3s ease;
+    }
+    .grid-modal-box img.modal-content-img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+    }
+
+    .iframe-toggle-btn { display: block; width: calc(100% + 40px); margin-left: -20px; margin-right: -20px; padding: 12px 20px; background: var(--accent-purple); color: white; text-align: center; font-weight: bold; font-size: 15px; margin-top: 15px; margin-bottom: 0; cursor: pointer; border: none; border-top: 1px solid var(--border); transition: 0.2s; outline: none; }
+    .iframe-toggle-btn:hover { background: var(--accent-purple-dark); }
+    
+    .iframe-container { width: 100%; display: none; }
+    .iframe-container.active { display: block; }
+    
+    .video-wrapper { 
+      position: relative; 
+      width: calc(100% + 40px); 
+      margin-left: -20px; 
+      padding-bottom: 56.25%; 
+      height: 0; 
+      background: #000; 
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0; 
+      overflow: hidden; 
+    }
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    
+    .direct-link-btn { 
+      display: block; 
+      width: calc(100% + 40px); 
+      margin-left: -20px; 
+      padding: 12px; 
+      background: #dfd3b2; 
+      border-bottom: 1px solid var(--border);
+      color: var(--text); 
+      text-align: center; 
+      text-decoration: none; 
+      font-weight: bold; 
+      font-size: 14px; 
+      transition: 0.2s; 
+    }
+    .direct-link-btn:hover { background: var(--primary); color: #fff; }
+    
+    .content-review { color: var(--text-muted); font-size: 14px; margin-bottom: 10px; white-space: pre-wrap; }
+    
+    /* Red text styling for Viewer Rating */
+    .content-rating { color: var(--danger); font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+
+    /* Clean Star Rating Styles without blue selection box */
+    .star-rating-group { display: flex; gap: 4px; font-size: 22px; cursor: pointer; margin-top: 5px; user-select: none; -webkit-user-select: none; }
+    .star { color: #ccc; transition: color 0.15s ease, transform 0.15s ease; outline: none; }
+    .star.rated { color: #ffbc00; text-shadow: 0 0 8px rgba(255, 188, 0, 0.8); transform: scale(1.1); }
+
+    .profile-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(61, 51, 36, 0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    .profile-modal.active { opacity: 1; pointer-events: auto; }
+    .profile-modal-content { position: relative; max-width: 90vw; max-height: 90vh; border-radius: 50%; overflow: hidden; border: 4px solid var(--primary); box-shadow: 0 0 30px rgba(140, 109, 70, 0.5); background: #fff; animation: popIn 0.3s ease; }
+    .profile-modal-content img { width: 300px; height: 300px; object-fit: cover; display: block; }
+    .profile-modal-close { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid var(--primary); width: 35px; height: 35px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; outline: none; z-index: 10; }
+    .profile-modal-close:hover { background: var(--primary); }
+
+    @keyframes popIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <!-- HOME VIEW -->
+  <div id="view-home" class="card">
+    <h1>SMDB</h1>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Secret Masti Database</p>
+    
+    <div class="hero-actions">
+      <button class="btn" onclick="openCreatorNew()">Create New List</button>
+      <button class="btn btn-warning" onclick="document.getElementById('edit-input').click()">📝 Edit List</button>
+      <button class="btn btn-success" onclick="document.getElementById('upload-input').click()"> View .smdb List</button>
+      
+      <input type="file" id="upload-input" accept=".smdb" class="d-none" onchange="uploadAndOpenList(event)">
+      <input type="file" id="edit-input" accept=".smdb" class="d-none" onchange="uploadAndEditList(event)">
+    </div>
+
+    <!-- FOUR LISTS SECTIONS (Auto-detected and ordered: Upcoming, Music, Movies, Videos) -->
+    
+    <!-- 1. Upcoming -->
+    <div id="section-upcoming" class="home-category-section">
+      <div class="category-header">
+        <h3 class="category-title">Upcoming</h3>
+      </div>
+      <div id="container-upcoming-scroll"></div>
+      <div id="container-upcoming-details"></div>
+    </div>
+
+    <!-- 2. Music -->
+    <div id="section-music" class="home-category-section">
+      <div class="category-header">
+        <h3 class="category-title">Music</h3>
+      </div>
+      <div id="container-music-scroll"></div>
+      <div id="container-music-details"></div>
+    </div>
+
+    <!-- 3. Movies -->
+    <div id="section-movies" class="home-category-section">
+      <div class="category-header">
+        <h3 class="category-title">Movies</h3>
+      </div>
+      <div id="container-movies-scroll"></div>
+      <div id="container-movies-details"></div>
+    </div>
+
+    <!-- 4. Videos -->
+    <div id="section-videos" class="home-category-section">
+      <div class="category-header">
+        <h3 class="category-title">Videos</h3>
+      </div>
+      <div id="container-videos-scroll"></div>
+      <div id="container-videos-details"></div>
+    </div>
+
+  </div>
+
+  <!-- CREATOR / EDITOR VIEW -->
+  <div id="view-creator" class="card d-none">
+    <h2 id="creator-heading">Create Database</h2>
+    
+    <div class="profile-header-preview">
+      <div class="profile-pic-container" onclick="document.getElementById('profile-pic-file').click()" title="Click to upload profile picture">
+        <img id="creator-pic-preview" class="d-none" alt="Profile">
+        <div id="creator-pic-placeholder" class="profile-pic-placeholder">Upload Image</div>
+      </div>
+      <input type="file" id="profile-pic-file" accept="image/*" class="d-none" onchange="handleProfilePicUpload(event)">
+    </div>
+
+    <label><b>Profile Name:</b></label>
+    <input type="text" id="profile-name" placeholder="e.g., sohan kubrick">
+
+    <label><b>Bio / Description:</b></label>
+    <textarea id="profile-bio" placeholder="Write a short bio about yourself..."></textarea>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+
+    <h3>Content List</h3>
+    <div id="links-container"></div>
+
+    <button class="btn btn-secondary" onclick="addLinkRow()">+ Add Content / Movie</button>
+    
+    <div style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="btn btn-success" onclick="exportSMDBFile()">💾 Download List (.smdb)</button>
+      <button class="btn btn-secondary" onclick="switchView('view-home')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- VIEWER PORTAL VIEW -->
+  <div id="view-portal" class="card d-none">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <!-- Viewer View Changer Top Left -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label for="viewer-type-select" style="font-size: 13px; font-weight: 600;">View As:</label>
+        <select id="viewer-type-select" onchange="changeViewerLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
+          <option value="standard">Scroll List (Normal)</option>
+          <option value="side-scroll">Side Scroll (Horizontal)</option>
+          <option value="grid">Grid View (2 per line)</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="switchView('view-home')">🏠 Back to Home</button>
+    </div>
+
+    <!-- Dynamic Header Box -->
+    <div id="viewer-header-area"></div>
+
+    <div id="viewer-links-container"></div>
+  </div>
+
+  <!-- GRID CONTENT DETAILS POPUP MODAL -->
+  <div id="grid-item-modal" class="grid-modal-overlay" onclick="closeGridModal()">
+    <div class="grid-modal-box" onclick="event.stopPropagation()">
+      <button class="profile-modal-close" onclick="closeGridModal()">×</button>
+      <div id="grid-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- PROFILE POPUP MODAL -->
+  <div id="profile-modal" class="profile-modal" onclick="closeProfilePopup()">
+    <div class="profile-modal-content" onclick="event.stopPropagation()">
+      <button class="profile-modal-close" onclick="closeProfilePopup()">×</button>
+      <img id="modal-profile-img" src="" alt="Profile Popup">
+    </div>
+  </div>
+
+  <script>
+    let currentListData = {
+      name: "",
+      bio: "",
+      profilePic: "",
+      items: []
+    };
+
+    let activeLoadedData = null;
+    let currentViewerLayout = "standard";
+
+    // Automatically try fetching the 4 list files on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const filesToFetch = [
+        { key: 'upcoming', filename: 'upcoming.smdb' },
+        { key: 'music', filename: 'music.smdb' },
+        { key: 'movies', filename: 'movies.smdb' },
+        { key: 'videos', filename: 'videos.smdb' }
+      ];
+
+      filesToFetch.forEach(f => {
+        fetch(f.filename)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('File not found');
+          })
+          .then(data => {
+            renderCategorySideScroll(f.key, data);
+            document.getElementById(`section-${f.key}`).style.display = 'block';
+          })
+          .catch(err => {
+            // File not present or failed to load, keep section hidden
+            console.log(`${f.filename} not detected.`);
+          });
+      });
+    });
+
+    function switchView(viewId) {
+      ['view-home', 'view-creator', 'view-portal'].forEach(id => {
+        document.getElementById(id).classList.add('d-none');
+      });
+      document.getElementById(viewId).classList.remove('d-none');
+    }
+
+    function openCreatorNew() {
+      document.getElementById('creator-heading').innerText = "Create Database";
+      document.getElementById('profile-name').value = "";
+      document.getElementById('profile-bio').value = "";
+      currentListData.profilePic = "";
+      
+      const imgPrev = document.getElementById('creator-pic-preview');
+      imgPrev.src = "";
+      imgPrev.classList.add('d-none');
+      document.getElementById('creator-pic-placeholder').classList.remove('d-none');
+
+      document.getElementById('links-container').innerHTML = "";
+      addLinkRow();
+      switchView('view-creator');
+    }
+
+    function handleProfilePicUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentListData.profilePic = e.target.result;
+        const imgPrev = document.getElementById('creator-pic-preview');
+        imgPrev.src = currentListData.profilePic;
+        imgPrev.classList.remove('d-none');
+        document.getElementById('creator-pic-placeholder').classList.add('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addLinkRow(itemData = {}) {
+      const container = document.getElementById('links-container');
+      const rowId = 'link-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+      
+      const name = itemData.name || "";
+      const pic = itemData.pic || "";
+      const review = itemData.review || "";
+      const link = itemData.link || "";
+      const rating = itemData.rating || "";
+
+      const div = document.createElement('div');
+      div.className = 'link-builder-row';
+      div.id = rowId;
+
+      div.innerHTML = `
+        <button class="btn btn-danger" style="position: absolute; right: 10px; top: 10px; padding: 4px 8px; font-size: 12px; margin:0;" onclick="document.getElementById('${rowId}').remove()">✕ Remove</button>
+        
+        <label><b>Content Name:</b></label>
+        <input type="text" class="row-name" value="${escapeHtml(name)}" placeholder="e.g., Inception (2010)">
+        
+        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'pic')">🖼️ Upload Pic</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'review')">✍️ Add Review</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'link')">🔗 Add Link</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'rating')">⭐ Add Rating</button>
+        </div>
+
+        <div id="${rowId}-field-pic" class="optional-field ${pic ? '' : 'd-none'}">
+          <label><b>Content Picture:</b></label>
+          <input type="file" accept="image/*" onchange="handleContentPicUpload(event, '${rowId}')">
+          <input type="hidden" class="row-pic" value="${pic}">
+          <img id="${rowId}-pic-prev" class="thumbnail-preview-box ${pic ? '' : 'd-none'}" src="${pic}">
+        </div>
+
+        <div id="${rowId}-field-review" class="optional-field ${review ? '' : 'd-none'}">
+          <label><b>Review / Description:</b></label>
+          <textarea class="row-review" placeholder="Write your thoughts or review...">${escapeHtml(review)}</textarea>
+        </div>
+
+        <div id="${rowId}-field-link" class="optional-field ${link ? '' : 'd-none'}">
+          <label><b>Link / Video URL:</b></label>
+          <input type="text" class="row-link" value="${escapeHtml(link)}" placeholder="e.g., https://www.youtube.com/watch?v=...">
+        </div>
+
+        <div id="${rowId}-field-rating" class="optional-field ${rating ? '' : 'd-none'}">
+          <label><b>Rating (1 to 10 Stars):</b></label>
+          <input type="hidden" class="row-rating" value="${rating || '0'}">
+          <div class="star-rating-group" id="${rowId}-stars"></div>
+          <span style="font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block;" id="${rowId}-rating-text">${rating ? rating + ' / 10 Stars' : 'Click stars to rate'}</span>
+        </div>
+      `;
+      container.appendChild(div);
+
+      const starGroup = div.querySelector('.star-rating-group');
+      for (let i = 1; i <= 10; i++) {
+        const starSpan = document.createElement('span');
+        starSpan.className = 'star' + ((rating && i <= parseInt(rating)) ? ' rated' : '');
+        starSpan.innerHTML = '★';
+        starSpan.onclick = function() {
+          setBuilderRating(rowId, i);
+        };
+        starGroup.appendChild(starSpan);
+      }
+    }
+
+    function setBuilderRating(rowId, score) {
+      const row = document.getElementById(rowId);
+      row.querySelector('.row-rating').value = score;
+      const stars = row.querySelectorAll('.star');
+      stars.forEach((star, idx) => {
+        if (idx < score) {
+          star.classList.add('rated');
+        } else {
+          star.classList.remove('rated');
+        }
+      });
+      document.getElementById(`${rowId}-rating-text`).innerText = `${score} / 10 Stars`;
+    }
+
+    function toggleField(rowId, fieldName) {
+      const fieldDiv = document.getElementById(`${rowId}-field-${fieldName}`);
+      fieldDiv.classList.toggle('d-none');
+    }
+
+    function handleContentPicUpload(event, rowId) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const row = document.getElementById(rowId);
+        row.querySelector('.row-pic').value = e.target.result;
+        const prevImg = document.getElementById(`${rowId}-pic-prev`);
+        prevImg.src = e.target.result;
+        prevImg.classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function exportSMDBFile() {
+      const name = document.getElementById('profile-name').value.trim() || 'My Profile';
+      const bio = document.getElementById('profile-bio').value.trim();
+      
+      const rowElements = document.querySelectorAll('.link-builder-row');
+      const items = [];
+
+      rowElements.forEach(row => {
+        const itemName = row.querySelector('.row-name').value.trim();
+        if (!itemName) return;
+
+        const itemPic = row.querySelector('.row-pic') ? row.querySelector('.row-pic').value : "";
+        const itemReviewEl = row.querySelector('.row-review');
+        const itemReview = itemReviewEl && !document.getElementById(row.id + '-field-review').classList.contains('d-none') ? itemReviewEl.value.trim() : "";
+        
+        const itemLinkEl = row.querySelector('.row-link');
+        const itemLink = itemLinkEl && !document.getElementById(row.id + '-field-link').classList.contains('d-none') ? itemLinkEl.value.trim() : "";
+        
+        const itemRatingEl = row.querySelector('.row-rating');
+        const itemRating = itemRatingEl && !document.getElementById(row.id + '-field-rating').classList.contains('d-none') ? itemRatingEl.value : "";
+
+        items.push({
+          name: itemName,
+          pic: itemPic,
+          review: itemReview,
+          link: itemLink,
+          rating: itemRating && itemRating !== '0' ? itemRating : ""
+        });
+      });
+
+      const smdbData = {
+        format: "SMDB-LinkList",
+        version: 6,
+        name: name,
+        bio: bio,
+        profilePic: currentListData.profilePic,
+        items: items
+      };
+
+      try {
+        const jsonString = JSON.stringify(smdbData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.smdb`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert("Error generating file: " + err.message);
+      }
+    }
+
+    function uploadAndEditList(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          loadDataIntoCreator(data);
+        } catch (err) {
+          alert('Invalid .smdb file format!');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function loadDataIntoCreator(data) {
+      document.getElementById('creator-heading').innerText = "Edit Link List";
+      document.getElementById('profile-name').value = data.name || "";
+      document.getElementById('profile-bio').value = data.bio || "";
+      
+      currentListData.profilePic = data.profilePic || "";
+      const imgPrev = document.getElementById('creator-pic-preview');
+      if (currentListData.profilePic) {
+        imgPrev.src = currentListData.profilePic;
+        imgPrev.classList.remove('d-none');
+        document.getElementById('creator-pic-placeholder').classList.add('d-none');
+      } else {
+        imgPrev.src = "";
+        imgPrev.classList.add('d-none');
+        document.getElementById('creator-pic-placeholder').classList.add('d-none');
+      }
+
+      const container = document.getElementById('links-container');
+      container.innerHTML = "";
+
+      if (data.items && data.items.length > 0) {
+        data.items.forEach(item => {
+          addLinkRow(item);
+        });
+      } else {
+        addLinkRow();
+      }
+
+      switchView('view-creator');
+    }
+
+    function uploadAndOpenList(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          activeLoadedData = data;
+          currentViewerLayout = "standard";
+          document.getElementById('viewer-type-select').value = "standard";
+          renderViewerPortal(data);
+        } catch (err) {
+          alert('Invalid .smdb file format!');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function renderCategorySideScroll(catKey, data) {
+      const scrollContainer = document.getElementById(`container-${catKey}-scroll`);
+      const detailsContainer = document.getElementById(`container-${catKey}-details`);
+
+      scrollContainer.innerHTML = "";
+      detailsContainer.innerHTML = "";
+
+      if (!data.items || data.items.length === 0) {
+        return;
+      }
+
+      const scrollWrapper = document.createElement('div');
+      scrollWrapper.className = 'side-scroll-container';
+
+      if (data.name || data.profilePic) {
+        const profileCard = document.createElement('div');
+        profileCard.className = 'side-scroll-card';
+        profileCard.id = `side-card-${catKey}-profile`;
+        profileCard.onclick = () => toggleCategorySideScrollDetails(catKey, 'profile');
+        
+        let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
+        profileCard.innerHTML = `
+          <div class="side-scroll-thumb-box">${pThumbContent}</div>
+          <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
+        `;
+        scrollWrapper.appendChild(profileCard);
+
+        const profileDetailsBox = document.createElement('div');
+        profileDetailsBox.className = 'side-scroll-details';
+        profileDetailsBox.id = `side-details-${catKey}-profile`;
+        profileDetailsBox.innerHTML = `
+          <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3>
+          <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
+        `;
+        detailsContainer.appendChild(profileDetailsBox);
+      }
+
+      data.items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'side-scroll-card';
+        card.id = `side-card-${catKey}-${index}`;
+        card.onclick = () => toggleCategorySideScrollDetails(catKey, index);
+
+        let thumbContent = '';
+        if (item.pic) {
+          thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
+        } else {
+          thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
+        }
+
+        card.innerHTML = `
+          <div class="side-scroll-thumb-box">
+            ${thumbContent}
+          </div>
+          <div class="side-scroll-title">${escapeHtml(item.name)}</div>
+        `;
+        scrollWrapper.appendChild(card);
+
+        const detailsBox = document.createElement('div');
+        detailsBox.className = 'side-scroll-details';
+        detailsBox.id = `side-details-${catKey}-${index}`;
+
+        let ratingHtml = '';
+        if (item.rating) {
+          let rVal = parseInt(item.rating) || 0;
+          let starString = '';
+          for (let s = 1; s <= 10; s++) {
+            starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+          }
+          ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+        }
+
+        let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+        
+        let actionHtml = '';
+        if (item.link && item.link.trim() !== '') {
+          const embedUrl = convertToEmbedUrl(item.link);
+          if (embedUrl) {
+            actionHtml = `
+              <button id="iframe-btn-${catKey}-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${catKey}-${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+              <div id="iframe-box-${catKey}-${index}" class="iframe-container">
+                <div class="video-wrapper">
+                  <iframe src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+              </div>
+            `;
+          } else {
+            actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+          }
+        }
+
+        detailsBox.innerHTML = `
+          <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
+          ${ratingHtml}
+          ${reviewHtml}
+          ${actionHtml}
+        `;
+        detailsContainer.appendChild(detailsBox);
+      });
+
+      scrollContainer.appendChild(scrollWrapper);
+    }
+
+    function toggleCategorySideScrollDetails(catKey, targetIndex) {
+      const detailsContainer = document.getElementById(`container-${catKey}-details`);
+      const scrollContainer = document.getElementById(`container-${catKey}-scroll`);
+
+      const detailsBoxes = detailsContainer.querySelectorAll('.side-scroll-details');
+      const sideCards = scrollContainer.querySelectorAll('.side-scroll-card');
+
+      detailsBoxes.forEach(box => box.classList.remove('active'));
+      sideCards.forEach(card => card.classList.remove('active-selected'));
+
+      const targetBox = document.getElementById(`side-details-${catKey}-${targetIndex}`);
+      const targetCard = document.getElementById(`side-card-${catKey}-${targetIndex}`);
+
+      if (targetBox && targetCard) {
+        targetBox.classList.add('active');
+        targetCard.classList.add('active-selected');
+        targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function changeViewerLayout(newType) {
+      if (!activeLoadedData) return;
+      currentViewerLayout = newType;
+      renderViewerPortal(activeLoadedData);
+    }
+
+    function renderViewerPortal(data) {
+      const headerArea = document.getElementById('viewer-header-area');
+      headerArea.innerHTML = "";
+
+      if (currentViewerLayout !== 'side-scroll') {
+        let profilePicHtml = data.profilePic ? `<img id="view-profile-img" class="view-profile-pic" src="${data.profilePic}" alt="Profile" onclick="openProfilePopup()" title="Click to view profile picture">` : '';
+        headerArea.innerHTML = `
+          <div id="viewer-header" style="text-align: center; margin-bottom: 25px;">
+            ${profilePicHtml}
+            <div id="view-name" class="view-name">${escapeHtml(data.name || "Untitled Profile")}</div>
+            <div id="view-bio" class="view-bio">${escapeHtml(data.bio || "")}</div>
+          </div>
+        `;
+      }
+
+      const container = document.getElementById('viewer-links-container');
+      container.innerHTML = "";
+
+      if (data.items && data.items.length > 0) {
+        if (currentViewerLayout === 'side-scroll') {
+          const scrollWrapper = document.createElement('div');
+          scrollWrapper.className = 'side-scroll-container';
+
+          const profileCard = document.createElement('div');
+          profileCard.className = 'side-scroll-card';
+          profileCard.id = 'side-card-profile';
+          profileCard.onclick = () => toggleSideScrollDetails('profile');
+          
+          let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
+          profileCard.innerHTML = `
+            <div class="side-scroll-thumb-box">${pThumbContent}</div>
+            <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
+          `;
+          scrollWrapper.appendChild(profileCard);
+
+          data.items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'side-scroll-card';
+            card.id = `side-card-${index}`;
+            card.onclick = () => toggleSideScrollDetails(index);
+
+            let thumbContent = '';
+            if (item.pic) {
+              thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
+            } else {
+              thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
+            }
+
+            card.innerHTML = `
+              <div class="side-scroll-thumb-box">
+                ${thumbContent}
+              </div>
+              <div class="side-scroll-title">${escapeHtml(item.name)}</div>
+            `;
+            scrollWrapper.appendChild(card);
+          });
+          container.appendChild(scrollWrapper);
+
+          const profileDetailsBox = document.createElement('div');
+          profileDetailsBox.className = 'side-scroll-details';
+          profileDetailsBox.id = 'side-details-profile';
+          profileDetailsBox.innerHTML = `
+            <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Untitled Profile")}</h3>
+            <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
+          `;
+          container.appendChild(profileDetailsBox);
+
+          data.items.forEach((item, index) => {
+            const detailsBox = document.createElement('div');
+            detailsBox.className = 'side-scroll-details';
+            detailsBox.id = `side-details-${index}`;
+
+            let ratingHtml = '';
+            if (item.rating) {
+              let rVal = parseInt(item.rating) || 0;
+              let starString = '';
+              for (let s = 1; s <= 10; s++) {
+                starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+              }
+              ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+            }
+
+            let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+            
+            let actionHtml = '';
+            if (item.link && item.link.trim() !== '') {
+              const embedUrl = convertToEmbedUrl(item.link);
+              if (embedUrl) {
+                actionHtml = `
+                  <button id="iframe-btn-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+                  <div id="iframe-box-${index}" class="iframe-container">
+                    <div class="video-wrapper">
+                      <iframe src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+                  </div>
+                `;
+              } else {
+                actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+              }
+            }
+
+            detailsBox.innerHTML = `
+              <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
+              ${ratingHtml}
+              ${reviewHtml}
+              ${actionHtml}
+            `;
+            container.appendChild(detailsBox);
+          });
+
+        } else if (currentViewerLayout === 'grid') {
+          const gridWrapper = document.createElement('div');
+          gridWrapper.className = 'grid-container';
+
+          data.items.forEach((item, index) => {
+            const gridCard = document.createElement('div');
+            gridCard.className = 'grid-card';
+            gridCard.onclick = () => openGridModal(item, index);
+
+            let thumbContent = '';
+            if (item.pic) {
+              thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
+            } else {
+              thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
+            }
+
+            gridCard.innerHTML = `
+              <div class="grid-thumb-box">
+                ${thumbContent}
+              </div>
+              <div class="grid-title">${escapeHtml(item.name)}</div>
+            `;
+            gridWrapper.appendChild(gridCard);
+          });
+
+          container.appendChild(gridWrapper);
+
+        } else {
+          data.items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'link-card';
+
+            let thumbHtml = item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : '';
+            
+            let ratingHtml = '';
+            if (item.rating) {
+              let rVal = parseInt(item.rating) || 0;
+              let starString = '';
+              for (let s = 1; s <= 10; s++) {
+                starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+              }
+              ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+            }
+
+            let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+            
+            let actionHtml = '';
+            if (item.link && item.link.trim() !== '') {
+              const embedUrl = convertToEmbedUrl(item.link);
+              if (embedUrl) {
+                actionHtml = `
+                  <button id="iframe-btn-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+                  <div id="iframe-box-${index}" class="iframe-container">
+                    <div class="video-wrapper">
+                      <iframe src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+                  </div>
+                `;
+              } else {
+                actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+              }
+            }
+
+            card.innerHTML = `
+              <div class="link-card-inner-flex">
+                ${thumbHtml}
+                <div class="link-card-content">
+                  <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
+                  ${ratingHtml}
+                  ${reviewHtml}
+                </div>
+              </div>
+              ${actionHtml}
+            `;
+            container.appendChild(card);
+          });
+        }
+      } else {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No content available in this list.</p>`;
+      }
+
+      switchView('view-portal');
+    }
+
+    function toggleSideScrollDetails(targetKey) {
+      const detailsBoxes = document.querySelectorAll('#viewer-links-container .side-scroll-details');
+      const sideCards = document.querySelectorAll('#viewer-links-container .side-scroll-card');
+
+      detailsBoxes.forEach(box => box.classList.remove('active'));
+      sideCards.forEach(card => card.classList.remove('active-selected'));
+
+      const targetBox = document.getElementById(`side-details-${targetKey}`);
+      const targetCard = document.getElementById(`side-card-${targetKey}`);
+
+      if (targetBox && targetCard) {
+        targetBox.classList.toggle('active');
+        targetCard.classList.toggle('active-selected');
+        
+        if (targetBox.classList.contains('active')) {
+          targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    function openGridModal(item, index) {
+      const modalBody = document.getElementById('grid-modal-body');
+      
+      let picHtml = item.pic ? `<img class="modal-content-img" src="${item.pic}" alt="${escapeHtml(item.name)}">` : '';
+
+      let ratingHtml = '';
+      if (item.rating) {
+        let rVal = parseInt(item.rating) || 0;
+        let starString = '';
+        for (let s = 1; s <= 10; s++) {
+          starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+        }
+        ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+      }
+
+      let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+
+      let actionHtml = '';
+      if (item.link && item.link.trim() !== '') {
+        const embedUrl = convertToEmbedUrl(item.link);
+        if (embedUrl) {
+          actionHtml = `
+            <button id="iframe-btn-modal-${index}" class="iframe-toggle-btn" onclick="toggleIframeModal('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+            <div id="iframe-box-modal-${index}" class="iframe-container">
+              <div class="video-wrapper">
+                <iframe src="" frameborder="0" allowfullscreen></iframe>
+              </div>
+              <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+            </div>
+          `;
+        } else {
+          actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+        }
+      }
+
+      modalBody.innerHTML = `
+        <h2 style="margin-bottom: 12px; font-size: 20px;">${escapeHtml(item.name)}</h2>
+        ${picHtml}
+        ${ratingHtml}
+        ${reviewHtml}
+        ${actionHtml}
+      `;
+
+      document.getElementById('grid-item-modal').classList.add('active');
+    }
+
+    function closeGridModal() {
+      document.getElementById('grid-item-modal').classList.remove('active');
+    }
+
+    function toggleIframeModal(index, embedUrl, itemName) {
+      const containerId = 'iframe-box-modal-' + index;
+      const container = document.getElementById(containerId);
+      const iframe = container.querySelector('iframe');
+      const btn = document.getElementById('iframe-btn-modal-' + index);
+      
+      if (container.classList.contains('active')) {
+        container.classList.remove('active');
+        iframe.src = ""; 
+        btn.innerText = `▶ Watch / Open: ${itemName}`;
+      } else {
+        iframe.src = embedUrl;
+        container.classList.add('active');
+        btn.innerText = `✕ Close: ${itemName}`;
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function toggleIframe(index, embedUrl, itemName) {
+      const containerId = 'iframe-box-' + index;
+      const container = document.getElementById(containerId);
+      const iframe = container.querySelector('iframe');
+      const btn = document.getElementById('iframe-btn-' + index);
+      
+      if (container.classList.contains('active')) {
+        container.classList.remove('active');
+        iframe.src = ""; 
+        btn.innerText = `▶ Watch / Open: ${itemName}`;
+      } else {
+        iframe.src = embedUrl;
+        container.classList.add('active');
+        btn.innerText = `✕ Close: ${itemName}`;
+      }
+    }
+
+    function openProfilePopup() {
+      const modal = document.getElementById('profile-modal');
+      const img = document.getElementById('view-profile-img');
+      if (img && img.src && !img.classList.contains('d-none')) {
+        modal.classList.add('active');
+        document.getElementById('modal-profile-img').src = img.src;
+      }
+    }
+
+    function closeProfilePopup() {
+      document.getElementById('profile-modal').classList.remove('active');
+    }
+
+    function convertToEmbedUrl(url) {
+      if (!url) return null;
+      
+      // YouTube Embed Support
+      let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      if (match && match[1]) {
+        return `https://www.youtube.com/embed/${match[1]}`;
+      }
+
+      // Vimeo Embed Support
+      match = url.match(/(?:vimeo\.com\/)([0-9]+)/);
+      if (match && match[1]) {
+        return `https://player.vimeo.com/video/${match[1]}`;
+      }
+
+      // OK.ru Embed Support (e.g., https://ok.ru/video/2112068520475)
+      match = url.match(/(?:ok\.ru\/video\/)([0-9]+)/);
+      if (match && match[1]) {
+        return `https://ok.ru/videoembed/${match[1]}`;
+      }
+
+      return null;
+    }
+  </script>
+</body>
+</html>

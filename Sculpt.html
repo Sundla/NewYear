@@ -1155,7 +1155,7 @@
       selectModel(currentMesh);
     });
 
-    // Common file loading logic
+    // Common file loading logic with full color/texture reconstruction & positioning support
     async function handleFileLoad(file) {
       if (!file) return;
       loadingScreen.style.display = 'block';
@@ -1175,38 +1175,93 @@
 
       const fileURL = URL.createObjectURL(file);
 
-      const handleLoadedObj = (objScene) => {
-        let foundMesh = null;
-        objScene.traverse((child) => {
-          if (child.isMesh && !foundMesh) foundMesh = child;
+      const processLoadedObject = (rootObj) => {
+        let loadedMeshes = [];
+        rootObj.traverse((child) => {
+          if (child.isMesh) {
+            loadedMeshes.push(child);
+          }
         });
 
-        if (foundMesh) {
-          const { canvas, ctx, texture } = createDrawCanvas('#ffffff');
-          foundMesh.material = new THREE.MeshStandardMaterial({
-            map: texture,
-            roughness: 0.4,
-            metalness: 0.1,
-            side: THREE.DoubleSide
+        if (loadedMeshes.length > 0) {
+          // If multiple meshes are imported, group them or center them collectively
+          const groupCenter = new THREE.Vector3();
+          loadedMeshes.forEach(m => {
+            m.geometry.computeBoundingBox();
+            const box = m.geometry.boundingBox;
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            groupCenter.add(center);
           });
-          foundMesh.userData = { canvas, ctx };
-          setupModel(foundMesh, meshes.length > 0);
+          groupCenter.divideScalar(loadedMeshes.length);
+
+          loadedMeshes.forEach((mesh) => {
+            // Ensure proper texture mapping channels and full color retention
+            if (!mesh.geometry.attributes.uv) {
+              const count = mesh.geometry.attributes.position.count;
+              const uvs = new Float32Array(count * 2);
+              for (let i = 0; i < count; i++) {
+                uvs[i * 2] = 0.5;
+                uvs[i * 2 + 1] = 0.5;
+              }
+              mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+            }
+
+            // Extract or generate texture canvas context for full paint/color modification capability
+            let canvas, ctx, texture;
+            if (mesh.material && mesh.material.map && mesh.material.map.image) {
+              const img = mesh.material.map.image;
+              canvas = document.createElement('canvas');
+              canvas.width = img.width || 1024;
+              canvas.height = img.width || 1024;
+              ctx = canvas.getContext('2d', { willReadFrequently: true });
+              try {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              } catch(e) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+              }
+              texture = new THREE.CanvasTexture(canvas);
+              texture.flipY = mesh.material.map.flipY !== undefined ? mesh.material.map.flipY : true;
+            } else {
+              let baseColorHex = '#FFFFFF';
+              if (mesh.material && mesh.material.color) {
+                baseColorHex = '#' + mesh.material.color.getHexString();
+              }
+              const created = createDrawCanvas(baseColorHex);
+              canvas = created.canvas;
+              ctx = created.ctx;
+              texture = created.texture;
+            }
+
+            mesh.material = new THREE.MeshStandardMaterial({
+              map: texture,
+              roughness: (mesh.material && mesh.material.roughness !== undefined) ? mesh.material.roughness : 0.4,
+              metalness: (mesh.material && mesh.material.metalness !== undefined) ? mesh.material.metalness : 0.1,
+              side: THREE.DoubleSide
+            });
+            mesh.userData = { canvas, ctx };
+
+            // Detach from original loader parent hierarchy and add directly to scene framework
+            rootObj.remove(mesh);
+            setupModel(mesh, meshes.length > 0);
+          });
         } else {
-          alert('No valid 3D mesh found.');
-          loadingScreen.style.display = 'none';
+          alert('No valid 3D mesh found in file.');
         }
+        loadingScreen.style.display = 'none';
         URL.revokeObjectURL(fileURL);
       };
 
       if (filename.endsWith('.glb') || filename.endsWith('.gltf')) {
-        gltfLoader.load(fileURL, (gltf) => handleLoadedObj(gltf.scene), undefined, (err) => {
+        gltfLoader.load(fileURL, (gltf) => processLoadedObject(gltf.scene), undefined, (err) => {
           console.error(err);
           alert('Failed to load GLTF file.');
           loadingScreen.style.display = 'none';
           URL.revokeObjectURL(fileURL);
         });
       } else if (filename.endsWith('.obj')) {
-        objLoader.load(fileURL, (obj) => handleLoadedObj(obj), undefined, (err) => {
+        objLoader.load(fileURL, (obj) => processLoadedObject(obj), undefined, (err) => {
           console.error(err);
           alert('Failed to load OBJ file.');
           loadingScreen.style.display = 'none';
@@ -1257,6 +1312,7 @@
           const planeMesh = new THREE.Mesh(geometry, material);
           planeMesh.userData = { canvas, ctx };
           setupModel(planeMesh, meshes.length > 0);
+          loadingScreen.style.display = 'none';
           URL.revokeObjectURL(fileURL);
         };
         img.onerror = (err) => {
@@ -1454,19 +1510,60 @@
     document.getElementById('undo-btn').addEventListener('click', undo);
     document.getElementById('redo-btn').addEventListener('click', redo);
 
+    // Export Handler: Save full structure collection of all models as one single file with full color/texture configuration and current center framing
     document.getElementById('export-btn').addEventListener('click', () => {
-      if (!currentMesh) return;
-      currentMesh.updateMatrix();
+      if (meshes.length === 0) return;
+
+      // Temporarily detach transform gizmo during export serialization
+      transformControls.detach();
+
+      // Create a master group containing all scene models preserving individual world transforms, textures, and color data
+      const exportGroup = new THREE.Group();
+      exportGroup.name = "SculptCollection";
+
+      // Compute bounding box center across all current models to normalize center coordinate frame
+      const overallBox = new THREE.Box3();
+      meshes.forEach(m => {
+        m.updateMatrixWorld(true);
+        overallBox.expandByObject(m);
+      });
+      const collectionCenter = new THREE.Vector3();
+      overallBox.getCenter(collectionCenter);
+
+      meshes.forEach((mesh) => {
+        const cloneMesh = mesh.clone(true);
+        cloneMesh.geometry = mesh.geometry.clone();
+        
+        // Retain embedded canvas texture mapping configurations explicitly in exported material
+        if (mesh.material) {
+          cloneMesh.material = mesh.material.clone();
+          if (mesh.material.map) {
+            cloneMesh.material.map = mesh.material.map.clone();
+            cloneMesh.material.map.needsUpdate = true;
+          }
+        }
+        exportGroup.add(cloneMesh);
+      });
+
+      // Shift group geometry collection to center current active coordinate view frame
+      exportGroup.position.sub(collectionCenter);
+      exportGroup.updateMatrixWorld(true);
+
       exporter.parse(
-        currentMesh,
+        exportGroup,
         (result) => {
           const blob = new Blob([result], { type: 'application/octet-stream' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
           link.download = 'sculpted-model.glb';
           link.click();
+
+          // Re-attach gizmo to current mesh if active
+          if (currentMesh) {
+            transformControls.attach(currentMesh);
+          }
         },
-        { binary: true }
+        { binary: true, embedImages: true }
       );
     });
 

@@ -30,7 +30,7 @@
       position: relative;
     }
 
-    /* Left UI: Fixed width containing Load, Download, Move, and full unconstrained Animation List */
+    /* Left UI */
     #left-ui {
       position: absolute;
       top: 20px;
@@ -40,13 +40,13 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 10px;
-      width: 200px;
+      width: 220px;
       max-height: calc(100vh - 40px);
       overflow-y: auto;
       padding-right: 4px;
     }
 
-    /* Right UI: Drawing Mode Entry & Controls */
+    /* Right UI */
     #right-ui {
       position: absolute;
       top: 20px;
@@ -79,7 +79,6 @@
       position: relative;
     }
 
-    /* Close (Cross) Button */
     .close-btn {
       position: absolute;
       top: 6px;
@@ -94,9 +93,7 @@
       transition: color 0.2s ease;
     }
 
-    .close-btn:hover {
-      color: #fff;
-    }
+    .close-btn:hover { color: #fff; }
 
     .control-group {
       display: flex;
@@ -113,9 +110,7 @@
       width: 100%;
     }
 
-    input[type="file"] {
-      display: none;
-    }
+    input[type="file"] { display: none; }
 
     .btn {
       display: inline-block;
@@ -133,37 +128,15 @@
       width: 100%;
     }
 
-    .btn:hover {
-      background-color: #0056b3;
-    }
-
-    .btn-draw {
-      background-color: #28a745;
-      width: auto;
-    }
-
-    .btn-draw:hover {
-      background-color: #218838;
-    }
-
-    .btn-download {
-      background-color: #fd7e14;
-      display: none; /* Controlled dynamically */
-    }
-
-    .btn-download:hover {
-      background-color: #e06b0e;
-    }
-
-    .btn-move {
-      background-color: #6f42c1;
-      width: 100%;
-      display: none; /* Initially hidden until animations are found */
-    }
-
-    .btn-move:hover {
-      background-color: #5a32a3;
-    }
+    .btn:hover { background-color: #0056b3; }
+    .btn-sky { background-color: #17a2b8; }
+    .btn-sky:hover { background-color: #138496; }
+    .btn-draw { background-color: #28a745; width: auto; }
+    .btn-draw:hover { background-color: #218838; }
+    .btn-download { background-color: #fd7e14; display: none; }
+    .btn-download:hover { background-color: #e06b0e; }
+    .btn-move { background-color: #6f42c1; width: 100%; display: none; }
+    .btn-move:hover { background-color: #5a32a3; }
 
     .anim-btn {
       background-color: #20c997;
@@ -171,44 +144,16 @@
       font-size: 13px;
       padding: 8px 12px;
     }
+    .anim-btn:hover { background-color: #17a589; }
+    .anim-btn.active { background-color: #ffc107; color: #000; }
 
-    .anim-btn:hover {
-      background-color: #17a589;
-    }
+    .btn-toggle { background-color: #17a2b8; width: 100%; }
+    .btn-toggle.painting { background-color: #ffc107; color: #000; }
 
-    .anim-btn.active {
-      background-color: #ffc107;
-      color: #000;
-    }
+    .btn-step { background-color: #6c757d; flex: 1; padding: 8px 10px; font-size: 16px; }
+    .btn-step:hover { background-color: #5a6268; }
+    .btn-step:disabled { background-color: #444; color: #888; cursor: not-allowed; }
 
-    .btn-toggle {
-      background-color: #17a2b8;
-      width: 100%;
-    }
-
-    .btn-toggle.painting {
-      background-color: #ffc107;
-      color: #000;
-    }
-
-    .btn-step {
-      background-color: #6c757d;
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 16px;
-    }
-
-    .btn-step:hover {
-      background-color: #5a6268;
-    }
-
-    .btn-step:disabled {
-      background-color: #444;
-      color: #888;
-      cursor: not-allowed;
-    }
-
-    /* Customized Color Picker Controls */
     .color-picker-wrapper {
       position: relative;
       display: flex;
@@ -231,10 +176,7 @@
       justify-content: center;
       transition: transform 0.1s ease;
     }
-
-    .custom-color-btn:hover {
-      transform: scale(1.08);
-    }
+    .custom-color-btn:hover { transform: scale(1.08); }
 
     .color-swatch-inner {
       width: 18px;
@@ -244,7 +186,6 @@
       box-shadow: inset 0 0 2px rgba(0,0,0,0.5);
     }
 
-    /* Interactive Color Wheel Popup */
     #color-wheel-popup {
       display: none;
       position: absolute;
@@ -270,12 +211,8 @@
       cursor: crosshair;
     }
 
-    #color-wheel-canvas {
-      border-radius: 50%;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-    }
+    #color-wheel-canvas { border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.5); }
 
-    /* Selection Pointer / Indicator */
     #wheel-pointer {
       position: absolute;
       width: 12px;
@@ -288,7 +225,6 @@
       display: none;
     }
 
-    /* Color Code & Name Info Bar */
     .wheel-info-bar {
       display: flex;
       justify-content: space-between;
@@ -298,6 +234,36 @@
       color: #ddd;
       padding: 2px 4px;
     }
+
+    /* Sky Modal Overlay */
+    #sky-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #sky-modal {
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 24px;
+      width: 300px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+    }
+
+    #sky-modal h3 { font-size: 16px; text-align: center; margin-bottom: 4px; color: #fff; }
 
     #loading-screen {
       position: absolute;
@@ -309,23 +275,110 @@
       border-radius: 8px;
       display: none;
       font-size: 18px;
+      z-index: 50;
+    }
+
+    #vr-camera-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+      display: none;
+    }
+
+    #sky-photo-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      z-index: 0;
+      pointer-events: none;
+      display: none;
+    }
+
+    canvas {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Mocap Floating Panel */
+    #mocap-container {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      width: 240px;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mocap-view {
+      position: relative;
+      width: 100%;
+      height: 150px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    #mocap-video, #mocap-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
     }
   </style>
 
+  <!-- Three.js r128 and all addons -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js.blend@1.0.3/build/js.blend.min.js"></script>
+
+  <!-- MediaPipe FaceMesh & Camera Utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
   <div id="canvas-container">
+    <video id="vr-camera-video" autoplay playsinline></video>
+    <div id="sky-photo-bg"></div>
+
     <div id="left-ui">
       <label for="file-input" class="btn">Load Model/Photo</label>
-      <input type="file" id="file-input" accept=".glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, .heif" />
+      <input type="file" id="file-input" accept=".glb, .gltf, .fbx, .usdz, .dae, .mlt, .mtl, .stl, .obj, .blend, .prisma, .vrm, .vrma, .png, .jpg, .jpeg, .heic, .heif" />
+      
+      <button id="sky-btn" class="btn btn-sky">Sky</button>
+
       <button id="download-btn" class="btn btn-download">Download Painted Model</button>
       <button id="move-btn" class="btn btn-move">Move</button>
       <div id="animation-list"></div>
@@ -382,6 +435,44 @@
     <div id="loading-screen">Loading file...</div>
   </div>
 
+  <!-- Sky Popup Modal Overlay -->
+  <div id="sky-modal-overlay">
+    <div id="sky-modal">
+      <button id="close-sky-modal" class="close-btn" title="Close">&times;</button>
+      <h3>Configure Sky Background</h3>
+      <button id="sky-vr-camera-btn" class="btn btn-sky">1. VR Camera</button>
+      <label for="sky-photo-input" class="btn btn-sky" style="text-align: center; cursor: pointer;">2. Load Photo as Sky</label>
+      <input type="file" id="sky-photo-input" accept=".png, .jpg, .jpeg, .heic, .heif" />
+      <button id="sky-color-picker-btn" class="btn btn-sky">3. Color Picker Wheel</button>
+      <button id="sky-mocap-btn" class="btn btn-sky" style="background-color: #e83e8c;">4. mocap (Face Mesh)</button>
+    </div>
+  </div>
+
+  <!-- Mocap Floating Camera Panel -->
+  <div id="mocap-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <span style="font-size: 12px; font-weight: bold;">Face Mocap Mesh</span>
+      <button id="close-mocap-btn" class="close-btn" style="position:static; font-size:18px;">&times;</button>
+    </div>
+    <div class="mocap-view">
+      <video id="mocap-video" autoplay playsinline muted></video>
+      <canvas id="mocap-canvas"></canvas>
+    </div>
+    <button id="download-face-btn" class="btn" style="background-color: #28a745; display: none; padding: 6px; font-size: 12px;">Download Face Model (.glb)</button>
+    <button id="capture-face-btn" class="btn" style="background-color: #fd7e14; padding: 6px; font-size: 12px;">Capture Face</button>
+    <div id="mocap-status" style="font-size: 11px; color: #aaa; text-align: center;">Initializing camera...</div>
+  </div>
+
+  <!-- Hidden Secondary Color Wheel Popup Specifically for Sky Color Selection -->
+  <div id="sky-color-wheel-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(20,20,20,0.95); border:1px solid #444; border-radius:8px; padding:16px; z-index:1100; box-shadow:0 4px 15px rgba(0,0,0,0.5); flex-direction:column; align-items:center; gap:10px;">
+    <button id="close-sky-wheel" class="close-btn">&times;</button>
+    <div style="font-size:14px; font-weight:bold;">Pick Sky Color</div>
+    <div class="color-wheel-container" id="sky-wheel-wrapper">
+      <canvas id="sky-wheel-canvas" width="160" height="160"></canvas>
+      <div id="sky-wheel-pointer" style="position: absolute; width: 12px; height: 12px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 3px rgba(0,0,0,0.8); transform: translate(-50%, -50%); pointer-events: none; display: none;"></div>
+    </div>
+  </div>
+
   <script>
     const container = document.getElementById('canvas-container');
     const loadingScreen = document.getElementById('loading-screen');
@@ -397,7 +488,7 @@
     );
     camera.position.set(0, 2, 5);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
@@ -407,10 +498,11 @@
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
+    // Restored old lighting strength/brightness settings
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1);
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.0);
     dirLight1.position.set(5, 10, 7.5);
     scene.add(dirLight1);
 
@@ -522,31 +614,228 @@
     const wheelSelectedHex = document.getElementById('wheel-selected-hex');
     const wheelSelectedName = document.getElementById('wheel-selected-name');
 
-    undoBtn.addEventListener('click', undo);
-    redoBtn.addEventListener('click', redo);
+    // Sky Modal Elements
+    const skyBtn = document.getElementById('sky-btn');
+    const skyModalOverlay = document.getElementById('sky-modal-overlay');
+    const closeSkyModal = document.getElementById('close-sky-modal');
+    const skyVrCameraBtn = document.getElementById('sky-vr-camera-btn');
+    const skyPhotoInput = document.getElementById('sky-photo-input');
+    const skyColorPickerBtn = document.getElementById('sky-color-picker-btn');
+    const skyMocapBtn = document.getElementById('sky-mocap-btn');
+    const vrCameraVideo = document.getElementById('vr-camera-video');
+    const skyPhotoBg = document.getElementById('sky-photo-bg');
+    const skyColorWheelPopup = document.getElementById('sky-color-wheel-popup');
+    const closeSkyWheel = document.getElementById('close-sky-wheel');
+    const skyWheelCanvas = document.getElementById('sky-wheel-canvas');
+    const skyWheelCtx = skyWheelCanvas.getContext('2d', { willReadFrequently: true });
+    const skyWheelWrapper = document.getElementById('sky-wheel-wrapper');
+    const skyWheelPointer = document.getElementById('sky-wheel-pointer');
 
-    function renderColorWheel() {
-      const radius = colorWheelCanvas.width / 2;
-      const imgData = wheelCtx.createImageData(colorWheelCanvas.width, colorWheelCanvas.height);
+    // Mocap Elements
+    const mocapContainer = document.getElementById('mocap-container');
+    const closeMocapBtn = document.getElementById('close-mocap-btn');
+    const mocapVideo = document.getElementById('mocap-video');
+    const mocapCanvas = document.getElementById('mocap-canvas');
+    const mocapCtx = mocapCanvas.getContext('2d');
+    const mocapStatus = document.getElementById('mocap-status');
+    const captureFaceBtn = document.getElementById('capture-face-btn');
+    const downloadFaceBtn = document.getElementById('download-face-btn');
+    let mocapCameraInstance = null;
+    let latestLandmarks = null;
+    let capturedFaceModelObject = null;
+    let faceMesh = null;
+
+    skyBtn.addEventListener('click', () => { skyModalOverlay.style.display = 'flex'; });
+    closeSkyModal.addEventListener('click', () => { skyModalOverlay.style.display = 'none'; });
+    skyModalOverlay.addEventListener('click', (e) => { if (e.target === skyModalOverlay) skyModalOverlay.style.display = 'none'; });
+
+    function clearCustomBackgrounds() {
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+      }
+      vrCameraVideo.style.display = 'none';
+      skyPhotoBg.style.display = 'none';
+      skyPhotoBg.style.backgroundImage = 'none';
+    }
+
+    let activeStream = null;
+    skyVrCameraBtn.addEventListener('click', async () => {
+      skyModalOverlay.style.display = 'none';
+      clearCustomBackgrounds();
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+        activeStream = stream;
+        vrCameraVideo.srcObject = stream;
+        vrCameraVideo.style.display = 'block';
+        scene.background = null; 
+      } catch (err) {
+        alert("Unable to access camera for VR background.");
+      }
+    });
+
+    skyPhotoInput.addEventListener('change', async (e) => {
+      let file = e.target.files[0];
+      if (!file) return;
+      skyModalOverlay.style.display = 'none';
+      clearCustomBackgrounds();
+
+      const filename = file.name.toLowerCase();
+      if (filename.endsWith('.heic') || filename.endsWith('.heif')) {
+        try {
+          const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
+          file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch (err) {
+          alert("Could not decode HEIC image.");
+          return;
+        }
+      }
+
+      const fileURL = URL.createObjectURL(file);
+      skyPhotoBg.style.backgroundImage = `url('${fileURL}')`;
+      skyPhotoBg.style.display = 'block';
+      scene.background = null;
+    });
+
+    // Mocap Face Mesh Implementation
+    skyMocapBtn.addEventListener('click', async () => {
+      skyModalOverlay.style.display = 'none';
+      mocapContainer.style.display = 'flex';
+      mocapStatus.innerText = "Starting front camera...";
+
+      if (!faceMesh) {
+        faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        faceMesh.onResults(onFaceMeshResults);
+      }
+
+      try {
+        mocapCameraInstance = new Camera(mocapVideo, {
+          onFrame: async () => {
+            if (mocapVideo.videoWidth) {
+              mocapCanvas.width = mocapVideo.videoWidth;
+              mocapCanvas.height = mocapVideo.videoHeight;
+            }
+            await faceMesh.send({ image: mocapVideo });
+          },
+          width: 320, height: 240, facingMode: 'user'
+        });
+        await mocapCameraInstance.start();
+        mocapStatus.innerText = "Tracking Face Mesh Live";
+      } catch (err) {
+        mocapStatus.innerText = "Camera error or blocked.";
+      }
+    });
+
+    function onFaceMeshResults(results) {
+      mocapCtx.save();
+      mocapCtx.clearRect(0, 0, mocapCanvas.width, mocapCanvas.height);
+      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        latestLandmarks = results.multiFaceLandmarks[0];
+        drawConnectors(mocapCtx, latestLandmarks, FACEMESH_TESSELATION, { color: 'rgba(0, 255, 204, 0.25)', lineWidth: 0.5 });
+        drawConnectors(mocapCtx, latestLandmarks, FACEMESH_RIGHT_EYE, { color: '#00ffcc', lineWidth: 1.2 });
+        drawConnectors(mocapCtx, latestLandmarks, FACEMESH_LEFT_EYE, { color: '#00ffcc', lineWidth: 1.2 });
+        drawConnectors(mocapCtx, latestLandmarks, FACEMESH_LIPS, { color: '#ff44aa', lineWidth: 1.2 });
+        drawConnectors(mocapCtx, latestLandmarks, FACEMESH_FACE_OVAL, { color: '#ffffff', lineWidth: 1.2 });
+        mocapStatus.innerText = "Face Tracked ✓ Ready to Capture";
+      } else {
+        latestLandmarks = null;
+        mocapStatus.innerText = "Searching for face...";
+      }
+      mocapCtx.restore();
+    }
+
+    captureFaceBtn.addEventListener('click', () => {
+      if (!latestLandmarks) {
+        alert("No face currently detected in camera view!");
+        return;
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = mocapVideo.videoWidth || 640;
+      tempCanvas.height = mocapVideo.videoHeight || 480;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.save();
+      tempCtx.scale(-1, 1);
+      tempCtx.drawImage(mocapVideo, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
+      tempCtx.restore();
+
+      const texture = new THREE.CanvasTexture(tempCanvas);
+      texture.encoding = THREE.sRGBEncoding;
+
+      const geometry = new THREE.BufferGeometry();
+      const positions = [];
+      const uvs = [];
+
+      latestLandmarks.forEach(pt => {
+        const x = (pt.x - 0.5) * 0.20;
+        const y = -(pt.y - 0.5) * 0.24;
+        const z = -pt.z * 0.22;
+        positions.push(x, y, z);
+        uvs.push(1.0 - pt.x, 1.0 - pt.y);
+      });
+
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+
+      const indices = [];
+      if (typeof FACEMESH_TESSELATION !== 'undefined') {
+        for (let i = 0; i < FACEMESH_TESSELATION.length; i += 3) {
+          if (i + 2 < FACEMESH_TESSELATION.length) {
+            indices.push(FACEMESH_TESSELATION[i][0], FACEMESH_TESSELATION[i+1][0], FACEMESH_TESSELATION[i+2][0]);
+          }
+        }
+      }
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+
+      const material = new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.35,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+
+      capturedFaceModelObject = new THREE.Mesh(geometry, material);
+      displayModel(capturedFaceModelObject, []);
+      downloadFaceBtn.style.display = 'block';
+      mocapStatus.innerText = "Solid Uniform Face Model Loaded!";
+    });
+
+    downloadFaceBtn.addEventListener('click', () => {
+      if (!capturedFaceModelObject) return;
+      exporter.parse(capturedFaceModelObject, (result) => {
+        const blob = new Blob([result instanceof ArrayBuffer ? result : JSON.stringify(result)], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = '3d-mask-model.glb';
+        link.click();
+      }, { binary: true });
+    });
+
+    closeMocapBtn.addEventListener('click', () => {
+      mocapContainer.style.display = 'none';
+      if (mocapVideo.srcObject) mocapVideo.srcObject.getTracks().forEach(t => t.stop());
+    });
+
+    function renderSkyColorWheel() {
+      const radius = skyWheelCanvas.width / 2;
+      const imgData = skyWheelCtx.createImageData(skyWheelCanvas.width, skyWheelCanvas.height);
       const data = imgData.data;
 
-      for (let y = 0; y < colorWheelCanvas.height; y++) {
-        for (let x = 0; x < colorWheelCanvas.width; x++) {
-          const dx = x - radius;
-          const dy = y - radius;
+      for (let y = 0; y < skyWheelCanvas.height; y++) {
+        for (let x = 0; x < skyWheelCanvas.width; x++) {
+          const dx = x - radius, dy = y - radius;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const index = (y * colorWheelCanvas.width + x) * 4;
+          const index = (y * skyWheelCanvas.width + x) * 4;
 
           if (dist <= radius) {
             const angle = Math.atan2(dy, dx);
             let hue = (angle * 180 / Math.PI + 360) % 360;
-            let sat = dist / radius;
-            let light = 0.5;
-
+            let sat = dist / radius, light = 0.5;
             let c = (1 - Math.abs(2 * light - 1)) * sat;
             let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
-            let m = light - c / 2;
-            let r = 0, g = 0, b = 0;
+            let m = light - c / 2, r = 0, g = 0, b = 0;
 
             if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
             else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
@@ -559,14 +848,99 @@
             data[index + 1] = Math.round((g + m) * 255);
             data[index + 2] = Math.round((b + m) * 255);
             data[index + 3] = 255;
-          } else {
-            data[index + 3] = 0;
-          }
+          } else { data[index + 3] = 0; }
+        }
+      }
+      skyWheelCtx.putImageData(imgData, 0, 0);
+    }
+    renderSkyColorWheel();
+
+    skyColorPickerBtn.addEventListener('click', () => {
+      skyModalOverlay.style.display = 'none';
+      clearCustomBackgrounds();
+      skyColorWheelPopup.style.display = 'flex';
+      skyWheelPointer.style.display = 'block';
+      skyWheelPointer.style.left = '80px';
+      skyWheelPointer.style.top = '80px';
+    });
+
+    closeSkyWheel.addEventListener('click', () => { skyColorWheelPopup.style.display = 'none'; });
+
+    function pickSkyColor(e) {
+      const rect = skyWheelCanvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      if (clientX === undefined || clientY === undefined) return;
+
+      const x = clientX - rect.left, y = clientY - rect.top;
+      const radius = skyWheelCanvas.width / 2;
+      const dx = x - radius, dy = y - radius;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      let px = x, py = y;
+      if (dist > radius) {
+        px = radius + (dx / dist) * radius;
+        py = radius + (dy / dist) * radius;
+      }
+
+      skyWheelPointer.style.left = px + 'px';
+      skyWheelPointer.style.top = py + 'px';
+
+      let sampleX = Math.min(Math.max(Math.floor(px), 0), skyWheelCanvas.width - 1);
+      let sampleY = Math.min(Math.max(Math.floor(py), 0), skyWheelCanvas.height - 1);
+      
+      const pixel = skyWheelCtx.getImageData(sampleX, sampleY, 1, 1).data;
+      if (pixel[3] > 0) {
+        scene.background = new THREE.Color(rgbToHex(pixel[0], pixel[1], pixel[2]));
+      }
+    }
+
+    let isSelectingSkyWheel = false;
+    skyWheelWrapper.addEventListener('mousedown', (e) => { isSelectingSkyWheel = true; pickSkyColor(e); });
+    window.addEventListener('mousemove', (e) => { if (isSelectingSkyWheel) pickSkyColor(e); });
+    window.addEventListener('mouseup', () => { isSelectingSkyWheel = false; });
+    skyWheelWrapper.addEventListener('touchstart', (e) => { isSelectingSkyWheel = true; pickSkyColor(e); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { if (isSelectingSkyWheel) pickSkyColor(e); }, { passive: true });
+    window.addEventListener('touchend', () => { isSelectingSkyWheel = false; });
+
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    function renderColorWheel() {
+      const radius = colorWheelCanvas.width / 2;
+      const imgData = wheelCtx.createImageData(colorWheelCanvas.width, colorWheelCanvas.height);
+      const data = imgData.data;
+
+      for (let y = 0; y < colorWheelCanvas.height; y++) {
+        for (let x = 0; x < colorWheelCanvas.width; x++) {
+          const dx = x - radius, dy = y - radius;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const index = (y * colorWheelCanvas.width + x) * 4;
+
+          if (dist <= radius) {
+            const angle = Math.atan2(dy, dx);
+            let hue = (angle * 180 / Math.PI + 360) % 360;
+            let sat = dist / radius, light = 0.5;
+            let c = (1 - Math.abs(2 * light - 1)) * sat;
+            let xVal = c * (1 - Math.abs((hue / 60) % 2 - 1));
+            let m = light - c / 2, r = 0, g = 0, b = 0;
+
+            if (0 <= hue && hue < 60) { r = c; g = xVal; b = 0; }
+            else if (60 <= hue && hue < 120) { r = xVal; g = c; b = 0; }
+            else if (120 <= hue && hue < 180) { r = 0; g = c; b = xVal; }
+            else if (180 <= hue && hue < 240) { r = 0; g = xVal; b = c; }
+            else if (240 <= hue && hue < 300) { r = xVal; g = 0; b = c; }
+            else if (300 <= hue && hue < 360) { r = c; g = 0; b = xVal; }
+
+            data[index] = Math.round((r + m) * 255);
+            data[index + 1] = Math.round((g + m) * 255);
+            data[index + 2] = Math.round((b + m) * 255);
+            data[index + 3] = 255;
+          } else { data[index + 3] = 0; }
         }
       }
       wheelCtx.putImageData(imgData, 0, 0);
     }
-
     renderColorWheel();
 
     function rgbToHex(r, g, b) {
@@ -579,58 +953,22 @@
       if (r > 200 && g < 50 && b < 50) return "Red";
       if (r < 50 && g > 200 && b < 50) return "Green";
       if (r < 50 && r < 50 && b > 200) return "Blue";
-      if (r > 200 && g > 200 && b < 50) return "Yellow";
-      if (r > 200 && g < 50 && b > 200) return "Magenta";
-      if (r < 50 && g > 200 && b > 200) return "Cyan";
-      if (r > 200 && g > 100 && b < 50) return "Orange";
-      if (r > 120 && g < 50 && b > 120) return "Purple";
-      if (r > 150 && g > 150 && b > 150) return "Gray";
-      if (r > 100 && g < 60 && b < 30) return "Brown";
-      
-      let max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let d = max - min;
-      let h = 0;
-      if (d !== 0) {
-        if (max === r) h = ((g - b) / d) % 6;
-        else if (max === g) h = (b - r) / d + 2;
-        else h = (r - g) / d + 4;
-        h = Math.round(h * 60);
-        if (h < 0) h += 360;
-      }
-
-      if (max < 60) return "Dark Gray";
-      if (min > 190) return "Light Gray";
-      
-      if (h < 15 || h >= 345) return "Red";
-      if (h < 45) return "Amber";
-      if (h < 75) return "Yellow";
-      if (h < 105) return "Chartreuse";
-      if (h < 165) return "Green";
-      if (h < 195) return "Spring Green";
-      if (h < 255) return "Cyan/Blue";
-      if (h < 285) return "Indigo/Violet";
-      if (h < 315) return "Purple";
-      return "Rose";
+      return "Custom";
     }
 
     function updatePointerPosition(x, y) {
       const radius = colorWheelCanvas.width / 2;
-      const dx = x - radius;
-      const dy = y - radius;
+      const dx = x - radius, dy = y - radius;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      let px = x;
-      let py = y;
-
+      let px = x, py = y;
       if (dist > radius) {
         px = radius + (dx / dist) * radius;
         py = radius + (dy / dist) * radius;
       }
-
       wheelPointer.style.left = px + 'px';
       wheelPointer.style.top = py + 'px';
       wheelPointer.style.display = 'block';
-
       return { x: px, y: py };
     }
 
@@ -640,25 +978,15 @@
       const clientY = e.clientY || (e.touches && e.touches[0].clientY);
       if (clientX === undefined || clientY === undefined) return;
 
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const radius = colorWheelCanvas.width / 2;
-      const dx = x - radius;
-      const dy = y - radius;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      const constrained = updatePointerPosition(x, y);
-
+      const constrained = updatePointerPosition(clientX - rect.left, clientY - rect.top);
       let sampleX = Math.min(Math.max(Math.floor(constrained.x), 0), colorWheelCanvas.width - 1);
       let sampleY = Math.min(Math.max(Math.floor(constrained.y), 0), colorWheelCanvas.height - 1);
       
       const pixel = wheelCtx.getImageData(sampleX, sampleY, 1, 1).data;
       if (pixel[3] > 0) {
         const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
-        const colorName = getColorName(pixel[0], pixel[1], pixel[2]);
-        
         wheelSelectedHex.innerText = hex;
-        wheelSelectedName.innerText = colorName;
+        wheelSelectedName.innerText = getColorName(pixel[0], pixel[1], pixel[2]);
 
         if (activeColorTarget === 'brush') {
           brushColorVal = hex;
@@ -666,11 +994,9 @@
         } else {
           fillColorVal = hex;
           fillColorPreview.style.backgroundColor = hex;
-
           drawCtx.fillStyle = hex;
           drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
           canvasTexture.needsUpdate = true;
-
           hasMadeEdits = true;
           downloadBtn.style.display = 'block';
           saveState();
@@ -679,27 +1005,12 @@
     }
 
     let isSelectingWheel = false;
-    colorWheelWrapper.addEventListener('mousedown', (e) => {
-      isSelectingWheel = true;
-      pickColorFromWheel(e);
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (isSelectingWheel) pickColorFromWheel(e);
-    });
-    window.addEventListener('mouseup', () => {
-      isSelectingWheel = false;
-    });
-
-    colorWheelWrapper.addEventListener('touchstart', (e) => {
-      isSelectingWheel = true;
-      pickColorFromWheel(e);
-    }, { passive: true });
-    window.addEventListener('touchmove', (e) => {
-      if (isSelectingWheel) pickColorFromWheel(e);
-    }, { passive: true });
-    window.addEventListener('touchend', () => {
-      isSelectingWheel = false;
-    });
+    colorWheelWrapper.addEventListener('mousedown', (e) => { isSelectingWheel = true; pickColorFromWheel(e); });
+    window.addEventListener('mousemove', (e) => { if (isSelectingWheel) pickColorFromWheel(e); });
+    window.addEventListener('mouseup', () => { isSelectingWheel = false; });
+    colorWheelWrapper.addEventListener('touchstart', (e) => { isSelectingWheel = true; pickColorFromWheel(e); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { if (isSelectingWheel) pickColorFromWheel(e); }, { passive: true });
+    window.addEventListener('touchend', () => { isSelectingWheel = false; });
 
     function initPointerForColor(hex) {
       wheelPointer.style.left = '80px';
@@ -713,18 +1024,14 @@
       e.stopPropagation();
       activeColorTarget = 'brush';
       colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
-      if (colorWheelPopup.style.display === 'flex') {
-        initPointerForColor(brushColorVal);
-      }
+      if (colorWheelPopup.style.display === 'flex') initPointerForColor(brushColorVal);
     });
 
     fillColorBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       activeColorTarget = 'fill';
       colorWheelPopup.style.display = colorWheelPopup.style.display === 'flex' ? 'none' : 'flex';
-      if (colorWheelPopup.style.display === 'flex') {
-        initPointerForColor(fillColorVal);
-      }
+      if (colorWheelPopup.style.display === 'flex') initPointerForColor(fillColorVal);
     });
 
     document.addEventListener('click', (e) => {
@@ -733,6 +1040,7 @@
       }
     });
 
+    // Loaders
     const dracoLoader = new THREE.DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     
@@ -740,33 +1048,25 @@
     gltfLoader.setDRACOLoader(dracoLoader);
 
     const objLoader = new THREE.OBJLoader();
+    const fbxLoader = new THREE.FBXLoader();
+    const stlLoader = new THREE.STLLoader();
+    const colladaLoader = new THREE.ColladaLoader();
+    const mtlLoader = new THREE.MTLLoader();
     const exporter = new THREE.GLTFExporter();
 
     function loadDefaultModel() {
       loadingScreen.style.display = 'block';
       isPhotoLoaded = false;
-      gltfLoader.load(
-        'Sachin.glb',
-        (gltf) => {
-          displayModel(gltf.scene, gltf.animations);
-        },
-        undefined,
-        (error) => {
-          console.warn('Could not load default model "Sachin.glb":', error);
-          loadingScreen.style.display = 'none';
-        }
-      );
+      gltfLoader.load('Sachin.glb', (gltf) => { displayModel(gltf.scene, gltf.animations); }, undefined, () => { loadingScreen.style.display = 'none'; });
     }
-
     loadDefaultModel();
 
     document.getElementById('file-input').addEventListener('change', async function (event) {
       let file = event.target.files[0];
       if (!file) return;
 
-      const filename = file.name.toLowerCase();
+      let filename = file.name.toLowerCase();
       loadingScreen.style.display = 'block';
-
       if (isDrawMode) exitDrawingMode();
 
       hasBeenInitialized = false;
@@ -775,13 +1075,10 @@
 
       if (filename.endsWith('.heic') || filename.endsWith('.heif')) {
         try {
-          const convertedBlob = await heic2any({
-            blob: file,
-            toType: "image/jpeg",
-          });
+          const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
           file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+          filename = filename.replace(/\.(heic|heif)$/, '.jpg');
         } catch (err) {
-          console.error("HEIC conversion failed:", err);
           alert("Could not decode HEIC image.");
           loadingScreen.style.display = 'none';
           return;
@@ -790,221 +1087,140 @@
 
       const fileURL = URL.createObjectURL(file);
 
-      if (filename.endsWith('.glb') || filename.endsWith('.gltf')) {
+      if (filename.endsWith('.glb') || filename.endsWith('.gltf') || filename.endsWith('.vrm') || filename.endsWith('.vrma') || filename.endsWith('.prisma')) {
         isPhotoLoaded = false;
-        gltfLoader.load(
-          fileURL,
-          (gltf) => {
-            displayModel(gltf.scene, gltf.animations);
-            URL.revokeObjectURL(fileURL);
-          },
-          undefined,
-          (error) => handleError(error, fileURL)
-        );
+        gltfLoader.load(fileURL, (gltf) => { displayModel(gltf.scene, gltf.animations || []); URL.revokeObjectURL(fileURL); }, undefined, (err) => handleError(err, fileURL));
       } else if (filename.endsWith('.obj')) {
         isPhotoLoaded = false;
-        objLoader.load(
-          fileURL,
-          (obj) => {
-            displayModel(obj, []);
-            URL.revokeObjectURL(fileURL);
-          },
-          undefined,
-          (error) => handleError(error, fileURL)
-        );
-      } else if (
-        filename.endsWith('.png') || 
-        filename.endsWith('.jpg') || 
-        filename.endsWith('.jpeg') || 
-        filename.endsWith('.heic') || 
-        filename.endsWith('.heif')
-      ) {
+        objLoader.load(fileURL, (obj) => { displayModel(obj, []); URL.revokeObjectURL(fileURL); }, undefined, (err) => handleError(err, fileURL));
+      } else if (filename.endsWith('.fbx')) {
+        isPhotoLoaded = false;
+        fbxLoader.load(fileURL, (fbx) => { displayModel(fbx, fbx.animations || []); URL.revokeObjectURL(fileURL); }, undefined, (err) => handleError(err, fileURL));
+      } else if (filename.endsWith('.stl')) {
+        isPhotoLoaded = false;
+        stlLoader.load(fileURL, (geometry) => {
+          geometry.computeVertexNormals();
+          displayModel(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.1 })), []);
+          URL.revokeObjectURL(fileURL);
+        }, undefined, (err) => handleError(err, fileURL));
+      } else if (filename.endsWith('.dae')) {
+        isPhotoLoaded = false;
+        colladaLoader.load(fileURL, (collada) => { displayModel(collada.scene, collada.animations || []); URL.revokeObjectURL(fileURL); }, undefined, (err) => handleError(err, fileURL));
+      } else if (filename.endsWith('.mtl') || filename.endsWith('.mlt')) {
+        mtlLoader.load(fileURL, (materials) => {
+          materials.preload();
+          loadingScreen.style.display = 'none';
+          URL.revokeObjectURL(fileURL);
+          alert('Material library loaded successfully! Pair with an OBJ file to apply.');
+        }, undefined, (err) => handleError(err, fileURL));
+      } else if (filename.endsWith('.blend')) {
+        isPhotoLoaded = false;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const blend = await JSBLEND(e.target.result);
+            const blendScene = new THREE.Scene();
+            blend.three.loadScene(blendScene);
+            displayModel(blendScene, []);
+          } catch(err) { handleError(err, fileURL); }
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (['.png', '.jpg', '.jpeg'].some(ext => filename.endsWith(ext))) {
         isPhotoLoaded = true;
         const img = new Image();
         img.onload = () => {
           const width = img.naturalWidth || img.width;
           const height = img.naturalHeight || img.height;
-          
-          const maxSide = 3.0;
-          const aspect = width / height;
-          let planeW, planeH;
-          if (aspect >= 1) {
-            planeW = maxSide;
-            planeH = maxSide / aspect;
-          } else {
-            planeH = maxSide;
-            planeW = maxSide * aspect;
-          }
-
-          const geometry = new THREE.PlaneGeometry(planeW, planeH);
+          const maxSide = 3.0, aspect = width / height;
+          let planeW = aspect >= 1 ? maxSide : maxSide * aspect;
+          let planeH = aspect >= 1 ? maxSide / aspect : maxSide;
 
           drawCanvas.width = width > 2048 ? 2048 : width;
           drawCanvas.height = height > 2048 ? 2048 : height;
-          
           drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
           drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
           
           canvasTexture.image = drawCanvas;
           canvasTexture.needsUpdate = true;
-
           hasBeenInitialized = true;
           hasMadeEdits = true;
           downloadBtn.style.display = 'block';
           saveState();
 
-          const material = new THREE.MeshStandardMaterial({
-            map: canvasTexture,
-            roughness: 0.5,
-            metalness: 0.1,
-            side: THREE.DoubleSide
-          });
-
-          const planeMesh = new THREE.Mesh(geometry, material);
           const group = new THREE.Group();
-          group.add(planeMesh);
-
+          group.add(new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), new THREE.MeshStandardMaterial({ map: canvasTexture, roughness: 0.5, metalness: 0.1, side: THREE.DoubleSide })));
           displayModel(group, []);
           URL.revokeObjectURL(fileURL);
         };
-        img.onerror = (error) => handleError(error, fileURL);
         img.src = fileURL;
-      } else {
-        alert('Unsupported file format! Please upload a .glb, .gltf, .obj, .png, .jpg, .jpeg, .heic, or .heif file.');
-        loadingScreen.style.display = 'none';
-        URL.revokeObjectURL(fileURL);
       }
     });
 
     enterDrawBtn.addEventListener('click', () => {
       if (!currentModel) return;
-
       isDrawMode = true;
       enterDrawBtn.style.display = 'none';
       drawPanel.style.display = 'flex';
-
       hasMadeEdits = true;
       downloadBtn.style.display = 'block';
-
-      if (!hasBeenInitialized) {
-        resetDrawCanvas();
-      }
+      if (!hasBeenInitialized) resetDrawCanvas();
       canvasTexture.needsUpdate = true;
 
       currentModel.traverse((child) => {
         if (child.isMesh) {
-          if (!originalMaterials.has(child.uuid)) {
-            originalMaterials.set(child.uuid, child.material);
-          }
-          child.material = new THREE.MeshStandardMaterial({
-            map: canvasTexture,
-            roughness: 0.5,
-            metalness: 0.1,
-            side: THREE.DoubleSide
-          });
+          if (!originalMaterials.has(child.uuid)) originalMaterials.set(child.uuid, child.material);
+          child.material = new THREE.MeshStandardMaterial({ map: canvasTexture, roughness: 0.5, metalness: 0.1, side: THREE.DoubleSide });
         }
       });
-
       setPaintState(true);
     });
 
     function exitDrawingMode() {
       isDrawMode = false;
       setPaintState(false);
-
       drawPanel.style.display = 'none';
       colorWheelPopup.style.display = 'none';
       enterDrawBtn.style.display = 'block';
-
       if (currentModel) {
         currentModel.traverse((child) => {
           if (child.isMesh) {
             const origMat = originalMaterials.get(child.uuid);
-            if (origMat) {
-              child.material = origMat;
-            }
+            if (origMat) child.material = origMat;
           }
         });
       }
     }
-
     closeDrawBtn.addEventListener('click', exitDrawingMode);
 
     function setPaintState(painting) {
       isPaintingState = painting;
       controls.enabled = !isPaintingState;
-
-      if (isPaintingState) {
-        togglePaintBtn.innerText = "Paint Go Slow";
-        togglePaintBtn.classList.add('painting');
-      } else {
-        togglePaintBtn.innerText = "Rotate Mode";
-        togglePaintBtn.classList.remove('painting');
-      }
+      togglePaintBtn.innerText = isPaintingState ? "Paint Go Slow" : "Rotate Mode";
+      togglePaintBtn.classList.toggle('painting', isPaintingState);
     }
-
-    togglePaintBtn.addEventListener('click', () => {
-      setPaintState(!isPaintingState);
-    });
+    togglePaintBtn.addEventListener('click', () => setPaintState(!isPaintingState));
 
     downloadBtn.addEventListener('click', () => {
       if (!currentModel) return;
-
       currentModel.traverse((child) => {
         if (child.isMesh) {
           if (!child.material || child.material.map !== canvasTexture) {
-            if (!originalMaterials.has(child.uuid)) {
-              originalMaterials.set(child.uuid, child.material);
-            }
-            child.material = new THREE.MeshStandardMaterial({
-              map: canvasTexture,
-              roughness: 0.5,
-              metalness: 0.1,
-              side: THREE.DoubleSide
-            });
+            if (!originalMaterials.has(child.uuid)) originalMaterials.set(child.uuid, child.material);
+            child.material = new THREE.MeshStandardMaterial({ map: canvasTexture, roughness: 0.5, metalness: 0.1, side: THREE.DoubleSide });
           }
         }
       });
 
-      const options = { binary: true };
-
-      exporter.parse(
-        currentModel,
-        (result) => {
-          let blob;
-          if (result instanceof ArrayBuffer) {
-            blob = new Blob([result], { type: 'application/octet-stream' });
-          } else {
-            const output = JSON.stringify(result, null, 2);
-            blob = new Blob([output], { type: 'application/octet-stream' });
-          }
-
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = '3d-model.glb';
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          setTimeout(() => {
-            URL.revokeObjectURL(link.href);
-          }, 100);
-        },
-        (error) => {
-          console.error('An error occurred while exporting the model:', error);
-          alert('Could not export model.');
-        },
-        options
-      );
+      exporter.parse(currentModel, (result) => {
+        const blob = result instanceof ArrayBuffer ? new Blob([result], { type: 'application/octet-stream' }) : new Blob([JSON.stringify(result, null, 2)], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = '3d-model.glb';
+        link.click();
+      }, { binary: true });
     });
 
-    moveBtn.addEventListener('click', () => {
-      if (animationList.style.display === 'flex') {
-        animationList.style.display = 'none';
-      } else {
-        animationList.style.display = 'flex';
-      }
-    });
+    moveBtn.addEventListener('click', () => { animationList.style.display = animationList.style.display === 'flex' ? 'none' : 'flex'; });
 
     function setupAnimations(animArray) {
       animations = animArray || [];
@@ -1013,36 +1229,25 @@
 
       if (animations.length > 0) {
         moveBtn.style.display = 'block';
-        
         animations.forEach((clip, index) => {
           const animBtn = document.createElement('button');
           animBtn.className = 'btn anim-btn';
           animBtn.innerText = clip.name ? clip.name : `Action ${index + 1}`;
-          
           animBtn.addEventListener('click', () => {
-            const allAnimBtns = animationList.querySelectorAll('.anim-btn');
-            allAnimBtns.forEach(b => b.classList.remove('active'));
+            animationList.querySelectorAll('.anim-btn').forEach(b => b.classList.remove('active'));
             animBtn.classList.add('active');
-
-            if (mixer) {
-              mixer.stopAllAction();
-            }
+            if (mixer) mixer.stopAllAction();
             const action = mixer.clipAction(clip);
             action.reset().play();
             activeAction = action;
           });
-
           animationList.appendChild(animBtn);
         });
 
-        if (animations.length > 0) {
-          const firstAction = mixer.clipAction(animations[0]);
-          firstAction.play();
-          activeAction = firstAction;
-          if (animationList.children[0]) {
-            animationList.children[0].classList.add('active');
-          }
-        }
+        const firstAction = mixer.clipAction(animations[0]);
+        firstAction.play();
+        activeAction = firstAction;
+        if (animationList.children[0]) animationList.children[0].classList.add('active');
       } else {
         moveBtn.style.display = 'none';
       }
@@ -1054,7 +1259,6 @@
       drawCtx.lineCap = 'round';
       drawCtx.lineJoin = 'round';
       drawCtx.lineWidth = size;
-
       drawCtx.beginPath();
       if (startUV) {
         drawCtx.moveTo(startUV.x, startUV.y);
@@ -1064,13 +1268,11 @@
         drawCtx.lineTo(endUV.x, endUV.y);
       }
       drawCtx.stroke();
-
       canvasTexture.needsUpdate = true;
     }
 
     function paintAtPoint(clientX, clientY) {
       if (!isDrawMode || !isPaintingState || !currentModel) return;
-
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
@@ -1080,17 +1282,12 @@
 
       if (intersects.length > 0 && intersects[0].uv) {
         const uv = intersects[0].uv;
-        const currentUV = {
-          x: uv.x * drawCanvas.width,
-          y: (1 - uv.y) * drawCanvas.height
-        };
-
+        const currentUV = { x: uv.x * drawCanvas.width, y: (1 - uv.y) * drawCanvas.height };
         const size = parseInt(brushSizeInput.value, 10);
         const color = brushColorVal;
 
         if (lastUV) {
-          const distUV = Math.hypot(currentUV.x - lastUV.x, currentUV.y - lastUV.y);
-          if (distUV < drawCanvas.width * 0.15) {
+          if (Math.hypot(currentUV.x - lastUV.x, currentUV.y - lastUV.y) < drawCanvas.width * 0.15) {
             drawStroke(lastUV, currentUV, size, color);
           } else {
             drawStroke(null, currentUV, size, color);
@@ -1101,67 +1298,32 @@
 
         hasMadeEdits = true;
         downloadBtn.style.display = 'block';
-
         lastUV = currentUV;
-      } else {
-        lastUV = null;
-      }
+      } else { lastUV = null; }
     }
 
-    function handleStart(clientX, clientY) {
-      if (isDrawMode && isPaintingState) {
-        isDrawing = true;
-        lastUV = null;
-        paintAtPoint(clientX, clientY);
-      }
-    }
-
-    function handleMove(clientX, clientY) {
-      if (isDrawing) {
-        paintAtPoint(clientX, clientY);
-      }
-    }
-
-    function handleEnd() {
-      if (isDrawing) {
-        isDrawing = false;
-        lastUV = null;
-        saveState();
-      }
-    }
-
-    renderer.domElement.addEventListener('mousedown', (e) => {
-      if (e.button === 0) handleStart(e.clientX, e.clientY);
-    });
-
-    renderer.domElement.addEventListener('mousemove', (e) => {
-      handleMove(e.clientX, e.clientY);
-    });
-
-    window.addEventListener('mouseup', handleEnd);
+    renderer.domElement.addEventListener('mousedown', (e) => { if (e.button === 0) { isDrawing = true; lastUV = null; paintAtPoint(e.clientX, e.clientY); } });
+    renderer.domElement.addEventListener('mousemove', (e) => { if (isDrawing) paintAtPoint(e.clientX, e.clientY); });
+    window.addEventListener('mouseup', () => { if (isDrawing) { isDrawing = false; lastUV = null; saveState(); } });
 
     renderer.domElement.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1 && (!isDrawMode || isPaintingState)) {
-        const touch = e.touches[0];
-        handleStart(touch.clientX, touch.clientY);
+        isDrawing = true;
+        lastUV = null;
+        paintAtPoint(e.touches[0].clientX, e.touches[0].clientY);
       }
     }, { passive: false });
 
     renderer.domElement.addEventListener('touchmove', (e) => {
       if (isDrawing && e.touches.length === 1) {
         e.preventDefault();
-        const touch = e.touches[0];
-        handleMove(touch.clientX, touch.clientY);
+        paintAtPoint(e.touches[0].clientX, e.touches[0].clientY);
       }
     }, { passive: false });
-
-    window.addEventListener('touchend', handleEnd);
+    window.addEventListener('touchend', () => { if (isDrawing) { isDrawing = false; lastUV = null; saveState(); } });
 
     function displayModel(model, anims) {
-      if (currentModel) {
-        scene.remove(currentModel);
-      }
-
+      if (currentModel) scene.remove(currentModel);
       currentModel = model;
       originalMaterials.clear();
       hasBeenInitialized = false;
@@ -1169,21 +1331,13 @@
       downloadBtn.style.display = 'none';
 
       mixer = new THREE.AnimationMixer(currentModel);
-
-      currentModel.traverse((child) => {
-        if (child.isMesh) {
-          originalMaterials.set(child.uuid, child.material);
-        }
-      });
-
+      currentModel.traverse((child) => { if (child.isMesh) originalMaterials.set(child.uuid, child.material); });
       scene.add(currentModel);
 
       const box = new THREE.Box3().setFromObject(currentModel);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
-
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 2 / (maxDim || 1);
+      const scale = 2 / (Math.max(size.x, size.y, size.z) || 1);
 
       currentModel.position.sub(center.multiplyScalar(scale));
       currentModel.scale.setScalar(scale);
@@ -1193,12 +1347,10 @@
       controls.update();
 
       setupAnimations(anims);
-
       loadingScreen.style.display = 'none';
     }
 
     function handleError(error, url) {
-      console.error('Error loading file:', error);
       alert('Failed to load the file.');
       loadingScreen.style.display = 'none';
       if (url) URL.revokeObjectURL(url);
@@ -1212,16 +1364,11 @@
 
     function animate() {
       requestAnimationFrame(animate);
-      
       const delta = clock.getDelta();
-      if (mixer) {
-        mixer.update(delta);
-      }
-
+      if (mixer) mixer.update(delta);
       controls.update();
       renderer.render(scene, camera);
     }
-
     animate();
   </script>
 </body>

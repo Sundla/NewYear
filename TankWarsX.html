@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TANK WARS X</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
+    * { box-sizing: border-box; padding: 0; margin: 0; user-select: none; font-family: 'Quicksand', sans-serif; }
+    
+    body { background-color: #1a1a1a; overflow: hidden; color: white; touch-action: none; }
+    
+    .status { position: fixed; top: 0; left: 0; width: 100%; display: flex; justify-content: space-around; z-index: 1000; text-shadow: 2px 2px #000; background: rgba(0,0,0,0.7); padding: 8px 0; border-bottom: 3px solid #FF9933; }
+    
+    #canvas-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+
+    #minimap {
+        position: fixed;
+        bottom: 175px;
+        right: 20px;
+        width: 110px;
+        height: 110px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 3px solid #FF9933;
+        border-radius: 8px;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .ui-layer { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; align-items: center; z-index: 100; pointer-events: none; background: transparent; }
+    .ui-layer > * { pointer-events: auto; }
+
+    #joystick-base {
+        width: 130px;
+        height: 130px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 3px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        position: relative;
+        touch-action: none;
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #joystick-handle {
+        width: 55px;
+        height: 55px;
+        background: rgba(255, 153, 51, 0.5);
+        border: 3px solid rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        position: absolute;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        pointer-events: none;
+        transition: transform 0.05s linear;
+        backdrop-filter: blur(2px);
+    }
+    
+    .fire-btn { width: 110px; height: 110px; border-radius: 50%; background: rgba(211, 47, 47, 0.85); border: 5px solid #b71c1c; color: white; font-size: 22px; font-weight: bold; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer; backdrop-filter: blur(2px); }
+
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; text-align: center; padding: 20px; }
+    .d-none { display: none !important; }
+    .btn-main { padding: 18px 50px; margin-top: 15px; background: #FF9933; color: black; border: none; border-radius: 40px; cursor: pointer; font-size: 1.4rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+    .btn-main:active { transform: scale(0.98); }
+    .stat-box { margin-top: 15px; font-size: 1.2rem; color: #edc9af; line-height: 1.6; }
+
+    #sculpt-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(10, 10, 15, 0.98);
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0;
+        touch-action: none;
+    }
+    .sculpt-msg {
+        background: rgba(0, 0, 0, 0.85);
+        border-bottom: 2px solid #FF9933;
+        color: #FF9933;
+        padding: 12px 15px;
+        border-radius: 0;
+        font-size: 1rem;
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+        z-index: 2010;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    #sculpt-viewport {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+        z-index: 2001;
+        overflow: hidden;
+        touch-action: none;
+    }
+    .sculpt-controls-panel {
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        align-items: center;
+        z-index: 2010;
+        pointer-events: none;
+        background: transparent;
+    }
+    .sculpt-controls-panel > * {
+        pointer-events: auto;
+    }
+    .dir-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        gap: 4px;
+        touch-action: none;
+    }
+    .sculpt-action-btn {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(76, 175, 80, 0.9);
+        border: 5px solid #2e7d32;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        cursor: pointer;
+        backdrop-filter: blur(2px);
+        padding: 5px;
+    }
+    .sculpt-action-btn:active {
+        transform: scale(0.98);
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/USDZLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+</head>
+<body>
+
+<div class="status">
+    <div>Stage: <span id="stage-num">1</span></div>
+    <div>Target: <span id="enemy-count">4</span></div>
+    <div>Ammo: <span id="ammo-count">20</span></div>
+    <div>Time: <span id="timer">100</span>s</div>
+</div>
+
+<canvas id="minimap" width="110" height="110"></canvas>
+
+<div id="overlay" class="overlay">
+    <h1 id="overlay-title" style="color: #ff3300; font-size: 3rem; margin-bottom: 10px;">TANK WARS X</h1>
+    <div id="stat-display" class="stat-box">
+         <span id="final-kills" style="color:#ff3300; font-size:1.8rem;">Stage 1</span>
+    </div>
+    <button class="btn-main" id="start-btn" onclick="startGame()">START BATTLE</button>
+    <button class="btn-main" style="background:#3399FF; color:white;" onclick="openSculptModal()">UPLOAD PLAYER</button>
+</div>
+
+<div id="sculpt-overlay" class="d-none">
+    <div class="sculpt-msg">
+        <div>Stage: <span id="sculpt-stage-num">1</span> | Target: <span id="sculpt-enemy-count">4</span> | Ammo: <span id="sculpt-ammo-count">20</span> | Time: <span id="sculpt-timer">100</span>s</div>
+        <div style="font-size:0.85rem; color:#fff; font-weight:normal; margin-top:3px;">Direction pad to set front. Images are already aligned.</div>
+    </div>
+    <div id="sculpt-viewport"></div>
+    <div class="sculpt-controls-panel">
+        <div class="dir-grid" id="sculpt-dpad">
+            <div class="ctrl-btn" style="grid-column:2" data-dir="up">▲</div>
+            <div class="ctrl-btn" style="grid-row:2; grid-column:1" data-dir="left">◀</div>
+            <div class="ctrl-btn" style="grid-row:2; grid-column:3" data-dir="right">▶</div>
+            <div class="ctrl-btn" style="grid-row:3; grid-column:2" data-dir="down">▼</div>
+        </div>
+        <div class="sculpt-action-btn" onclick="confirmCustomPlayer()">SET FRONT & START</div>
+    </div>
+    <input type="file" id="gltf-file-input" accept=".glb,.gltf,.obj,.fbx,.usdz,.dae,.png,.jpg,.jpeg,.gif,.heif,.heic" style="display:none" onchange="handleFileLoaded(event)">
+</div>
+
+<div id="canvas-container"></div>
+
+<div class="ui-layer">
+    <div id="joystick-base">
+        <div id="joystick-handle"></div>
+    </div>
+    <div class="fire-btn" onpointerdown="playerFire()">FIRE</div>
+</div>
+
+<script>
+let scene, camera, renderer;
+let baseWorldSize = 160; 
+let worldW = 160, worldH = 160; 
+let audioCtx = null;
+let minimapCtx = null;
+
+let customPlayerGroup = null;
+let sculptScene, sculptCamera, sculptRenderer, sculptMesh = null;
+let sculptAnimFrame = null;
+let sculptRotDir = null;
+
+const stageData = [
+    { ammo: 20, enemies: 4, time: 100, color: 0xff0000 }, 
+    { ammo: 40, enemies: 8, time: 200, color: 0xff7f00 }, 
+    { ammo: 80, enemies: 16, time: 300, color: 0xffff00 }, 
+    { ammo: 160, enemies: 32, time: 400, color: 0x00ff00 }, 
+    { ammo: 320, enemies: 64, time: 500, color: 0x0000ff }, 
+    { ammo: 640, enemies: 128, time: 600, color: 0x4b0082 }, 
+    { ammo: 1280, enemies: 256, time: 700, color: 0x8a2be2 } 
+];
+
+const state = { 
+    active: false,
+    stage: 1,
+    player: { x: 0, z: 60, angle: 0, speed: 0.8, moveX: 0, moveZ: 0 },
+    enemies: [],
+    blocks: [],
+    bullets: [],
+    explosions: [],
+    clouds: [],
+    timer: 100,
+    ammo: 20,
+    kills: 0,
+    timerInt: null
+};
+
+let playerTankMesh, groundMesh;
+let dirLight;
+
+function setupTrackballControls() {
+    const base = document.getElementById('joystick-base');
+    const handle = document.getElementById('joystick-handle');
+    if (!base || !handle) return;
+
+    let activePointerId = null;
+    let baseRect = null;
+    const maxDist = 45;
+
+    base.addEventListener('pointerdown', (e) => {
+        activePointerId = e.pointerId;
+        baseRect = base.getBoundingClientRect();
+        try { base.setPointerCapture(e.pointerId); } catch(err) {}
+        updateJoystickPosition(e.clientX, e.clientY);
+    });
+
+    base.addEventListener('pointermove', (e) => {
+        if (e.pointerId !== activePointerId) return;
+        updateJoystickPosition(e.clientX, e.clientY);
+    });
+
+    const handleRelease = (e) => {
+        if (e.pointerId !== activePointerId) return;
+        activePointerId = null;
+        handle.style.transform = `translate(0px, 0px)`;
+        state.player.moveX = 0;
+        state.player.moveZ = 0;
+        try { base.releasePointerCapture(e.pointerId); } catch(err) {}
+    };
+
+    base.addEventListener('pointerup', handleRelease);
+    base.addEventListener('pointercancel', handleRelease);
+
+    function updateJoystickPosition(clientX, clientY) {
+        if (!baseRect) baseRect = base.getBoundingClientRect();
+        let centerX = baseRect.left + baseRect.width / 2;
+        let centerY = baseRect.top + baseRect.height / 2;
+        
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > maxDist) {
+            dx = (dx / dist) * maxDist;
+            dy = (dy / dist) * maxDist;
+        }
+
+        handle.style.transform = `translate(${dx}px, ${dy}px)`;
+
+        let normDist = Math.min(dist, maxDist) / maxDist;
+        if (dist > 2) {
+            state.player.moveX = (dx / maxDist) * normDist;
+            state.player.moveZ = (dy / maxDist) * normDist;
+        } else {
+            state.player.moveX = 0;
+            state.player.moveZ = 0;
+        }
+    }
+}
+
+function setupSculptPadControls() {
+    const el = document.getElementById('sculpt-dpad');
+    if (!el) return;
+    el.addEventListener('pointerdown', (e) => {
+        const btn = e.target.closest('.ctrl-btn');
+        if (btn) sculptRotate(btn.getAttribute('data-dir'));
+    });
+    const handleEnd = () => sculptStop();
+    el.addEventListener('pointerup', handleEnd);
+    el.addEventListener('pointercancel', handleEnd);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    setupTrackballControls();
+    setupSculptPadControls();
+});
+
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+function createNoiseBuffer(ctx, duration = 3.0, color = 'white') {
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    
+    for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        if (color === 'pink') {
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            data[i] *= 0.11;
+            b6 = white * 0.115926;
+        } else {
+            data[i] = white;
+        }
+    }
+    return buffer;
+}
+
+function playTankShot() {
+    try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+
+        let baseFreq = 45;
+        let decay = 1.2;
+
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(baseFreq * 4, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+        oscGain.gain.setValueAtTime(1.0, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(oscGain); oscGain.connect(masterGain);
+        osc.start(now); osc.stop(now + 0.5);
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(ctx, decay, 'pink');
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1500, now);
+        filter.frequency.exponentialRampToValueAtTime(100, now + decay);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(1.5, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + decay);
+        noiseSource.connect(filter); filter.connect(noiseGain); noiseGain.connect(masterGain);
+        noiseSource.start(now); noiseSource.stop(now + decay);
+    } catch(e) {}
+}
+
+function playDestroySound() {
+    try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+
+        const duration = 1.0;
+
+        const subOsc = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(70, now);
+        subOsc.frequency.exponentialRampToValueAtTime(20, now + duration * 0.6);
+        subGain.gain.setValueAtTime(1.2, now);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        subOsc.connect(subGain); subGain.connect(masterGain);
+        subOsc.start(now); subOsc.stop(now + duration);
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(ctx, duration, 'pink');
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, now);
+        filter.frequency.linearRampToValueAtTime(80, now + duration);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(1.0, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        noiseSource.connect(filter); filter.connect(noiseGain); noiseGain.connect(masterGain);
+        noiseSource.start(now); noiseSource.stop(now + duration);
+    } catch(e) {}
+}
+
+const sfx = {
+    tankShot: { play: playTankShot },
+    destroy: { play: playDestroySound }
+};
+
+function playSound(soundObj) {
+    soundObj.play();
+}
+
+function init3D() {
+    const container = document.getElementById('canvas-container');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xdceef2);
+    scene.fog = new THREE.FogExp2(0xdceef2, 0.003);
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    dirLight = new THREE.DirectionalLight(0xfffaed, 0.9);
+    dirLight.position.set(60, 120, 60);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 600;
+    
+    let d = 150;
+    dirLight.shadow.camera.left = -d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = -d;
+    dirLight.shadow.bias = -0.0005;
+    scene.add(dirLight);
+
+    createGround();
+    createClouds();
+    minimapCtx = document.getElementById('minimap').getContext('2d');
+    window.addEventListener('resize', onWindowResize);
+}
+
+function updateWorldDimensions() {
+    let sizeMultiplier = Math.pow(2, Math.floor((state.stage - 1) / 3));
+    worldW = baseWorldSize * Math.sqrt(sizeMultiplier);
+    worldH = baseWorldSize * Math.sqrt(sizeMultiplier);
+
+    if (groundMesh) scene.remove(groundMesh);
+    const groundGeo = new THREE.PlaneGeometry(worldW, worldH);
+    
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load('tile.png', 
+        (texture) => {
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(worldW / 10, worldH / 10);
+            const groundMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.8 });
+            groundMesh.material = groundMat;
+            groundMesh.material.needsUpdate = true;
+        },
+        undefined,
+        (err) => {
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
+            groundMesh.material = groundMat;
+            groundMesh.material.needsUpdate = true;
+        }
+    );
+
+    const defaultMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
+    groundMesh = new THREE.Mesh(groundGeo, defaultMat);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.position.y = 0;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    if (dirLight) {
+        let d = Math.max(worldW, worldH) * 0.75;
+        dirLight.shadow.camera.left = -d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = -d;
+        dirLight.shadow.camera.updateProjectionMatrix();
+    }
+}
+
+function createGround() { updateWorldDimensions(); }
+
+function createClouds() {
+    const cloudGeo = new THREE.SphereGeometry(6, 6, 6);
+    const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    
+    for (let i = 0; i < 15; i++) {
+        const cloudGroup = new THREE.Group();
+        const parts = 2 + Math.floor(Math.random() * 2);
+        for (let j = 0; j < parts; j++) {
+            const part = new THREE.Mesh(cloudGeo, cloudMat);
+            part.position.set((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 15);
+            const scale = 0.8 + Math.random() * 1.2;
+            part.scale.set(scale, scale, scale);
+            cloudGroup.add(part);
+        }
+        cloudGroup.position.set((Math.random() - 0.5) * 300, 70 + Math.random() * 20, (Math.random() - 0.5) * 300);
+        scene.add(cloudGroup);
+        state.clouds.push(cloudGroup);
+    }
+}
+
+function createRoundedBoxGeometry(width, height, depth, radius, smoothness) {
+    const shape = new THREE.Shape();
+    const eps = 0.00001;
+    let rad = Math.max(eps, radius);
+    
+    shape.absarc(width / 2 - rad, height / 2 - rad, rad, -Math.PI / 2, 0, false);
+    shape.absarc(width / 2 - rad, -height / 2 + rad, rad, 0, Math.PI / 2, false);
+    shape.absarc(-width / 2 + rad, -height / 2 + rad, rad, Math.PI / 2, Math.PI, false);
+    shape.absarc(-width / 2 + rad, height / 2 - rad, rad, Math.PI, (3 * Math.PI) / 2, false);
+
+    const settings = { steps: 1, depth: depth - rad * 2, bevelEnabled: true, bevelThickness: rad, bevelSize: rad, bevelSegments: smoothness };
+    const geometry = new THREE.ExtrudeGeometry(shape, settings);
+    geometry.center();
+    return geometry;
+}
+
+function createEnhancedTank(colorHex) {
+    const group = new THREE.Group();
+
+    const bodyGeo = createRoundedBoxGeometry(3.6, 1.2, 5.2, 0.5, 3);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.2 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 1.2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+
+    const frustumGeo = new THREE.CylinderGeometry(1.2, 1.8, 1.2, 12);
+    const frustumMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.3 });
+    const frustum = new THREE.Mesh(frustumGeo, frustumMat);
+    frustum.position.set(0, 2.4, 0);
+    frustum.castShadow = true;
+    frustum.receiveShadow = true;
+    group.add(frustum);
+
+    const barrelGeo = new THREE.CylinderGeometry(0.35, 0.35, 3.5, 10);
+    const barrelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(0, 2.6, 2.2);
+    barrel.castShadow = true;
+    group.add(barrel);
+
+    const tyreGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.4, 12);
+    tyreGeo.rotateZ(Math.PI / 2);
+    const tyreMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+
+    const discGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.42, 12);
+    discGeo.rotateZ(Math.PI / 2);
+    const discMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8, roughness: 0.2 });
+
+    const zPositions = [-1.6, -0.5, 0.5, 1.6];
+    const xPositions = [-2.0, 2.0];
+
+    xPositions.forEach(xPos => {
+        zPositions.forEach(zPos => {
+            const tyre = new THREE.Mesh(tyreGeo, tyreMat);
+            tyre.position.set(xPos, 0.7, zPos);
+            tyre.castShadow = true;
+            group.add(tyre);
+
+            const disc = new THREE.Mesh(discGeo, discMat);
+            disc.position.set(xPos, 0.7, zPos);
+            disc.castShadow = true;
+            group.add(disc);
+        });
+    });
+
+    return group;
+}
+
+function buildWorld() {
+    state.blocks.forEach(b => scene.remove(b.mesh));
+    state.blocks = [];
+    state.enemies.forEach(e => scene.remove(e.group));
+    state.enemies = [];
+
+    updateWorldDimensions();
+
+    let halfW = worldW / 2;
+    let halfH = worldH / 2;
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.5 });
+
+    const t = 1.0; 
+    const h = 4.0; 
+
+    let northGeo = new THREE.BoxGeometry(worldW + t * 2, h, t);
+    let northMesh = new THREE.Mesh(northGeo, wallMat);
+    northMesh.position.set(0, h/2, -halfH - t/2);
+    northMesh.castShadow = true;
+    northMesh.receiveShadow = true;
+    scene.add(northMesh);
+    state.blocks.push({ x: 0, z: -halfH, w: worldW, d: t, mesh: northMesh, isBorder: true });
+
+    let southMesh = new THREE.Mesh(northGeo, wallMat);
+    southMesh.position.set(0, h/2, halfH + t/2);
+    southMesh.castShadow = true;
+    southMesh.receiveShadow = true;
+    scene.add(southMesh);
+    state.blocks.push({ x: 0, z: halfH, w: worldW, d: t, mesh: southMesh, isBorder: true });
+
+    let sideGeo = new THREE.BoxGeometry(t, h, worldH);
+    let westMesh = new THREE.Mesh(sideGeo, wallMat);
+    westMesh.position.set(-halfW - t/2, h/2, 0);
+    westMesh.castShadow = true;
+    westMesh.receiveShadow = true;
+    scene.add(westMesh);
+    state.blocks.push({ x: -halfW, z: 0, w: t, d: worldH, mesh: westMesh, isBorder: true });
+
+    let eastMesh = new THREE.Mesh(sideGeo, wallMat);
+    eastMesh.position.set(halfW + t/2, h/2, 0);
+    eastMesh.castShadow = true;
+    eastMesh.receiveShadow = true;
+    scene.add(eastMesh);
+    state.blocks.push({ x: halfW, z: 0, w: t, d: worldH, mesh: eastMesh, isBorder: true });
+
+    const cubeGeo = new THREE.BoxGeometry(6, 2.5, 6);
+    const cubeMat = new THREE.MeshStandardMaterial({ color: 0xb57c50, roughness: 0.7 });
+    const roofGeo = new THREE.ConeGeometry(4.5, 2.5, 4);
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 });
+
+    for (let x = -halfW + 20; x <= halfW - 20; x += 25) {
+        for (let z = -halfH + 20; z <= halfH - 20; z += 25) {
+            if (Math.random() > 0.7 && !(Math.abs(x) < 25 && Math.abs(z - 60) < 25)) {
+                let houseGroup = new THREE.Group();
+
+                let boxMesh = new THREE.Mesh(cubeGeo, cubeMat);
+                boxMesh.position.y = 1.25;
+                boxMesh.castShadow = true;
+                boxMesh.receiveShadow = true;
+                houseGroup.add(boxMesh);
+
+                let roofMesh = new THREE.Mesh(roofGeo, roofMat);
+                roofMesh.position.y = 3.75;
+                roofMesh.rotation.y = Math.PI / 4;
+                roofMesh.castShadow = true;
+                roofMesh.receiveShadow = true;
+                houseGroup.add(roofMesh);
+
+                houseGroup.position.set(x, 0, z);
+                scene.add(houseGroup);
+
+                state.blocks.push({ x, z, w: 6, d: 6, mesh: houseGroup, isBorder: false });
+            }
+        }
+    }
+
+    if (playerTankMesh) scene.remove(playerTankMesh);
+    if (customPlayerGroup) {
+        playerTankMesh = customPlayerGroup.clone();
+    } else {
+        playerTankMesh = createEnhancedTank(0x2e7d32);
+    }
+    scene.add(playerTankMesh);
+}
+
+function spawnEnemies(count) {
+    let enemyColor = stageData[state.stage - 1].color;
+    let halfW = worldW / 2 - 20;
+    let halfH = worldH / 2 - 20;
+
+    for (let i = 0; i < count; i++) {
+        let ex, ez, attempts = 0;
+        do {
+            ex = (Math.random() - 0.5) * halfW * 1.5;
+            ez = (Math.random() - 0.5) * halfH * 1.5;
+            attempts++;
+        } while ((Math.abs(ex - state.player.x) < 35 && Math.abs(ez - state.player.z) < 35 || checkCollision(ex, ez, 6)) && attempts < 50);
+
+        let eGroup = createEnhancedTank(enemyColor);
+        eGroup.position.set(ex, 0, ez);
+        scene.add(eGroup);
+
+        state.enemies.push({
+            x: ex,
+            z: ez,
+            angle: Math.random() * Math.PI * 2,
+            group: eGroup,
+            fireCooldown: Math.floor(Math.random() * 60) + 30
+        });
+    }
+}
+
+function createExplosion(x, z) {
+    playSound(sfx.destroy);
+    
+    const flashLight = new THREE.PointLight(0xffaa22, 5.0, 30);
+    flashLight.position.set(x, 2.6, z);
+    scene.add(flashLight);
+
+    const particleCount = 16;
+    const explosionGroup = new THREE.Group();
+    explosionGroup.position.set(x, 2.6, z);
+    
+    const particles = [];
+    const geo = new THREE.BoxGeometry(0.5, 0.4, 0.5);
+
+    for (let i = 0; i < particleCount; i++) {
+        let isSmoke = i > particleCount * 0.5;
+        let color = isSmoke ? 0x444444 : 0xff4500;
+        
+        const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+        const mesh = new THREE.Mesh(geo, material);
+
+        let scale = 0.6 + Math.random() * 1.0;
+        mesh.scale.set(scale, scale, scale);
+
+        const theta = Math.random() * Math.PI * 2;
+        const speed = 0.2 + Math.random() * 0.3;
+        
+        particles.push({
+            mesh: mesh,
+            vx: Math.cos(theta) * speed,
+            vy: 0.2 + Math.random() * 0.3,
+            vz: Math.sin(theta) * speed,
+            isSmoke: isSmoke
+        });
+        explosionGroup.add(mesh);
+    }
+    
+    scene.add(explosionGroup);
+    state.explosions.push({ group: explosionGroup, particles: particles, light: flashLight, life: 25 });
+}
+
+function updateUI() {
+    document.getElementById('stage-num').innerText = state.stage;
+    document.getElementById('enemy-count').innerText = state.enemies.length;
+    document.getElementById('ammo-count').innerText = state.ammo;
+    document.getElementById('timer').innerText = state.timer;
+    
+    document.getElementById('sculpt-stage-num').innerText = state.stage;
+    document.getElementById('sculpt-enemy-count').innerText = stageData[state.stage - 1].enemies;
+    document.getElementById('sculpt-ammo-count').innerText = stageData[state.stage - 1].ammo;
+    document.getElementById('sculpt-timer').innerText = stageData[state.stage - 1].time;
+}
+
+function drawMinimap() {
+    if (!minimapCtx) return;
+    minimapCtx.clearRect(0, 0, 110, 110);
+
+    let scale = 110 / worldW;
+    let offsetX = 55;
+    let offsetZ = 55;
+
+    state.blocks.forEach(b => {
+        minimapCtx.fillStyle = b.isBorder ? '#000000' : '#b57c50';
+        let bx = (b.x - b.w/2) * scale + offsetX;
+        let bz = (b.z - b.d/2) * scale + offsetZ;
+        minimapCtx.fillRect(bx, bz, b.w * scale, b.d * scale);
+    });
+
+    state.enemies.forEach(e => {
+        minimapCtx.fillStyle = '#ff0000';
+        let ex = e.x * scale + offsetX;
+        let ez = e.z * scale + offsetZ;
+        minimapCtx.beginPath();
+        minimapCtx.arc(ex, ez, 2.5, 0, Math.PI * 2);
+        minimapCtx.fill();
+    });
+
+    minimapCtx.fillStyle = '#00ff00';
+    let px = state.player.x * scale + offsetX;
+    let pz = state.player.z * scale + offsetZ;
+    minimapCtx.beginPath();
+    minimapCtx.arc(px, pz, 3.5, 0, Math.PI * 2);
+    minimapCtx.fill();
+}
+
+function startGame() {
+    if (!scene) init3D();
+    document.getElementById('overlay').classList.add('d-none');
+    state.active = true;
+    
+    let currentConfig = stageData[state.stage - 1];
+    state.timer = currentConfig.time;
+    state.ammo = currentConfig.ammo;
+    if(state.stage === 1) state.kills = 0;
+
+    state.bullets.forEach(b => scene.remove(b.mesh));
+    state.bullets = [];
+
+    state.player.x = 0;
+    state.player.z = worldH / 2 - 20;
+    state.player.angle = 0;
+    state.player.moveX = 0;
+    state.player.moveZ = 0;
+
+    buildWorld();
+    spawnEnemies(currentConfig.enemies);
+    updateUI();
+
+    if(state.timerInt) clearInterval(state.timerInt);
+    state.timerInt = setInterval(() => {
+        if(state.active) {
+            state.timer--;
+            updateUI();
+            if(state.timer <= 0) endGame("TIME EXPIRED");
+        }
+    }, 1000);
+
+    requestAnimationFrame(gameLoop);
+}
+
+function checkCollision(nx, nz, size) {
+    return state.blocks.some(b => {
+        let halfW = b.w / 2;
+        let halfD = b.d / 2;
+        return (nx + size/2 > b.x - halfW && nx - size/2 < b.x + halfW &&
+                nz + size/2 > b.z - halfD && nz - size/2 < b.z + halfD);
+    });
+}
+
+function gameLoop() {
+    if (!state.active) return;
+
+    if (Math.abs(state.player.moveX) > 0.01 || Math.abs(state.player.moveZ) > 0.01) {
+        state.player.angle = Math.atan2(state.player.moveX, state.player.moveZ);
+        
+        let nx = state.player.x + state.player.moveX * state.player.speed * 1.5;
+        let nz = state.player.z + state.player.moveZ * state.player.speed * 1.5;
+
+        if (!checkCollision(nx, state.player.z, 4)) state.player.x = nx;
+        if (!checkCollision(state.player.x, nz, 4)) state.player.z = nz;
+    }
+
+    if (playerTankMesh) {
+        playerTankMesh.position.set(state.player.x, 0, state.player.z);
+        playerTankMesh.rotation.y = state.player.angle;
+    }
+
+    camera.position.set(state.player.x, 42, state.player.z + 32);
+    camera.lookAt(state.player.x, 0, state.player.z - 4);
+
+    for (let i = state.explosions.length - 1; i >= 0; i--) {
+        let exp = state.explosions[i];
+        exp.life--;
+        
+        if (exp.light) {
+            exp.light.intensity *= 0.8;
+            if (exp.life <= 8) {
+                scene.remove(exp.light);
+                exp.light = null;
+            }
+        }
+
+        exp.particles.forEach(p => {
+            p.mesh.position.x += p.vx;
+            p.mesh.position.y += p.vy;
+            p.mesh.position.z += p.vz;
+            p.mesh.scale.multiplyScalar(0.95);
+            p.mesh.material.opacity *= 0.85;
+        });
+
+        if (exp.life <= 0) {
+            scene.remove(exp.group);
+            state.explosions.splice(i, 1);
+        }
+    }
+
+    state.enemies.forEach(en => {
+        let enSpeed = 0.35;
+        let nextX = en.x + Math.sin(en.angle) * enSpeed;
+        let nextZ = en.z + Math.cos(en.angle) * enSpeed;
+
+        if (checkCollision(nextX, nextZ, 4)) {
+            en.angle += Math.PI + (Math.random() - 0.5) * 1.5;
+        } else {
+            en.x = nextX;
+            en.z = nextZ;
+        }
+
+        en.group.position.set(en.x, 0, en.z);
+        en.group.rotation.y = en.angle;
+
+        en.fireCooldown--;
+        if (en.fireCooldown <= 0) {
+            en.fireCooldown = Math.floor(Math.random() * 80) + 60;
+            let bGeo = new THREE.SphereGeometry(0.35, 6, 6);
+            let bMat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
+            let ebMesh = new THREE.Mesh(bGeo, bMat);
+            
+            let ebx = en.x + Math.sin(en.angle) * 3.8;
+            let ebz = en.z + Math.cos(en.angle) * 3.8;
+            ebMesh.position.set(ebx, 2.6, ebz);
+            scene.add(ebMesh);
+            state.bullets.push({
+                mesh: ebMesh,
+                x: ebx,
+                z: ebz,
+                angle: en.angle,
+                speed: 1.2,
+                isEnemy: true
+            });
+        }
+
+        if (Math.abs(en.x - state.player.x) < 4 && Math.abs(en.z - state.player.z) < 4) {
+            createExplosion(state.player.x, state.player.z);
+            endGame("TANK DESTROYED!");
+        }
+    });
+
+    for (let i = state.bullets.length - 1; i >= 0; i--) {
+        let b = state.bullets[i];
+        b.x += Math.sin(b.angle) * b.speed;
+        b.z += Math.cos(b.angle) * b.speed;
+        b.mesh.position.set(b.x, 2.6, b.z);
+
+        let blockIndex = state.blocks.findIndex(bl => {
+            let halfW = bl.w / 2;
+            let halfD = bl.d / 2;
+            return (b.x > bl.x - halfW && b.x < bl.x + halfW &&
+                    b.z > bl.z - halfD && b.z < bl.z + halfD);
+        });
+
+        if (blockIndex !== -1) {
+            let bl = state.blocks[blockIndex];
+            
+            if (b.isEnemy) {
+                scene.remove(b.mesh);
+                state.bullets.splice(i, 1);
+                continue;
+            }
+
+            createExplosion(bl.x, bl.z);
+            if (!bl.isBorder) {
+                scene.remove(bl.mesh);
+                state.blocks.splice(blockIndex, 1);
+            }
+            scene.remove(b.mesh);
+            state.bullets.splice(i, 1);
+            continue;
+        }
+
+        if (b.isEnemy) {
+            if (Math.abs(b.x - state.player.x) < 3 && Math.abs(b.z - state.player.z) < 3) {
+                createExplosion(state.player.x, state.player.z);
+                scene.remove(b.mesh);
+                state.bullets.splice(i, 1);
+                endGame("TANK DESTROYED!");
+                break;
+            }
+        } else {
+            let hitIndex = state.enemies.findIndex(en => Math.abs(b.x - en.x) < 3 && Math.abs(b.z - en.z) < 3);
+            if (hitIndex !== -1) {
+                createExplosion(state.enemies[hitIndex].x, state.enemies[hitIndex].z);
+                scene.remove(state.enemies[hitIndex].group);
+                state.enemies.splice(hitIndex, 1);
+                scene.remove(b.mesh);
+                state.bullets.splice(i, 1);
+                state.kills++;
+                state.ammo += 5;
+                updateUI();
+
+                if (state.enemies.length === 0) {
+                    if (state.stage < 7) {
+                        let completedStage = state.stage;
+                        state.stage++;
+                        endGame(`STAGE ${completedStage} CLEAR!`);
+                    } else {
+                        endGame("ULTIMATE MISSION ACCOMPLISHED!");
+                        state.stage = 1;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    renderer.render(scene, camera);
+    drawMinimap();
+    requestAnimationFrame(gameLoop);
+}
+
+function playerFire() {
+    if (!state.active || state.ammo <= 0) return;
+    state.ammo--;
+    updateUI();
+    playSound(sfx.tankShot);
+
+    const bulletGeo = new THREE.SphereGeometry(0.35, 6, 6);
+    const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const bMesh = new THREE.Mesh(bulletGeo, bulletMat);
+    
+    let bx = state.player.x + Math.sin(state.player.angle) * 3.8;
+    let bz = state.player.z + Math.cos(state.player.angle) * 3.8;
+    bMesh.position.set(bx, 2.6, bz);
+    scene.add(bMesh);
+
+    state.bullets.push({
+        mesh: bMesh,
+        x: bx,
+        z: bz,
+        angle: state.player.angle,
+        speed: 1.8,
+        isEnemy: false
+    });
+}
+
+function endGame(msg) {
+    state.active = false;
+    clearInterval(state.timerInt);
+    document.getElementById('overlay-title').innerText = msg;
+    document.getElementById('overlay-title').style.color = "#ff3300";
+    document.getElementById('final-kills').innerText = "Enemies Defeated: " + state.kills;
+    document.getElementById('final-kills').style.color = "#ff3300";
+    
+    const startBtn = document.getElementById('start-btn');
+    if (msg.includes("CLEAR!")) {
+        startBtn.innerText = `START STAGE ${state.stage}`;
+    } else if (msg.includes("ULTIMATE")) {
+        startBtn.innerText = "PLAY AGAIN";
+    } else {
+        startBtn.innerText = "RESTART MISSION";
+        state.stage = 1;
+    }
+    document.getElementById('overlay').classList.remove('d-none');
+}
+
+function onWindowResize() {
+    if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    if (sculptCamera && sculptRenderer) {
+        const container = document.getElementById('sculpt-viewport');
+        sculptCamera.aspect = container.clientWidth / container.clientHeight;
+        sculptCamera.updateProjectionMatrix();
+        sculptRenderer.setSize(container.clientWidth, container.clientHeight);
+    }
+}
+
+function openSculptModal() {
+    document.getElementById('gltf-file-input').click();
+}
+
+async function handleFileLoaded(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let fileName = file.name.toLowerCase();
+
+    if (fileName.endsWith('.heic') || fileName.endsWith('.heif')) {
+        try {
+            const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
+            file = new File([convertedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
+            fileName = file.name.toLowerCase();
+        } catch (err) {
+            alert("Could not process HEIC file. Please upload standard JPG or PNG.");
+            return;
+        }
+    }
+
+    if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const imgWidth = img.naturalWidth || img.width || 1;
+                const imgHeight = img.naturalHeight || img.height || 1;
+                const imgAspect = imgWidth / imgHeight;
+
+                const boxWidth = 3.6;
+                const boxDepth = 5.2;
+
+                let finalWidth = boxWidth;
+                let finalHeight = boxWidth / imgAspect;
+                let finalDepth = boxDepth;
+
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(e.target.result, (texture) => {
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+
+                    const imageMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                    const materials = [imageMat, imageMat, imageMat, imageMat, imageMat, imageMat];
+                    const geo = new THREE.BoxGeometry(finalWidth, finalHeight, finalDepth);
+                    const mesh = new THREE.Mesh(geo, materials);
+                    mesh.position.y = finalHeight / 2;
+
+                    const group = new THREE.Group();
+                    group.add(mesh);
+                    document.getElementById('sculpt-overlay').classList.remove('d-none');
+                    updateUI();
+                    initSculptViewport(group);
+                });
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const contents = e.target.result;
+        if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
+            const loader = new THREE.GLTFLoader();
+            loader.parse(contents, '', (gltf) => { processLoadedModelScene(gltf.scene); });
+        } else if (fileName.endsWith('.obj')) {
+            const objLoader = new THREE.OBJLoader();
+            const textDecoder = new TextDecoder();
+            const objGroup = objLoader.parse(textDecoder.decode(contents));
+            processLoadedModelScene(objGroup);
+        } else if (fileName.endsWith('.fbx')) {
+            const fbxLoader = new THREE.FBXLoader();
+            const fbxGroup = fbxLoader.parse(contents, '');
+            processLoadedModelScene(fbxGroup);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function processLoadedModelScene(modelScene) {
+    modelScene.traverse((node) => {
+        if (node.isMesh && node.material) {
+            let originalMap = node.material.map;
+            let originalColor = node.material.color ? node.material.color.clone() : new THREE.Color(0xffffff);
+            node.material = new THREE.MeshBasicMaterial({ map: originalMap, color: originalMap ? 0xffffff : originalColor, side: THREE.DoubleSide });
+        }
+    });
+    document.getElementById('sculpt-overlay').classList.remove('d-none');
+    updateUI();
+    initSculptViewport(modelScene);
+}
+
+function initSculptViewport(modelGroup) {
+    const container = document.getElementById('sculpt-viewport');
+    container.innerHTML = '';
+    sculptScene = new THREE.Scene();
+    sculptScene.background = new THREE.Color(0x151518);
+
+    const width = container.clientWidth, height = container.clientHeight;
+    sculptCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    sculptCamera.position.set(0, 3, 7);
+    sculptCamera.lookAt(0, 0, 0);
+
+    sculptRenderer = new THREE.WebGLRenderer({ antialias: true });
+    sculptRenderer.setSize(width, height);
+    container.appendChild(sculptRenderer.domElement);
+
+    sculptScene.add(new THREE.AmbientLight(0xffffff, 1.0));
+
+    const box = new THREE.Box3().setFromObject(modelGroup);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scaleFactor = 4.5 / (maxDim > 0 ? maxDim : 1);
+    modelGroup.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+    box.setFromObject(modelGroup);
+    const center = box.getCenter(new THREE.Vector3());
+    modelGroup.position.set(-center.x, -box.min.y, -center.z);
+
+    sculptMesh = modelGroup;
+    sculptScene.add(sculptMesh);
+
+    let isSculptDragging = false, prevTouch = { x: 0, y: 0 };
+    container.onpointerdown = (e) => { isSculptDragging = true; prevTouch = { x: e.clientX, y: e.clientY }; };
+    container.onpointermove = (e) => {
+        if (!isSculptDragging || !sculptMesh) return;
+        sculptMesh.rotation.y += (e.clientX - prevTouch.x) * 0.01;
+        sculptMesh.rotation.x += (e.clientY - prevTouch.y) * 0.01;
+        prevTouch = { x: e.clientX, y: e.clientY };
+    };
+    window.onpointerup = () => { isSculptDragging = false; };
+
+    if (sculptAnimFrame) cancelAnimationFrame(sculptAnimFrame);
+    runSculptLoop();
+}
+
+function runSculptLoop() {
+    if (sculptMesh) {
+        if (sculptRotDir === 'up') sculptMesh.rotation.x -= 0.03;
+        if (sculptRotDir === 'down') sculptMesh.rotation.x += 0.03;
+        if (sculptRotDir === 'left') sculptMesh.rotation.y += 0.03;
+        if (sculptRotDir === 'right') sculptMesh.rotation.y -= 0.03;
+    }
+    sculptRenderer.render(sculptScene, sculptCamera);
+    sculptAnimFrame = requestAnimationFrame(runSculptLoop);
+}
+
+function sculptRotate(dir) { sculptRotDir = dir; }
+function sculptStop() { sculptRotDir = null; }
+
+function confirmCustomPlayer() {
+    if (sculptMesh) {
+        sculptMesh.rotation.y += Math.PI / 2;
+        const box = new THREE.Box3().setFromObject(sculptMesh);
+        sculptMesh.position.y -= box.min.y;
+        customPlayerGroup = sculptMesh.clone();
+    }
+    if (sculptAnimFrame) cancelAnimationFrame(sculptAnimFrame);
+    document.getElementById('sculpt-overlay').classList.add('d-none');
+    startGame();
+}
+</script>
+</body>
+</html>

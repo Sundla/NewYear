@@ -90,6 +90,13 @@
     .x-power-brick { background: #2e7d32 !important; position: absolute; width: 40px; height: 40px; border: 2px solid #1b5e20 !important; box-shadow: 0 0 10px #00ff00; display: flex; justify-content: center; align-items: center; }
     .x-power-brick::before { content: '✕'; color: white; font-size: 22px; font-weight: bold; text-shadow: 0 0 4px #000; }
 
+    /* New Creator Blocks Styling */
+    .creator-brick-block { background: #d32f2f !important; position: absolute; width: 40px; height: 40px; border: 2px solid #b71c1c !important; box-shadow: 0 0 10px #ff5252; display: flex; justify-content: center; align-items: center; }
+    .creator-brick-block::before { content: '#'; color: white; font-size: 24px; font-weight: bold; text-shadow: 0 0 4px #000; }
+
+    .creator-bomb-block { background: #333333 !important; position: absolute; width: 40px; height: 40px; border: 2px solid #000000 !important; box-shadow: 0 0 10px #ff9800; display: flex; justify-content: center; align-items: center; }
+    .creator-bomb-block::before { content: 'B'; color: #ff9800; font-size: 22px; font-weight: bold; text-shadow: 0 0 4px #000; }
+
     .heart-drop { position: absolute; width: 30px; height: 30px; background: rgba(255, 0, 0, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; z-index: 12; animation: pulse 0.8s infinite alternate; }
     @keyframes pulse {
         0% { transform: scale(1); }
@@ -103,9 +110,14 @@
     .special-white-shot { background: #ffffff; border: 1px solid #000; box-shadow: 0 0 12px #ffffff; }
 
     .blast { position: absolute; width: 50px; height: 50px; z-index: 50; pointer-events: none; transform: translate(-10px, -10px); animation: boom 0.4s ease-out forwards; }
+    .mega-blast { position: absolute; width: 800px; height: 800px; z-index: 50; pointer-events: none; transform: translate(-400px, -400px); border-radius: 50%; background: radial-gradient(circle, rgba(255,152,0,0.8) 0%, rgba(255,69,0,0.5) 50%, rgba(0,0,0,0) 80%); animation: megaBoom 0.6s ease-out forwards; }
     @keyframes boom {
         0% { transform: scale(0.5); opacity: 1; }
         100% { transform: scale(1.8); opacity: 0; }
+    }
+    @keyframes megaBoom {
+        0% { transform: scale(0.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 0; }
     }
 
     @keyframes blip3 {
@@ -174,11 +186,9 @@
       .asset-panel { right:10px; bottom:72px; width:min(270px,calc(100vw - 20px)); max-height:58vh; }
     }
 
-  
 /* Final Stage Creator positioning */
 #editorDownloadBtn { transform: translateY(10px); }
 #editorAddBtn { transform: translateY(10px); }
-
 </style>
 </head>
 <body>
@@ -188,6 +198,12 @@
 </div>
 
 <div id="cross-toggle" class="cross-toggle-btn d-none" onclick="toggleXMode()"><span>X-MODE</span></div>
+
+<!-- Extra dynamic builders tracker UI display -->
+<div id="builder-toggle" class="cross-toggle-btn d-none" style="right: 115px; background: rgba(211, 47, 47, 0.85); border-color: #ff5252; box-shadow: 0 0 8px #ff5252;" 
+     onpointerdown="startBuildButtonPress()" onpointerup="endBuildButtonPress()" onpointerleave="endBuildButtonPress()">
+    <span id="build-btn-text">BUILD</span>
+</div>
 
 <div class="status">
     <div>Stage: <span id="stage-num">1</span></div>
@@ -249,6 +265,8 @@
     <div class="asset-row" data-asset="brick" onclick="selectEditorAsset('brick',this)"><div class="asset-preview brick"></div><div class="asset-label">Normal Block</div></div>
     <div class="asset-row" data-asset="powerBrick" onclick="selectEditorAsset('powerBrick',this)"><div class="asset-preview power-brick"></div><div class="asset-label">Special Plus</div></div>
     <div class="asset-row" data-asset="xPowerBrick" onclick="selectEditorAsset('xPowerBrick',this)"><div class="asset-preview x-power-brick"></div><div class="asset-label">Special Cross</div></div>
+    <div class="asset-row" data-asset="creatorBrick" onclick="selectEditorAsset('creatorBrick',this)"><div class="asset-preview creator-brick-block"></div><div class="asset-label">Block Maker</div></div>
+    <div class="asset-row" data-asset="creatorBomb" onclick="selectEditorAsset('creatorBomb',this)"><div class="asset-preview creator-bomb-block"></div><div class="asset-label">Bomb Block</div></div>
     <div class="asset-row" data-asset="antiMatter" onclick="selectEditorAsset('antiMatter',this)"><div class="asset-preview stone"></div><div class="asset-label">Anti Matter</div></div>
   </div>
 </div>
@@ -263,7 +281,6 @@ const world = document.getElementById('world');
 const overlay = document.getElementById('overlay');
 const worldW = 2200, worldH = 1500;
 
-// Web Audio API procedural sound engine setup
 let audioCtx = null;
 let activeMusicTimeouts = [];
 
@@ -302,7 +319,6 @@ function createNoiseBuffer(ctx, duration = 3.0, color = 'white') {
     return buffer;
 }
 
-// Attack Fire Sound
 function playTankShot() {
     try {
         const ctx = getAudioContext();
@@ -337,7 +353,6 @@ function playTankShot() {
     } catch(e) {}
 }
 
-// Explosion Blast Sound
 function playDestroySound() {
     try {
         const ctx = getAudioContext();
@@ -371,7 +386,6 @@ function playDestroySound() {
     } catch(e) {}
 }
 
-// Acquiring Things / Loot Sound
 function playAcquireSound() {
     try {
         const ctx = getAudioContext();
@@ -392,7 +406,6 @@ function playAcquireSound() {
     } catch(e) {}
 }
 
-// Procedural Music Player for Game Theme & Glow Mode Theme
 let currentPlayingMusic = null;
 
 function stopActiveMusic() {
@@ -459,15 +472,16 @@ function playSound(soundObj) {
     soundObj.play();
 }
 
+// Stage lives updated: Stage 1 = 3 hearts, Stage 2 = 2 hearts, Stage 3 = 3 hearts... up to 8 hearts in stage 8
 const stageLivesMap = {
     1: 3,
-    2: 4,
-    3: 5,
-    4: 6,
-    5: 7,
-    6: 8,
-    7: 9,
-    8: 10
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8
 };
 
 const stageGlowDurationMap = {
@@ -514,6 +528,9 @@ const state = {
     hasXUnlocked: false,
     isXActive: false,
     xShotsLeft: 0,
+    hasBlockBuilder: false,
+    blockBuilderShotsLeft: 0,
+    hasBombBuilder: false,
     isGlowMode: false,
     glowTimer: 0,
     gameEnded: false,
@@ -543,6 +560,16 @@ function createBlast(x, y) {
     blast.innerHTML = `<circle cx="50" cy="50" r="40" fill="#FF4500" /><circle cx="50" cy="50" r="25" fill="#FFD700" /><path d="M50 5 L60 40 L95 50 L60 60 L50 95 L40 60 L5 50 L40 40 Z" fill="white" />`;
     world.appendChild(blast);
     setTimeout(() => blast.remove(), 400);
+}
+
+function createMegaBlast(x, y) {
+    playSound(sfx.destroy);
+    const blast = document.createElement('div');
+    blast.className = 'mega-blast';
+    blast.style.left = x + 'px';
+    blast.style.top = y + 'px';
+    world.appendChild(blast);
+    setTimeout(() => blast.remove(), 600);
 }
 
 function updateUI() {
@@ -612,13 +639,12 @@ function startGame() {
     document.getElementById('win-container').classList.add('d-none');
     document.getElementById('start-btn').classList.remove('d-none');
     
-    // Start Game Theme music loop
     playProceduralSong('gameTheme');
 
     if (state.stage === 8) {
         state.timer = 1000;
         state.ammo = 999999;
-        state.lives = 10;
+        state.lives = stageLivesMap[8];
     } else {
         state.timer = state.stage * 100;
     }
@@ -634,6 +660,11 @@ function startGame() {
     state.isXActive = false;
     state.xShotsLeft = 0;
     document.getElementById('cross-toggle').classList.add('d-none');
+
+    state.hasBlockBuilder = false;
+    state.blockBuilderShotsLeft = 0;
+    state.hasBombBuilder = false;
+    document.getElementById('builder-toggle').classList.add('d-none');
     
     state.bullets.forEach(b => b.el.remove());
     state.bullets = [];
@@ -674,14 +705,26 @@ function startGame() {
                 if (state.glowTimer <= 0) {
                     state.isGlowMode = false;
                     state.glowTimer = 0;
-                    playProceduralSong('gameTheme'); // Revert to standard game theme music
+                    playProceduralSong('gameTheme');
                 }
             }
             updateUI();
-            if(state.timer <= 0) endGame("TIME EXPIRED");
+            if(state.timer <= 0) {
+                // Time runs out -> restart same stage with full ammo, full life, and all enemies
+                restartCurrentStageOnTimeOut();
+            }
         }
     }, 1000);
     requestAnimationFrame(gameLoop);
+}
+
+function restartCurrentStageOnTimeOut() {
+    if (state.timerInt) clearInterval(state.timerInt);
+    state.active = false;
+    state.timer = state.stage === 8 ? 1000 : state.stage * 100;
+    state.ammo = state.stage === 8 ? 999999 : 50;
+    state.lives = stageLivesMap[state.stage] || 3;
+    startGame();
 }
 
 function triggerWinState() {
@@ -796,20 +839,36 @@ function buildWorld() {
     
     const xPowerX = 2;
     const xPowerY = rows - 3;
+    
+    // Choose a random position for the creator brick block ('#') avoiding the border and player starting area (x > 45, y < 5)
+    let makerX, makerY;
+    do {
+        makerX = Math.floor(Math.random() * (cols - 2)) + 1;
+        makerY = Math.floor(Math.random() * (rows - 2)) + 1;
+    } while (
+        (makerX > 45 && makerY < 5) || 
+        (makerX === centerX && makerY === centerY) || 
+        (makerX === xPowerX && makerY === xPowerY)
+    );
 
     for (let x = 0; x < cols; x++) {
         for (let y = 0; y < rows; y++) {
             const isBorder = y === 0 || y === rows - 1 || x === 0 || x === cols - 1;
             const isCenterPowerBlock = (x === centerX && y === centerY);
             const isXPowerBlock = (x === xPowerX && y === xPowerY);
-            const isRock = !isCenterPowerBlock && !isXPowerBlock && Math.random() > 0.90 && x % 2 === 0 && !(x > 45 && y < 5);
+            const isBlockMakerBlock = (x === makerX && y === makerY);
+            const isRock = !isCenterPowerBlock && !isXPowerBlock && !isBlockMakerBlock && Math.random() > 0.90 && x % 2 === 0 && !(x > 45 && y < 5);
             
-            if (isBorder || isRock || isCenterPowerBlock || isXPowerBlock) {
+            if (isBorder || isRock || isCenterPowerBlock || isXPowerBlock || isBlockMakerBlock) {
                 const el = document.createElement('div');
+                let isCreatorBrk = false;
                 if (isCenterPowerBlock) {
                     el.className = 'power-brick';
                 } else if (isXPowerBlock) {
                     el.className = 'x-power-brick';
+                } else if (isBlockMakerBlock) {
+                    el.className = 'creator-brick-block';
+                    isCreatorBrk = true;
                 } else {
                     el.className = isBorder ? 'stone' : 'brick';
                 }
@@ -822,7 +881,8 @@ function buildWorld() {
                     type: el.className, 
                     el, 
                     isCenter: isCenterPowerBlock, 
-                    isXBlock: isXPowerBlock 
+                    isXBlock: isXPowerBlock,
+                    isCreatorBrick: isCreatorBrk
                 });
             }
         }
@@ -890,9 +950,9 @@ function spawnSpecialEnemy() {
         dir: 'up',
         size: 28,
         isGlowing: true,
-        glowTimerMax: 4,      // Changed to 4 sec glow
-        normalTimerMax: 3,    // Changed to 3 sec normal
-        phaseTimer: 4,        // Initialized to glow duration (4 sec)
+        glowTimerMax: 4,
+        normalTimerMax: 3,
+        phaseTimer: 4,
         el: document.createElement('div')
     };
     state.specialEnemy.el.className = 'sprite enemy';
@@ -993,9 +1053,6 @@ function positionEditorCursor() {
     if(state.playerEl){state.playerEl.style.left=state.player.x+'px';state.playerEl.style.top=state.player.y+'px';state.playerEl.setAttribute('data-dir',state.player.dir);}
 }
 function editorBoundaryCollision(nx, ny) {
-    // The four existing black Anti Matter walls are real solid walls in Create Mode.
-    // The stage is 55 x 37 tiles = 2200 x 1480px (not worldH=1500, which includes
-    // a little unused space below the last wall in the normal game viewport).
     const size = 34;
     const wall = 40;
     const editorW = 55 * 40;
@@ -1008,9 +1065,6 @@ function startEditorLoop() {
         if(!editorMode)return;
         let nx=state.player.x + state.player.vx;
         let ny=state.player.y + state.player.vy;
-        // Treat the four visible Anti Matter walls as hard collision geometry.
-        // Clamp the cursor against the inside edge so it can never visually enter
-        // or pass through a wall, even when moving diagonally or at frame boundaries.
         const editorW = 55 * 40;
         const editorH = 37 * 40;
         const cursorSize = 34;
@@ -1065,7 +1119,7 @@ function editorPointOccupied(x,y){
     return editorStage.objects.some(o=>Math.abs(o.x-x)<40 && Math.abs(o.y-y)<40);
 }
 function updateEditorTargetCount(){
-    document.getElementById('enemy-count').innerText=editorStage.objects.filter(o=>!['brick','powerBrick','xPowerBrick','antiMatter'].includes(o.type)).length;
+    document.getElementById('enemy-count').innerText=editorStage.objects.filter(o=>!['brick','powerBrick','xPowerBrick','creatorBrick','creatorBomb','antiMatter'].includes(o.type)).length;
 }
 function addEditorAsset(){
     if(!editorMode || !editorSelectedAsset)return;
@@ -1081,8 +1135,13 @@ function addEditorAsset(){
     }
     const el=document.createElement('div');
     const obj={type,x,y,dir:state.player.dir,color:editorAssetColor(type),el};
-    if(type==='brick'||type==='powerBrick'||type==='xPowerBrick'||type==='antiMatter'){
-        el.className=type==='brick'?'brick':type==='powerBrick'?'power-brick':type==='xPowerBrick'?'x-power-brick':'stone';
+    if(['brick','powerBrick','xPowerBrick','creatorBrick','creatorBomb','antiMatter'].includes(type)){
+        if(type==='brick') el.className='brick';
+        else if(type==='powerBrick') el.className='power-brick';
+        else if(type==='xPowerBrick') el.className='x-power-brick';
+        else if(type==='creatorBrick') el.className='creator-brick-block';
+        else if(type==='creatorBomb') el.className='creator-bomb-block';
+        else el.className='stone';
     } else if(type==='enemy'){el.className='sprite enemy';el.style.backgroundColor=obj.color;}
     else if(type==='changing'){el.className='sprite enemy';el.style.backgroundColor='#fff';el.style.border='2px solid #fff';el.style.boxShadow='inset 0 0 8px #fff,inset 0 0 12px #fff';}
     else if(type==='plusEnemy'){el.className='sprite enemy enemy-plus';el.style.backgroundColor=obj.color;}
@@ -1114,7 +1173,7 @@ function downloadStage1(){
 }
 function normalizeUploadedStage(data){
     if(!data || typeof data!=='object' || !Array.isArray(data.objects)) throw new Error('Invalid stage file.');
-    const allowed=['enemy','changing','plusEnemy','xEnemy','heartEnemy','whiteTank','brick','powerBrick','xPowerBrick','antiMatter'];
+    const allowed=['enemy','changing','plusEnemy','xEnemy','heartEnemy','whiteTank','brick','powerBrick','xPowerBrick','creatorBrick','creatorBomb','antiMatter'];
     const objects=data.objects.map(o=>({
         type:o.type,x:Number(o.x),y:Number(o.y),dir:o.dir||'up',color:o.color||'#ff0000'
     })).filter(o=>allowed.includes(o.type) && Number.isFinite(o.x) && Number.isFinite(o.y));
@@ -1138,8 +1197,14 @@ function loadDesignIntoEditor(design){
         if(editorPointOccupied(x,y))return;
         const el=document.createElement('div');
         const obj={type:o.type,x,y,dir:o.dir||'up',color:o.color||'#ff0000',el};
-        if(o.type==='brick'||o.type==='powerBrick'||o.type==='xPowerBrick'||o.type==='antiMatter')
-            el.className=o.type==='brick'?'brick':o.type==='powerBrick'?'power-brick':o.type==='xPowerBrick'?'x-power-brick':'stone';
+        if(['brick','powerBrick','xPowerBrick','creatorBrick','creatorBomb','antiMatter'].includes(o.type)){
+            if(o.type==='brick') el.className='brick';
+            else if(o.type==='powerBrick') el.className='power-brick';
+            else if(o.type==='xPowerBrick') el.className='x-power-brick';
+            else if(o.type==='creatorBrick') el.className='creator-brick-block';
+            else if(o.type==='creatorBomb') el.className='creator-bomb-block';
+            else el.className='stone';
+        }
         else if(o.type==='enemy'){el.className='sprite enemy';el.style.backgroundColor=obj.color;}
         else if(o.type==='changing'){el.className='sprite enemy';el.style.backgroundColor='#fff';el.style.border='2px solid #fff';el.style.boxShadow='inset 0 0 8px #fff,inset 0 0 12px #fff';}
         else if(o.type==='plusEnemy'){el.className='sprite enemy enemy-plus';el.style.backgroundColor=obj.color;}
@@ -1149,8 +1214,6 @@ function loadDesignIntoEditor(design){
         el.style.left=x+'px';el.style.top=y+'px';world.appendChild(el);editorStage.objects.push(obj);
     });
     savedCustomDesign=design;
-    // The uploaded JSON is now the currently edited stage. Recreate the movable
-    // +/direction cursor after rebuilding the world so it remains visible.
     createEditorCursor();
     editorSelectedAsset=null;
     document.querySelectorAll('.asset-row').forEach(r=>r.classList.remove('selected'));
@@ -1184,8 +1247,6 @@ function closeCreatorUI(){
 }
 function startCreatedStage(){
     if(!editorMode)return;
-    // START always plays the stage currently being edited, including an uploaded JSON stage.
-    // Selecting an asset is not required to play; the + cursor is only needed when adding more assets.
     const design=getCurrentEditorDesign();
     savedCustomDesign=design;
     closeCreatorUI();
@@ -1197,7 +1258,10 @@ function startCustomStage(design){
     state.isGlowMode=false;state.glowTimer=0;state.timer=100;state.isInvulnerable=false;
     state.hasQuadUnlocked=false;state.isQuadActive=false;state.quadShotsLeft=0;
     state.hasXUnlocked=false;state.isXActive=false;state.xShotsLeft=0;
-    document.getElementById('mode-toggle').classList.add('d-none');document.getElementById('cross-toggle').classList.add('d-none');
+    state.hasBlockBuilder=false; state.blockBuilderShotsLeft=0; state.hasBombBuilder=false;
+    document.getElementById('mode-toggle').classList.add('d-none');
+    document.getElementById('cross-toggle').classList.add('d-none');
+    document.getElementById('builder-toggle').classList.add('d-none');
     state.bullets.forEach(b=>b.el?.remove());state.bullets=[];
     state.heartDrops.forEach(h=>h.el?.remove());state.heartDrops=[];
     state.enemies=[];state.specialEnemy=null;state.whiteTank=null;state.blocks=[];world.innerHTML='';
@@ -1209,8 +1273,6 @@ function startCustomStage(design){
         el.style.left=bx+'px';
         el.style.top=by+'px';
         world.appendChild(el);
-        // These are not decoration: Create Mode's four Anti Matter side walls
-        // must also be part of the collision map during the actual custom Stage 1.
         state.blocks.push({x:bx,y:by,type:'stone',el,isCenter:false,isXBlock:false,isBoundary:true});
     }
     const p=design.player||{x:2000,y:100,dir:'left'};
@@ -1218,11 +1280,26 @@ function startCustomStage(design){
     state.playerEl=document.createElement('div');state.playerEl.className='sprite tank';world.appendChild(state.playerEl);
 
     design.objects.forEach(o=>{
-        if(['brick','powerBrick','xPowerBrick','antiMatter'].includes(o.type)){
+        if(['brick','powerBrick','xPowerBrick','creatorBrick','creatorBomb','antiMatter'].includes(o.type)){
             const el=document.createElement('div');
-            el.className=o.type==='brick'?'brick':o.type==='powerBrick'?'power-brick':o.type==='xPowerBrick'?'x-power-brick':'stone';
+            if(o.type==='brick') el.className='brick';
+            else if(o.type==='powerBrick') el.className='power-brick';
+            else if(o.type==='xPowerBrick') el.className='x-power-brick';
+            else if(o.type==='creatorBrick') el.className='creator-brick-block';
+            else if(o.type==='creatorBomb') el.className='creator-bomb-block';
+            else el.className='stone';
             el.style.left=o.x+'px';el.style.top=o.y+'px';world.appendChild(el);
-            state.blocks.push({x:o.x,y:o.y,type:el.className,el,isCenter:o.type==='powerBrick',isXBlock:o.type==='xPowerBrick'});return;
+            state.blocks.push({
+                x:o.x,
+                y:o.y,
+                type:el.className,
+                el,
+                isCenter:o.type==='powerBrick',
+                isXBlock:o.type==='xPowerBrick',
+                isCreatorBrick:o.type==='creatorBrick',
+                isCreatorBomb:o.type==='creatorBomb'
+            });
+            return;
         }
         const el=document.createElement('div');
         const obj={x:o.x,y:o.y,dir:o.dir||'up',size:28,el,specialType:null};
@@ -1240,7 +1317,7 @@ function startCustomStage(design){
     if(state.timerInt)clearInterval(state.timerInt);
     state.timerInt=setInterval(()=>{
         if(state.active){state.timer--;if(state.isGlowMode){state.glowTimer--;if(state.glowTimer<=0){state.isGlowMode=false;state.glowTimer=0;playProceduralSong('gameTheme');}}
-            updateUI();if(state.timer<=0)endGame('TIME EXPIRED');}
+            updateUI();if(state.timer<=0) restartCurrentStageOnTimeOut();}
     },1000);
     lastTime=0;lastFrameTimestamp=0;requestAnimationFrame(gameLoop);
 }
@@ -1332,6 +1409,138 @@ function toggleXMode() {
         document.getElementById('cross-toggle').innerHTML = '<span>X-MODE</span>';
     }
     updateTankAppearance();
+}
+
+// Long-press handling for Build button
+let buildPressTimer = null;
+let buildPressStartTime = 0;
+
+function startBuildButtonPress() {
+    if (!state.hasBlockBuilder || state.blockBuilderShotsLeft <= 0) return;
+    buildPressStartTime = Date.now();
+    buildPressTimer = setInterval(() => {
+        let elapsed = (Date.now() - buildPressStartTime) / 1000;
+        if (elapsed >= 7) {
+            document.getElementById('build-btn-text').innerText = "ANTIMATTER (7s!)";
+        } else if (elapsed >= 2) {
+            document.getElementById('build-btn-text').innerText = "BOMB (2s!)";
+        }
+    }, 100);
+}
+
+function endBuildButtonPress() {
+    if (!state.hasBlockBuilder || state.blockBuilderShotsLeft <= 0) return;
+    if (buildPressTimer) {
+        clearInterval(buildPressTimer);
+        buildPressTimer = null;
+    }
+    let elapsed = (Date.now() - buildPressStartTime) / 1000;
+    document.getElementById('build-btn-text').innerText = `BUILD(${state.blockBuilderShotsLeft})`;
+
+    if (elapsed >= 7) {
+        // Antimatter requires 10 blocks
+        if (state.blockBuilderShotsLeft >= 10) {
+            state.blockBuilderShotsLeft -= 10;
+            placeBuiltItem('stone', 'Anti Matter');
+        } else {
+            alert("Not enough blocks! Antimatter requires 10 blocks.");
+        }
+    } else if (elapsed >= 2) {
+        // Bomb requires 5 blocks
+        if (state.blockBuilderShotsLeft >= 5) {
+            state.blockBuilderShotsLeft -= 5;
+            placeBuiltItem('creator-bomb-block', 'Bomb Block');
+        } else {
+            alert("Not enough blocks! Bomb block requires 5 blocks.");
+        }
+    } else {
+        // Normal click: places block from the BACK of the tank
+        if (state.blockBuilderShotsLeft >= 1) {
+            state.blockBuilderShotsLeft -= 1;
+            placeBuiltItem('brick', 'Normal Block');
+        }
+    }
+
+    if (state.blockBuilderShotsLeft <= 0) {
+        state.hasBlockBuilder = false;
+        document.getElementById('builder-toggle').classList.add('d-none');
+    } else {
+        document.getElementById('builder-toggle').innerHTML = `<span id="build-btn-text">BUILD(${state.blockBuilderShotsLeft})</span>`;
+    }
+}
+
+function placeBuiltItem(cssClass, typeName) {
+    let bx = state.player.x;
+    let by = state.player.y;
+    // Place from the BACK of the tank
+    if (state.player.dir === 'up') by += 40;
+    else if (state.player.dir === 'down') by -= 40;
+    else if (state.player.dir === 'left') bx += 40;
+    else if (state.player.dir === 'right') bx -= 40;
+
+    if (!checkBlockCollision(bx, by, 30)) {
+        const el = document.createElement('div');
+        el.className = cssClass === 'stone' ? 'stone' : (cssClass === 'creator-bomb-block' ? 'creator-bomb-block' : 'brick');
+        el.style.left = bx + 'px';
+        el.style.top = by + 'px';
+        world.appendChild(el);
+        state.blocks.push({ 
+            x: bx, 
+            y: by, 
+            type: el.className, 
+            el, 
+            isCreatorBomb: (cssClass === 'creator-bomb-block') 
+        });
+        playSound(sfx.acquire);
+    } else {
+        // Refund if blocked
+        state.blockBuilderShotsLeft += (typeName === 'Anti Matter' ? 10 : (typeName === 'Bomb Block' ? 5 : 1));
+    }
+}
+
+function triggerBombExplosion(bombX, bombY) {
+    createMegaBlast(bombX - 360, bombY - 360);
+    playSound(sfx.destroy);
+
+    if (!state.isGlowMode) {
+        let distX = state.player.x - bombX;
+        let distY = state.player.y - bombY;
+        let distance = Math.sqrt(distX * distX + distY * distY);
+        if (distance <= 400) {
+            handlePlayerShotDeath();
+        }
+    }
+
+    for (let j = state.blocks.length - 1; j >= 0; j--) {
+        let bl = state.blocks[j];
+        let bDistX = bl.x - bombX;
+        let bDistY = bl.y - bombY;
+        if (Math.sqrt(bDistX * bDistX + bDistY * bDistY) <= 400) {
+            if (!bl.isBoundary && !bl.isCenter && !bl.isXBlock && bl.type !== 'stone') {
+                bl.el.remove();
+                state.blocks.splice(j, 1);
+            }
+        }
+    }
+
+    for (let e = state.enemies.length - 1; e >= 0; e--) {
+        let en = state.enemies[e];
+        let eDistX = en.x - bombX;
+        let eDistY = en.y - bombY;
+        if (Math.sqrt(eDistX * eDistX + eDistY * eDistY) <= 400) {
+            const isWhiteEnemy = (en === state.whiteTank);
+            const isWhiteGlowChanger = (en.isGlowing === true);
+            if (!isWhiteEnemy && !isWhiteGlowChanger) {
+                createBlast(en.x, en.y);
+                en.el.remove();
+                state.enemies.splice(e, 1);
+                state.kills++;
+            }
+        }
+    }
+
+    updateUI();
+    checkStageClear();
 }
 
 function handlePlayerCollision(enemyObj) {
@@ -1517,16 +1726,12 @@ function handlePlayerShotDeath() {
 
 function checkStageClear() {
     if (state.customStage) {
-        // Created Stage 1 is complete only when every placed enemy/tank is gone.
-        // As soon as the target reaches 0, leave Create Mode and continue directly
-        // into the normal game's Stage 2.
         const remaining = state.enemies.length + (state.specialEnemy ? 1 : 0) + (state.whiteTank ? 1 : 0);
         if (remaining === 0) {
             state.customStage = false;
             state.stage = 2;
             state.ammo += 50;
             state.lives = stageLivesMap[2] || 3;
-            state.kills = state.kills;
             startGame();
         }
         return;
@@ -1693,10 +1898,27 @@ function gameLoop(timestamp) {
                 for (let j = state.blocks.length - 1; j >= 0; j--) {
                     let bl = state.blocks[j];
                     if (bullet.x > bl.x && bullet.x < bl.x + 40 && bullet.y > bl.y && bullet.y < bl.y + 40) {
-                        if (bullet.type === 'player' && (bl.type === 'brick' || bl.isCenter || bl.isXBlock)) { 
-                            createBlast(bl.x, bl.y); 
+                        if (bullet.type === 'player' && (bl.type === 'brick' || bl.isCenter || bl.isXBlock || bl.isCreatorBrick || bl.isCreatorBomb)) { 
+                            let bx = bl.x, by = bl.y;
+                            let isBomb = bl.isCreatorBomb;
+                            let isCreatorBrk = bl.isCreatorBrick;
+
+                            createBlast(bx, by); 
                             bl.el.remove(); 
                             state.blocks.splice(j, 1); 
+
+                            if (isBomb) {
+                                triggerBombExplosion(bx, by);
+                            }
+
+                            if (isCreatorBrk) {
+                                playSound(sfx.acquire);
+                                state.hasBlockBuilder = true;
+                                state.blockBuilderShotsLeft += 10;
+                                document.getElementById('builder-toggle').classList.remove('d-none');
+                                document.getElementById('build-btn-text').innerText = `BUILD(${state.blockBuilderShotsLeft})`;
+                            }
+
                             if (bl.isCenter) {
                                 playSound(sfx.acquire);
                                 state.hasQuadUnlocked = true;
@@ -1727,9 +1949,6 @@ function gameLoop(timestamp) {
 
             if (bullet.type === 'player') {
                 if (state.whiteTank && bullet.x > state.whiteTank.x && bullet.x < state.whiteTank.x + 30 && bullet.y > state.whiteTank.y && bullet.y < state.whiteTank.y + 30) {
-                    // In a user-created Stage 1, every placed enemy must be killable
-                    // so the target can actually reach 0. The original Stage 8 White
-                    // King keeps its original Glow Mode requirement.
                     if (state.customStage || state.isGlowMode) {
                         createBlast(state.whiteTank.x, state.whiteTank.y);
                         state.whiteTank.el.remove();
@@ -1753,7 +1972,6 @@ function gameLoop(timestamp) {
                             state.isGlowMode = true;
                             state.glowTimer = stageGlowDurationMap[state.stage] || 10;
                             
-                            // Switch to Glow Mode Theme music loop
                             playProceduralSong('glowTheme');
 
                             if (state.stage !== 8) {
