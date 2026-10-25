@@ -26,6 +26,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); padding: 10px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
 
+    /* Prevent mobile image long-press hang/freeze bugs */
+    img {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     h1, h2, h3 { color: var(--text); margin-bottom: 15px; }
     .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: var(--glow); }
     
@@ -71,7 +78,7 @@
 
     /* Home Category Sections */
     .home-category-section { margin-top: 25px; border-top: 1px dashed var(--border); padding-top: 15px; display: none; }
-    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
     .category-title { font-size: 18px; font-weight: bold; color: var(--text); margin: 0; }
 
     /* Side Scroll Container & Cards */
@@ -314,7 +321,7 @@
   <!-- HOME VIEW -->
   <div id="view-home" class="card">
     <h1>SMDB</h1>
-    <p style="color: var(--text-muted); margin-bottom: 20px;">Internet Secret Mastii Database</p>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Internet Secret Masti Database</p>
     
     <div class="hero-actions">
       <button class="btn" onclick="openCreatorNew()">Create New List</button>
@@ -323,6 +330,19 @@
       
       <input type="file" id="upload-input" accept=".smdb" class="d-none" onchange="uploadAndOpenList(event)">
       <input type="file" id="edit-input" accept=".smdb" class="d-none" onchange="uploadAndEditList(event)">
+    </div>
+
+    <!-- SAVED BROWSER LIST SECTION (Appears above Upcoming if saved) -->
+    <div id="section-saved" class="home-category-section" style="display: none;">
+      <div class="category-header">
+        <select id="saved-type-select" onchange="changeSavedLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
+          <option value="side-scroll">Side Scroll (Horizontal)</option>
+          <option value="standard">Scroll List (Normal)</option>
+          <option value="grid">Grid View (2 per line)</option>
+        </select>
+        <button class="btn btn-danger btn-sm" onclick="clearSavedList()" title="Remove Saved List" style="padding: 4px 10px; font-size: 13px; margin: 0; line-height: 1.2;">✕</button>
+      </div>
+      <div id="container-saved-content"></div>
     </div>
 
     <!-- FOUR LISTS SECTIONS (Auto-detected and ordered: Upcoming, Music, Movies, Videos) -->
@@ -392,6 +412,7 @@
     
     <div style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button class="btn btn-success" onclick="exportSMDBFile()">💾 Download List (.smdb)</button>
+      <button class="btn btn-purple" onclick="saveSMDBBrowser()"> Save</button>
       <button class="btn btn-secondary" onclick="switchView('view-home')">Cancel</button>
     </div>
   </div>
@@ -443,9 +464,12 @@
 
     let activeLoadedData = null;
     let currentViewerLayout = "standard";
+    let savedListLayout = "side-scroll";
 
-    // Automatically try fetching the 4 list files on page load
+    // Automatically try fetching the 4 list files on page load and load saved list from localStorage
     window.addEventListener('DOMContentLoaded', () => {
+      loadSavedListToHome();
+
       const filesToFetch = [
         { key: 'upcoming', filename: 'upcoming.smdb' },
         { key: 'music', filename: 'music.smdb' },
@@ -609,7 +633,7 @@
       reader.readAsDataURL(file);
     }
 
-    function exportSMDBFile() {
+    function collectCurrentFormData() {
       const name = document.getElementById('profile-name').value.trim() || 'My Profile';
       const bio = document.getElementById('profile-bio').value.trim();
       
@@ -639,7 +663,7 @@
         });
       });
 
-      const smdbData = {
+      return {
         format: "SMDB-LinkList",
         version: 6,
         name: name,
@@ -647,20 +671,287 @@
         profilePic: currentListData.profilePic,
         items: items
       };
+    }
 
+    function exportSMDBFile() {
+      const smdbData = collectCurrentFormData();
       try {
         const jsonString = JSON.stringify(smdbData, null, 2);
         const blob = new Blob([jsonString], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.smdb`;
+        a.download = `${smdbData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.smdb`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (err) {
         alert("Error generating file: " + err.message);
+      }
+    }
+
+    function saveSMDBBrowser() {
+      const smdbData = collectCurrentFormData();
+      try {
+        localStorage.setItem('smdb_saved_list', JSON.stringify(smdbData));
+        alert("List successfully saved to browser storage!");
+        loadSavedListToHome();
+        switchView('view-home');
+      } catch (err) {
+        alert("Error saving list to browser: " + err.message);
+      }
+    }
+
+    function loadSavedListToHome() {
+      const savedDataJson = localStorage.getItem('smdb_saved_list');
+      const sectionSaved = document.getElementById('section-saved');
+      
+      if (!savedDataJson) {
+        sectionSaved.style.display = 'none';
+        return;
+      }
+
+      try {
+        const data = JSON.parse(savedDataJson);
+        renderSavedListContent(data);
+        sectionSaved.style.display = 'block';
+      } catch (err) {
+        console.error("Failed to load saved list from localStorage", err);
+        sectionSaved.style.display = 'none';
+      }
+    }
+
+    function clearSavedList() {
+      if (confirm("Are you sure you want to remove the saved list?")) {
+        localStorage.removeItem('smdb_saved_list');
+        document.getElementById('section-saved').style.display = 'none';
+      }
+    }
+
+    function changeSavedLayout(newType) {
+      savedListLayout = newType;
+      const savedDataJson = localStorage.getItem('smdb_saved_list');
+      if (savedDataJson) {
+        renderSavedListContent(JSON.parse(savedDataJson));
+      }
+    }
+
+    function renderSavedListContent(data) {
+      const container = document.getElementById('container-saved-content');
+      container.innerHTML = "";
+
+      if (!data.items || data.items.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 10px;">Saved list is empty.</p>`;
+        return;
+      }
+
+      if (savedListLayout === 'side-scroll') {
+        const scrollWrapper = document.createElement('div');
+        scrollWrapper.className = 'side-scroll-container';
+
+        if (data.name || data.profilePic) {
+          const profileCard = document.createElement('div');
+          profileCard.className = 'side-scroll-card';
+          profileCard.id = `side-card-saved-profile`;
+          profileCard.onclick = () => toggleSavedDetails('profile');
+          
+          let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
+          profileCard.innerHTML = `
+            <div class="side-scroll-thumb-box">${pThumbContent}</div>
+            <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
+          `;
+          scrollWrapper.appendChild(profileCard);
+        }
+
+        data.items.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = 'side-scroll-card';
+          card.id = `side-card-saved-${index}`;
+          card.onclick = () => toggleSavedDetails(index);
+
+          let thumbContent = item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
+
+          card.innerHTML = `
+            <div class="side-scroll-thumb-box">${thumbContent}</div>
+            <div class="side-scroll-title">${escapeHtml(item.name)}</div>
+          `;
+          scrollWrapper.appendChild(card);
+        });
+        container.appendChild(scrollWrapper);
+
+        if (data.name || data.profilePic) {
+          const profileDetailsBox = document.createElement('div');
+          profileDetailsBox.className = 'side-scroll-details';
+          profileDetailsBox.id = `side-details-saved-profile`;
+          profileDetailsBox.innerHTML = `
+            <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3>
+            <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
+          `;
+          container.appendChild(profileDetailsBox);
+        }
+
+        data.items.forEach((item, index) => {
+          const detailsBox = document.createElement('div');
+          detailsBox.className = 'side-scroll-details';
+          detailsBox.id = `side-details-saved-${index}`;
+
+          let ratingHtml = '';
+          if (item.rating) {
+            let rVal = parseInt(item.rating) || 0;
+            let starString = '';
+            for (let s = 1; s <= 10; s++) {
+              starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+            }
+            ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+          }
+
+          let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+          let actionHtml = '';
+          if (item.link && item.link.trim() !== '') {
+            const embedUrl = convertToEmbedUrl(item.link);
+            if (embedUrl) {
+              actionHtml = `
+                <button id="iframe-btn-saved-${index}" class="iframe-toggle-btn" onclick="toggleIframeSaved('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+                <div id="iframe-box-saved-${index}" class="iframe-container">
+                  <div class="video-wrapper"><iframe src="" frameborder="0" allowfullscreen></iframe></div>
+                  <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+                </div>
+              `;
+            } else {
+              actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+            }
+          }
+
+          detailsBox.innerHTML = `
+            <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
+            ${ratingHtml}
+            ${reviewHtml}
+            ${actionHtml}
+          `;
+          container.appendChild(detailsBox);
+        });
+
+      } else if (savedListLayout === 'grid') {
+        const gridWrapper = document.createElement('div');
+        gridWrapper.className = 'grid-container';
+
+        data.items.forEach((item, index) => {
+          const gridCard = document.createElement('div');
+          gridCard.className = 'grid-card';
+          gridCard.onclick = () => openGridModal(item, index);
+
+          let thumbContent = item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
+
+          gridCard.innerHTML = `
+            <div class="grid-thumb-box">${thumbContent}</div>
+            <div class="grid-title">${escapeHtml(item.name)}</div>
+          `;
+          gridWrapper.appendChild(gridCard);
+        });
+        container.appendChild(gridWrapper);
+
+      } else {
+        // Standard view
+        data.items.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = 'link-card';
+
+          let thumbHtml = item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : '';
+          let ratingHtml = '';
+          if (item.rating) {
+            let rVal = parseInt(item.rating) || 0;
+            let starString = '';
+            for (let s = 1; s <= 10; s++) {
+              starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+            }
+            ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
+          }
+
+          let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
+          let actionHtml = '';
+          if (item.link && item.link.trim() !== '') {
+            const embedUrl = convertToEmbedUrl(item.link);
+            if (embedUrl) {
+              actionHtml = `
+                <button id="iframe-btn-saved-std-${index}" class="iframe-toggle-btn" onclick="toggleIframeSavedStd('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
+                <div id="iframe-box-saved-std-${index}" class="iframe-container">
+                  <div class="video-wrapper"><iframe src="" frameborder="0" allowfullscreen></iframe></div>
+                  <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
+                </div>
+              `;
+            } else {
+              actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
+            }
+          }
+
+          card.innerHTML = `
+            <div class="link-card-inner-flex">
+              ${thumbHtml}
+              <div class="link-card-content">
+                <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
+                ${ratingHtml}
+                ${reviewHtml}
+              </div>
+            </div>
+            ${actionHtml}
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
+    function toggleSavedDetails(targetKey) {
+      const detailsBoxes = document.querySelectorAll('#container-saved-content .side-scroll-details');
+      const sideCards = document.querySelectorAll('#container-saved-content .side-scroll-card');
+
+      detailsBoxes.forEach(box => box.classList.remove('active'));
+      sideCards.forEach(card => card.classList.remove('active-selected'));
+
+      const targetBox = document.getElementById(`side-details-saved-${targetKey}`);
+      const targetCard = document.getElementById(`side-card-saved-${targetKey}`);
+
+      if (targetBox && targetCard) {
+        targetBox.classList.toggle('active');
+        targetCard.classList.toggle('active-selected');
+        
+        if (targetBox.classList.contains('active')) {
+          targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    function toggleIframeSaved(index, embedUrl, itemName) {
+      const containerId = 'iframe-box-saved-' + index;
+      const container = document.getElementById(containerId);
+      const iframe = container.querySelector('iframe');
+      const btn = document.getElementById('iframe-btn-saved-' + index);
+      
+      if (container.classList.contains('active')) {
+        container.classList.remove('active');
+        iframe.src = ""; 
+        btn.innerText = `▶ Watch / Open: ${itemName}`;
+      } else {
+        iframe.src = embedUrl;
+        container.classList.add('active');
+        btn.innerText = `✕ Close: ${itemName}`;
+      }
+    }
+
+    function toggleIframeSavedStd(index, embedUrl, itemName) {
+      const containerId = 'iframe-box-saved-std-' + index;
+      const container = document.getElementById(containerId);
+      const iframe = container.querySelector('iframe');
+      const btn = document.getElementById('iframe-btn-saved-std-' + index);
+      
+      if (container.classList.contains('active')) {
+        container.classList.remove('active');
+        iframe.src = ""; 
+        btn.innerText = `▶ Watch / Open: ${itemName}`;
+      } else {
+        iframe.src = embedUrl;
+        container.classList.add('active');
+        btn.innerText = `✕ Close: ${itemName}`;
       }
     }
 
@@ -695,7 +986,7 @@
       } else {
         imgPrev.src = "";
         imgPrev.classList.add('d-none');
-        document.getElementById('creator-pic-placeholder').classList.add('d-none');
+        document.getElementById('creator-pic-placeholder').classList.remove('d-none');
       }
 
       const container = document.getElementById('links-container');

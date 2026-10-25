@@ -115,6 +115,7 @@
     <div class="section-tabs">
       <button class="tab-btn active" id="tab-subject" onclick="switchSection('subject')">Subject</button>
       <button class="tab-btn" id="tab-exercise" onclick="switchSection('exercise')">Exercise</button>
+      <button class="tab-btn" id="tab-saved" onclick="switchSection('saved')">Saved</button>
     </div>
 
     <!-- SUBJECT SECTION -->
@@ -137,6 +138,14 @@
         <button class="btn btn-secondary" onclick="openTestFile('money.test')">Money</button>
       </div>
     </div>
+
+    <!-- SAVED SECTION -->
+    <div id="section-saved" class="d-none">
+      <h3 style="margin-bottom: 10px;">Saved</h3>
+      <div id="saved-tests-grid" class="test-grid">
+        <!-- Dynamically populated from localStorage -->
+      </div>
+    </div>
   </div>
 
   <!-- VIEW 2: TEST CREATOR / EDITOR -->
@@ -157,7 +166,8 @@
     <button class="btn btn-secondary" onclick="addQuestionBuilder()">+ Add Question</button>
     
     <div style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
-      <button class="btn btn-success" onclick="exportBinaryTest()">💾 Download Test File (.test)</button>
+      <button class="btn btn-success" onclick="saveTestToBrowser()">💾 Save</button>
+      <button class="btn" onclick="exportBinaryTest()">Download Test File (.test)</button>
       <button class="btn btn-secondary" onclick="switchView('view-home')">Cancel</button>
     </div>
   </div>
@@ -220,6 +230,11 @@
     let touchStartX = 0;
     let touchEndX = 0;
 
+    // Initialize Saved Tests on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSavedTestsGrid();
+    });
+
     // View Manager
     function switchView(viewId) {
       ['view-home', 'view-creator', 'view-portal', 'view-result'].forEach(id => {
@@ -230,18 +245,21 @@
       const selectorContainer = document.getElementById('section-selector-container');
       if (viewId === 'view-home') {
         selectorContainer.classList.remove('d-none');
+        renderSavedTestsGrid();
       } else {
         selectorContainer.classList.add('d-none');
       }
     }
 
-    // Section Switching (Subject vs Exercise)
+    // Section Switching (Subject vs Exercise vs Saved)
     function switchSection(section) {
       document.getElementById('section-subject').classList.add('d-none');
       document.getElementById('section-exercise').classList.add('d-none');
+      document.getElementById('section-saved').classList.add('d-none');
       
       document.getElementById('tab-subject').classList.remove('active');
       document.getElementById('tab-exercise').classList.remove('active');
+      document.getElementById('tab-saved').classList.remove('active');
 
       if (section === 'subject') {
         document.getElementById('section-subject').classList.remove('d-none');
@@ -249,7 +267,67 @@
       } else if (section === 'exercise') {
         document.getElementById('section-exercise').classList.remove('d-none');
         document.getElementById('tab-exercise').classList.add('active');
+      } else if (section === 'saved') {
+        document.getElementById('section-saved').classList.remove('d-none');
+        document.getElementById('tab-saved').classList.add('active');
+        renderSavedTestsGrid();
       }
+    }
+
+    // Local Storage Helpers for Browser-Saved Tests
+    function getStoredTests() {
+      try {
+        const stored = localStorage.getItem('browser_saved_tests');
+        return stored ? JSON.parse(stored) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveTestObjectToStorage(testData) {
+      const tests = getStoredTests();
+      const title = testData.title ? testData.title.trim() : 'Untitled Test';
+      tests[title] = testData; // Overwrites if title already exists
+      localStorage.setItem('browser_saved_tests', JSON.stringify(tests));
+    }
+
+    function renderSavedTestsGrid() {
+      const grid = document.getElementById('saved-tests-grid');
+      grid.innerHTML = '';
+      const tests = getStoredTests();
+      const titles = Object.keys(tests);
+
+      if (titles.length === 0) {
+        grid.innerHTML = '<p style="color: #5f6368; font-size: 14px; grid-column: 1 / -1;">No tests saved yet.</p>';
+        return;
+      }
+
+      titles.forEach(title => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.innerText = title;
+        btn.onclick = () => openStoredTest(title);
+        grid.appendChild(btn);
+      });
+    }
+
+    function openStoredTest(title) {
+      const tests = getStoredTests();
+      if (tests[title]) {
+        currentTest = tests[title];
+        startTestPortal();
+      } else {
+        alert('Test not found in browser storage.');
+      }
+    }
+
+    function saveTestToBrowser() {
+      const testData = compileTestDataFromEditor();
+      if (!testData) return;
+
+      saveTestObjectToStorage(testData);
+      alert(`Test "${testData.title}" successfully saved in browser!`);
+      switchView('view-home');
     }
 
     // Shuffle/Jumble Questions Array
@@ -480,15 +558,14 @@
       document.getElementById(`q-build-${qId}`).remove();
     }
 
-    /* Binary Exporter */
-    function exportBinaryTest() {
+    function compileTestDataFromEditor() {
       const title = document.getElementById('test-title').value.trim() || 'Untitled Test';
       const timeMinutes = parseInt(document.getElementById('test-time').value) || 10;
       
       const qBuilders = document.querySelectorAll('.question-builder');
       if (qBuilders.length === 0) {
         alert('Please add at least one question.');
-        return;
+        return null;
       }
 
       const questions = [];
@@ -499,7 +576,7 @@
 
         if (!text && !image) {
           alert(`Question ${i + 1} must contain either text, a photo, or both.`);
-          return;
+          return null;
         }
 
         const optInputs = qEl.querySelectorAll('.opt-text');
@@ -510,7 +587,7 @@
 
         if (options.length < 2) {
           alert(`Question ${i + 1} must have at least 2 non-empty options.`);
-          return;
+          return null;
         }
 
         const checkedRadio = qEl.querySelector(`input[type="radio"]:checked`);
@@ -520,7 +597,13 @@
         questions.push({ text, image, options, correctIdx });
       }
 
-      const testData = { title, timeMinutes, questions };
+      return { title, timeMinutes, questions };
+    }
+
+    /* Binary Exporter */
+    function exportBinaryTest() {
+      const testData = compileTestDataFromEditor();
+      if (!testData) return;
       
       const jsonString = JSON.stringify(testData);
       const encoder = new TextEncoder();
@@ -530,7 +613,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.test`;
+      a.download = `${testData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.test`;
       a.click();
       URL.revokeObjectURL(url);
     }
