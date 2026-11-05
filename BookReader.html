@@ -24,15 +24,20 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      min-height: 100dvh;
       padding: 0;
       width: 100vw;
+      width: 100dvw;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
     .book-container {
       width: 100vw;
+      width: 100dvw;
       height: 100vh;
+      height: 100dvh;
       max-width: none;
       max-height: none;
       background: #f4ecd8;
@@ -786,7 +791,7 @@
       let isSliderDragging = false;
       let currentChapterHref = '';
 
-      // Preset books mapping (12 books) formatted cleanly as "1. Book Name"
+      // Preset books mapping (16 books) formatted cleanly as "1. Book Name"
       const presetBooks = [
         { filename: 'book1.epub', title: 'Aesops Fables' },
         { filename: 'book2.epub', title: 'Nausea' },
@@ -804,7 +809,6 @@
         { filename: 'book14.epub', title: 'Critique of Pure Reason' },
         { filename: 'book15.epub', title: 'The First Three Minutes' },
         { filename: 'book16.epub', title: 'Indian Divine Masterpiece' }
-        
       ];
 
       presetBooks.forEach((b, index) => {
