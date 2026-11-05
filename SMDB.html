@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMDB</title>
+  <!-- Google Fonts: Akronim for title, Pacifico for cursive subtitle -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Akronim&family=Pacifico&display=swap" rel="stylesheet">
+  <!-- Include heic2any for HEIC/HEIF image conversion -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
   <style>
     :root {
       --primary: #8c6d46;
@@ -23,17 +29,41 @@
       --glow-strong: 0 6px 18px rgba(140, 109, 70, 0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); padding: 10px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
 
-    /* Prevent mobile image long-press hang/freeze bugs */
+    /* Akronim font for SMDB title — simple, no animation */
+    .home-title-row h1 {
+      font-family: 'Akronim', cursive;
+      font-size: 48px;
+      letter-spacing: 3px;
+      font-weight: 400;
+      color: var(--primary-dark);
+      text-shadow: 2px 2px 0 rgba(255,255,255,0.7), 0 0 15px rgba(140,109,70,0.3);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      line-height: 1.1;
+    }
+    /* Cursive font for subtitle */
+    .home-subtitle {
+      font-family: 'Pacifico', cursive;
+      font-size: 17px;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      cursor: pointer;
+      user-select: none;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    }
+
     img {
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
 
-    h1, h2, h3 { color: var(--text); margin-bottom: 15px; }
+    h1, h2, h3 { color: var(--text); margin-bottom: 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: var(--glow); }
     
     .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: var(--glow); outline: none; }
@@ -44,14 +74,23 @@
     .btn-success:hover { background: #2e5f43; }
     .btn-danger { background: #a63a3a; border: 1px solid var(--danger); color: #fff; }
     .btn-danger:hover { background: #822d2d; }
-    .btn-warning { background: #c68b00; border: 1px solid var(--warning); color: #fff; }
+    .btn-warning { background: #d99b00; border: 1px solid var(--warning); color: #fff; }
     .btn-warning:hover { background: #9f6f00; }
     .btn-purple { background: var(--accent-purple); color: white; border: none; }
     .btn-purple:hover { background: var(--accent-purple-dark); }
     .btn-sm { padding: 5px 10px; font-size: 13px; }
 
-    input[type="text"], textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-inner); color: var(--text); font-size: 14px; margin-bottom: 12px; outline: none; transition: border 0.2s; }
-    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: var(--glow); }
+    /* Red Save button */
+    .btn-save-red { background: #c0392b; border: 1px solid #a93226; color: #fff; }
+    .btn-save-red:hover { background: #a93226; }
+
+    /* Toggle buttons with active red border */
+    .btn-toggle { background: var(--card-inner); border: 2px solid var(--border); color: var(--text); }
+    .btn-toggle:hover { background: #dfd3b2; }
+    .btn-toggle.active-field { border-color: #c0392b !important; color: #c0392b; font-weight: bold; }
+
+    input[type="text"], input[type="number"], input[type="range"], textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-inner); color: var(--text); font-size: 14px; margin-bottom: 12px; outline: none; transition: border 0.2s; }
+    input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: var(--glow); }
     textarea { resize: vertical; min-height: 60px; }
 
     .d-none { display: none !important; }
@@ -61,242 +100,97 @@
     .profile-pic-container img { width: 100%; height: 100%; object-fit: cover; }
     .profile-pic-placeholder { font-size: 13px; color: var(--text-muted); text-align: center; padding: 10px; }
 
+    /* Header Title Row with Search Icon Button */
+    .home-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .home-title-row h1 { margin-bottom: 0; }
+    .title-search-icon-btn { background: var(--card-inner); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; color: var(--text); box-shadow: var(--glow); transition: 0.2s; outline: none; }
+    .title-search-icon-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Search API Container */
+    .search-api-box { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; position: relative; }
+    .search-results-container { position: absolute; top: 100%; left: 15px; right: 15px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0 0 8px 8px; max-height: 250px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 4px; padding: 8px; }
+    .search-result-item { display: flex; align-items: center; justify-content: space-between; background: var(--card-inner); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); gap: 10px; transition: background 0.2s; }
+    .search-result-item:hover { background: #dfd3b2; }
+    .search-result-info { display: flex; align-items: center; gap: 10px; overflow: hidden; cursor: pointer; flex-grow: 1; }
+    .search-result-thumb { width: 35px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); flex-shrink: 0; }
+    .search-result-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+
+    /* Modal Popups */
+    .search-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(61, 51, 36, 0.75); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; padding: 15px; }
+    .search-modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .search-modal-box { position: relative; background: var(--card-bg); border: 2px solid var(--primary); border-radius: 12px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); animation: popIn 0.3s ease; text-align: left; }
+    .search-modal-box img.modal-content-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
+
     .link-builder-row { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; position: relative; }
     .optional-field { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border); }
     .thumbnail-preview-box { width: 80px; height: 80px; border-radius: 6px; border: 1px solid var(--border); object-fit: cover; margin-top: 5px; display: block; }
-    
+
     .view-profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin: 0 auto 10px; display: block; cursor: pointer; box-shadow: var(--glow); transition: transform 0.2s; }
     .view-profile-pic:hover { transform: scale(1.05); }
     .view-name { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 5px; color: var(--text); }
     .view-bio { text-align: center; color: var(--text-muted); margin-bottom: 25px; font-size: 15px; }
     
-    /* Standard Link Card */
     .link-card { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 20px 20px 0 20px; margin-bottom: 20px; box-shadow: var(--glow); display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap; overflow: hidden; }
     .link-card-inner-flex { display: flex; gap: 15px; align-items: flex-start; width: 100%; }
     .link-card-thumb { width: 90px; height: 90px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
     .link-card-content { flex-grow: 1; min-width: 0; }
 
-    /* Home Category Sections */
     .home-category-section { margin-top: 25px; border-top: 1px dashed var(--border); padding-top: 15px; display: none; }
     .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
     .category-title { font-size: 18px; font-weight: bold; color: var(--text); margin: 0; }
 
-    /* Side Scroll Container & Cards */
-    .side-scroll-container {
-      display: flex;
-      overflow-x: auto;
-      gap: 15px;
-      padding-bottom: 15px;
-      margin-bottom: 15px;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-    .side-scroll-container::-webkit-scrollbar {
-      height: 8px;
-    }
-    .side-scroll-container::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
+    .side-scroll-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; margin-bottom: 15px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .side-scroll-container::-webkit-scrollbar { height: 8px; }
+    .side-scroll-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    .side-scroll-card {
-      flex: 0 0 160px;
-      scroll-snap-align: start;
-      background: var(--card-inner);
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: var(--glow);
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-    .side-scroll-card:hover {
-      transform: translateY(-3px);
-    }
-    .side-scroll-card.active-selected {
-      border-color: var(--primary) !important;
-      box-shadow: 0 0 12px rgba(140, 109, 70, 0.4);
-    }
-    .side-scroll-thumb-box {
-      width: 100%;
-      height: 200px;
-      background: #d8cca6;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 10px;
-      font-weight: bold;
-      color: var(--text);
-      overflow: hidden;
-    }
-    .side-scroll-thumb-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .side-scroll-title {
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .side-scroll-card { flex: 0 0 160px; scroll-snap-align: start; background: var(--card-inner); border: 2px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; box-shadow: var(--glow); transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .side-scroll-card:hover { transform: translateY(-3px); }
+    .side-scroll-card.active-selected { border-color: var(--primary) !important; box-shadow: 0 0 12px rgba(140, 109, 70, 0.4); }
+    .side-scroll-thumb-box { width: 100%; height: 200px; background: #d8cca6; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0; font-weight: bold; color: var(--text); overflow: hidden; border: none !important; }
+    .side-scroll-thumb-box img { width: 100%; height: 100%; object-fit: cover; border: none !important; }
+    .side-scroll-title { padding: 10px; font-size: 14px; font-weight: 600; color: var(--text); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Expanded Details Panel for Side Scroll Items */
-    .side-scroll-details {
-      background: var(--card-inner);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px 20px 0 20px;
-      margin-bottom: 20px;
-      box-shadow: var(--glow);
-      display: none;
-    }
-    .side-scroll-details.active {
-      display: block;
-    }
+    .side-scroll-details { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 20px 20px 0 20px; margin-bottom: 20px; box-shadow: var(--glow); display: none; }
+    .side-scroll-details.active { display: block; }
 
-    /* Grid View Styles (Two per row) */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .grid-card {
-      background: var(--card-inner);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: var(--glow);
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-    .grid-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--glow-strong);
-    }
-    .grid-thumb-box {
-      width: 100%;
-      height: 200px;
-      background: #d8cca6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 10px;
-      font-weight: bold;
-      color: var(--text);
-      overflow: hidden;
-    }
-    .grid-thumb-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .grid-title {
-      padding: 10px;
-      font-size: 14px;
-      font-weight: bold;
-      text-align: center;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+    .grid-card { background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; box-shadow: var(--glow); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .grid-card:hover { transform: translateY(-3px); box-shadow: var(--glow-strong); }
+    .grid-thumb-box { width: 100%; height: 200px; background: #d8cca6; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0; font-weight: bold; color: var(--text); overflow: hidden; border: none !important; }
+    .grid-thumb-box img { width: 100%; height: 100%; object-fit: cover; border: none !important; }
+    .grid-title { padding: 10px; font-size: 14px; font-weight: bold; text-align: center; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Grid Details Modal (Centered Popup) */
-    .grid-modal-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(61, 51, 36, 0.75);
-      backdrop-filter: blur(6px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1050;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      padding: 15px;
-    }
-    .grid-modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .grid-modal-box {
-      position: relative;
-      background: var(--card-bg);
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 500px;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      animation: popIn 0.3s ease;
-    }
-    .grid-modal-box img.modal-content-img {
-      width: 100%;
-      max-height: 250px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border: 1px solid var(--border);
-    }
+    .grid-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(61, 51, 36, 0.75); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 1050; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; padding: 15px; }
+    .grid-modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .grid-modal-box { position: relative; background: var(--card-bg); border: 2px solid var(--primary); border-radius: 12px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); animation: popIn 0.3s ease; }
+    .grid-modal-box img.modal-content-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
 
-    .iframe-toggle-btn { display: block; width: calc(100% + 40px); margin-left: -20px; margin-right: -20px; padding: 12px 20px; background: var(--accent-purple); color: white; text-align: center; font-weight: bold; font-size: 15px; margin-top: 15px; margin-bottom: 0; cursor: pointer; border: none; border-top: 1px solid var(--border); transition: 0.2s; outline: none; }
-    .iframe-toggle-btn:hover { background: var(--accent-purple-dark); }
+    .iframe-toggle-btn { display: block; width: calc(100% + 40px); margin-left: -20px; margin-right: -20px; padding: 12px 20px; background: var(--accent-purple); color: white; text-align: center; font-weight: bold; font-size: 15px; margin-top: 15px; margin-bottom: 0; cursor: pointer; border: none; border-top: 1px solid var(--border); transition: 0.2s; outline: none; text-decoration: none; }
+    .iframe-toggle-btn:hover { background: var(--accent-purple-dark); color: white; }
+    .iframe-toggle-btn.active-active-btn { border: 2px solid #ffffff !important; box-shadow: 0 0 8px rgba(255, 255, 255, 0.8); }
     
     .iframe-container { width: 100%; display: none; }
     .iframe-container.active { display: block; }
     
-    .video-wrapper { 
-      position: relative; 
-      width: calc(100% + 40px); 
-      margin-left: -20px; 
-      padding-bottom: 56.25%; 
-      height: 0; 
-      background: #000; 
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 0; 
-      overflow: hidden; 
-    }
+    .video-wrapper { position: relative; width: calc(100% + 40px); margin-left: -20px; padding-bottom: 56.25%; height: 0; background: #000; border-bottom: 1px solid var(--border); margin-bottom: 0; overflow: hidden; }
     .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     
-    .direct-link-btn { 
-      display: block; 
-      width: calc(100% + 40px); 
-      margin-left: -20px; 
-      padding: 12px; 
-      background: #dfd3b2; 
-      border-bottom: 1px solid var(--border);
-      color: var(--text); 
-      text-align: center; 
-      text-decoration: none; 
-      font-weight: bold; 
-      font-size: 14px; 
-      transition: 0.2s; 
-    }
+    .direct-link-btn { display: block; width: calc(100% + 40px); margin-left: -20px; padding: 12px; background: #dfd3b2; border-bottom: 1px solid var(--border); color: var(--text); text-align: center; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.2s; }
     .direct-link-btn:hover { background: var(--primary); color: #fff; }
+
+    /* Multi-link action buttons grid under iframe container */
+    .multi-links-grid { display: none; gap: 8px; flex-wrap: wrap; margin-top: 12px; margin-bottom: 12px; justify-content: center; }
+    .multi-links-grid.active { display: flex; }
+    .multi-link-action-btn { flex: 1; min-width: 120px; text-align: center; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; text-decoration: none; background: var(--primary); color: #fff; box-shadow: var(--glow); transition: 0.2s; border: none; cursor: pointer; display: inline-block; }
+    .multi-link-action-btn:hover { background: var(--primary-dark); }
+    .multi-link-action-btn.active-active-btn { border: 2px solid #ffffff !important; box-shadow: 0 0 8px rgba(255, 255, 255, 0.8); }
     
-    .content-review { color: var(--text-muted); font-size: 14px; margin-bottom: 10px; white-space: pre-wrap; }
-    
-    /* Red text styling for Viewer Rating */
+    .content-description-btn { background: none; border: none; color: var(--danger); font-weight: bold; cursor: pointer; text-decoration: underline; font-size: 14px; padding: 0; margin-bottom: 8px; display: inline-block; }
+    .content-description-btn:hover { color: #822d2d; }
+
+    .content-review { color: var(--text); font-style: italic; background: rgba(0,0,0,0.03); border-left: 3px solid var(--primary); padding: 8px 12px; font-size: 14px; margin-bottom: 10px; border-radius: 0 6px 6px 0; white-space: pre-wrap; }
     .content-rating { color: var(--danger); font-weight: bold; margin-bottom: 8px; font-size: 14px; }
 
-    /* Clean Star Rating Styles without blue selection box */
     .star-rating-group { display: flex; gap: 4px; font-size: 22px; cursor: pointer; margin-top: 5px; user-select: none; -webkit-user-select: none; }
     .star { color: #ccc; transition: color 0.15s ease, transform 0.15s ease; outline: none; }
     .star.rated { color: #ffbc00; text-shadow: 0 0 8px rgba(255, 188, 0, 0.8); transform: scale(1.1); }
@@ -313,76 +207,92 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
+    @keyframes needleVibrate {
+      0% { transform: translateX(-50%) rotate(var(--target-angle)); }
+      25% { transform: translateX(-50%) rotate(calc(var(--target-angle) - 1.5deg)); }
+      50% { transform: translateX(-50%) rotate(calc(var(--target-angle) + 1.5deg)); }
+      75% { transform: translateX(-50%) rotate(calc(var(--target-angle) - 1deg)); }
+      100% { transform: translateX(-50%) rotate(var(--target-angle)); }
+    }
+    .vibrating-needle {
+      animation: needleVibrate 0.3s infinite ease-in-out;
+      transform-origin: bottom center;
+      transition: transform 0.6s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+    }
+
     .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .loading-indicator { text-align: center; color: var(--text-muted); font-size: 13px; padding: 10px; }
   </style>
 </head>
 <body>
 
   <!-- HOME VIEW -->
   <div id="view-home" class="card">
-    <h1>SMDB</h1>
-    <p style="color: var(--text-muted); margin-bottom: 20px;">Internet Secret Masti Database</p>
+    <div class="home-title-row">
+      <h1 id="smdb-title">SMDB</h1>
+      <button class="title-search-icon-btn" onclick="openHomeQuickSearch()" title="Search Movies & Add">🔍</button>
+    </div>
+    <p id="smdb-subtitle" class="home-subtitle">Internet Secret Masti Database</p>
     
     <div class="hero-actions">
       <button class="btn" onclick="openCreatorNew()">Create New List</button>
-      <button class="btn btn-warning" onclick="document.getElementById('edit-input').click()">📝 Edit List</button>
-      <button class="btn btn-success" onclick="document.getElementById('upload-input').click()"> View .smdb List</button>
+      <button class="btn btn-warning" onclick="document.getElementById('edit-input').click()">Edit List</button>
+      <button class="btn btn-success" onclick="document.getElementById('upload-input').click()">View .smdb List</button>
       
       <input type="file" id="upload-input" accept=".smdb" class="d-none" onchange="uploadAndOpenList(event)">
       <input type="file" id="edit-input" accept=".smdb" class="d-none" onchange="uploadAndEditList(event)">
     </div>
 
-    <!-- SAVED BROWSER LIST SECTION (Appears above Upcoming if saved) -->
+    <div id="home-quick-search-box" class="search-api-box d-none" style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <label style="margin-bottom: 0;"><b>Search Movies & Series:</b></label>
+        <button class="btn btn-danger btn-sm" style="margin: 0; padding: 2px 8px;" onclick="closeHomeQuickSearch()">✕</button>
+      </div>
+      <input type="text" id="home-search-input" placeholder="Type movie or series name..." style="margin-bottom:0;" oninput="onHomeSearchInputTyped()">
+      <div id="home-search-results" class="search-results-container d-none"></div>
+    </div>
+
     <div id="section-saved" class="home-category-section" style="display: none;">
       <div class="category-header">
-        <select id="saved-type-select" onchange="changeSavedLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
+        <select id="saved-type-select" onclick="event.stopPropagation()" onchange="changeSavedLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
           <option value="side-scroll">Side Scroll (Horizontal)</option>
           <option value="standard">Scroll List (Normal)</option>
           <option value="grid">Grid View (2 per line)</option>
         </select>
-        <button class="btn btn-danger btn-sm" onclick="clearSavedList()" title="Remove Saved List" style="padding: 4px 10px; font-size: 13px; margin: 0; line-height: 1.2;">✕</button>
+        <button class="btn btn-warning btn-sm" onclick="editSavedList()" title="Edit Saved List" style="padding: 4px 10px; font-size: 13px; margin: 0; line-height: 1.2;">Edit</button>
       </div>
       <div id="container-saved-content"></div>
     </div>
 
-    <!-- FOUR LISTS SECTIONS (Auto-detected and ordered: Upcoming, Music, Movies, Videos) -->
-    
-    <!-- 1. Upcoming -->
     <div id="section-upcoming" class="home-category-section">
-      <div class="category-header">
-        <h3 class="category-title">Upcoming</h3>
-      </div>
-      <div id="container-upcoming-scroll"></div>
+      <div class="category-header"><h3 class="category-title">Upcoming</h3></div>
+      <div id="container-upcoming-scroll"><div class="loading-indicator">Loading...</div></div>
       <div id="container-upcoming-details"></div>
     </div>
 
-    <!-- 2. Music -->
     <div id="section-music" class="home-category-section">
-      <div class="category-header">
-        <h3 class="category-title">Music</h3>
-      </div>
-      <div id="container-music-scroll"></div>
+      <div class="category-header"><h3 class="category-title">Music</h3></div>
+      <div id="container-music-scroll"><div class="loading-indicator">Loading...</div></div>
       <div id="container-music-details"></div>
     </div>
 
-    <!-- 3. Movies -->
-    <div id="section-movies" class="home-category-section">
-      <div class="category-header">
-        <h3 class="category-title">Movies</h3>
-      </div>
-      <div id="container-movies-scroll"></div>
-      <div id="container-movies-details"></div>
-    </div>
-
-    <!-- 4. Videos -->
     <div id="section-videos" class="home-category-section">
-      <div class="category-header">
-        <h3 class="category-title">Videos</h3>
-      </div>
-      <div id="container-videos-scroll"></div>
+      <div class="category-header"><h3 class="category-title">Videos</h3></div>
+      <div id="container-videos-scroll"><div class="loading-indicator">Loading...</div></div>
       <div id="container-videos-details"></div>
     </div>
 
+    <div id="section-books" class="home-category-section">
+      <div class="category-header"><h3 class="category-title">Books</h3></div>
+      <div id="container-books-scroll"><div class="loading-indicator">Loading...</div></div>
+      <div id="container-books-details"></div>
+    </div>
+
+    <div id="section-movies" class="home-category-section">
+      <div class="category-header"><h3 class="category-title">Movies</h3></div>
+      <div id="container-movies-scroll"><div class="loading-indicator">Loading...</div></div>
+      <div id="container-movies-details"></div>
+    </div>
   </div>
 
   <!-- CREATOR / EDITOR VIEW -->
@@ -394,25 +304,31 @@
         <img id="creator-pic-preview" class="d-none" alt="Profile">
         <div id="creator-pic-placeholder" class="profile-pic-placeholder">Upload Image</div>
       </div>
-      <input type="file" id="profile-pic-file" accept="image/*" class="d-none" onchange="handleProfilePicUpload(event)">
+      <input type="file" id="profile-pic-file" accept="image/*,.heic,.heif" class="d-none" onchange="handleProfilePicUpload(event)">
     </div>
 
     <label><b>Profile Name:</b></label>
-    <input type="text" id="profile-name" placeholder="e.g., sohan kubrick">
+    <input type="text" id="profile-name" placeholder="e.g., santan kubrick">
 
     <label><b>Bio / Description:</b></label>
     <textarea id="profile-bio" placeholder="Write a short bio about yourself..."></textarea>
 
     <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
 
+    <div class="search-api-box">
+      <label><b>Search Movies & Series:</b></label>
+      <input type="text" id="tmdb-search-input" placeholder="Type movie or series name..." style="margin-bottom:0;" oninput="onSearchInputTyped()">
+      <div id="tmdb-search-results" class="search-results-container d-none"></div>
+    </div>
+
     <h3>Content List</h3>
     <div id="links-container"></div>
 
-    <button class="btn btn-secondary" onclick="addLinkRow()">+ Add Content / Movie</button>
+    <button class="btn btn-secondary" onclick="addLinkRow()">+ Add Manual Content</button>
     
     <div style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-      <button class="btn btn-success" onclick="exportSMDBFile()">💾 Download List (.smdb)</button>
-      <button class="btn btn-purple" onclick="saveSMDBBrowser()"> Save</button>
+      <button class="btn btn-save-red" onclick="saveSMDBBrowser()">Save</button>
+      <button class="btn btn-success" onclick="exportSMDBFile()">Download List (.smdb)</button>
       <button class="btn btn-secondary" onclick="switchView('view-home')">Cancel</button>
     </div>
   </div>
@@ -420,25 +336,29 @@
   <!-- VIEWER PORTAL VIEW -->
   <div id="view-portal" class="card d-none">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-      <!-- Viewer View Changer Top Left -->
       <div style="display: flex; align-items: center; gap: 8px;">
         <label for="viewer-type-select" style="font-size: 13px; font-weight: 600;">View As:</label>
-        <select id="viewer-type-select" onchange="changeViewerLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
+        <select id="viewer-type-select" onclick="event.stopPropagation()" onchange="changeViewerLayout(this.value)" style="width: auto; margin-bottom: 0; padding: 6px 12px; font-size: 13px;">
           <option value="standard">Scroll List (Normal)</option>
           <option value="side-scroll">Side Scroll (Horizontal)</option>
           <option value="grid">Grid View (2 per line)</option>
         </select>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="switchView('view-home')">🏠 Back to Home</button>
+      <button class="btn btn-secondary btn-sm" onclick="switchView('view-home')">Back to Home</button>
     </div>
 
-    <!-- Dynamic Header Box -->
     <div id="viewer-header-area"></div>
-
     <div id="viewer-links-container"></div>
   </div>
 
-  <!-- GRID CONTENT DETAILS POPUP MODAL -->
+  <!-- MODALS -->
+  <div id="search-item-modal" class="search-modal-overlay" onclick="closeSearchModal()">
+    <div class="search-modal-box" onclick="event.stopPropagation()">
+      <button class="profile-modal-close" onclick="closeSearchModal()">×</button>
+      <div id="search-modal-body"></div>
+    </div>
+  </div>
+
   <div id="grid-item-modal" class="grid-modal-overlay" onclick="closeGridModal()">
     <div class="grid-modal-box" onclick="event.stopPropagation()">
       <button class="profile-modal-close" onclick="closeGridModal()">×</button>
@@ -446,7 +366,6 @@
     </div>
   </div>
 
-  <!-- PROFILE POPUP MODAL -->
   <div id="profile-modal" class="profile-modal" onclick="closeProfilePopup()">
     <div class="profile-modal-content" onclick="event.stopPropagation()">
       <button class="profile-modal-close" onclick="closeProfilePopup()">×</button>
@@ -455,51 +374,253 @@
   </div>
 
   <script>
-    let currentListData = {
-      name: "",
-      bio: "",
-      profilePic: "",
-      items: []
-    };
-
+    let currentListData = { name: "", bio: "", profilePic: "", items: [] };
     let activeLoadedData = null;
     let currentViewerLayout = "standard";
     let savedListLayout = "side-scroll";
+    let searchDebounceTimer = null;
+    let homeSearchDebounceTimer = null;
+    let contentCache = {};
 
-    // Automatically try fetching the 4 list files on page load and load saved list from localStorage
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedListToHome();
+      loadAllCategoryFiles();
 
-      const filesToFetch = [
-        { key: 'upcoming', filename: 'upcoming.smdb' },
-        { key: 'music', filename: 'music.smdb' },
-        { key: 'movies', filename: 'movies.smdb' },
-        { key: 'videos', filename: 'videos.smdb' }
-      ];
+      document.addEventListener('click', (e) => {
+        const searchBox = document.querySelector('.search-api-box');
+        const resultsContainer = document.getElementById('tmdb-search-results');
+        if (searchBox && resultsContainer && !searchBox.contains(e.target)) resultsContainer.classList.add('d-none');
 
-      filesToFetch.forEach(f => {
-        fetch(f.filename)
-          .then(response => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error('File not found');
-          })
-          .then(data => {
-            renderCategorySideScroll(f.key, data);
-            document.getElementById(`section-${f.key}`).style.display = 'block';
-          })
-          .catch(err => {
-            // File not present or failed to load, keep section hidden
-            console.log(`${f.filename} not detected.`);
-          });
+        const homeSearchBox = document.getElementById('home-quick-search-box');
+        const homeResultsContainer = document.getElementById('home-search-results');
+        const titleSearchBtn = document.querySelector('.title-search-icon-btn');
+        if (homeSearchBox && homeResultsContainer && titleSearchBtn && !homeSearchBox.contains(e.target) && !titleSearchBtn.contains(e.target)) {
+          homeResultsContainer.classList.add('d-none');
+        }
       });
     });
 
-    function switchView(viewId) {
-      ['view-home', 'view-creator', 'view-portal'].forEach(id => {
-        document.getElementById(id).classList.add('d-none');
+    // Handle standard images and convert HEIC/HEIF images via heic2any
+    async function processImageFile(file, maxWidth = 1200, maxHeight = 1200, quality = 0.92, callback) {
+      if (!file) return;
+      let targetFile = file;
+      const fileName = file.name ? file.name.toLowerCase() : '';
+      if (fileName.endsWith('.heic') || fileName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+        try {
+          const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: quality });
+          targetFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        } catch (err) {
+          console.error("HEIC conversion failed:", err);
+        }
+      }
+      compressImage(targetFile, maxWidth, maxHeight, quality, callback);
+    }
+
+    function compressImage(fileOrBlob, maxWidth = 1200, maxHeight = 1200, quality = 0.92, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          let width = img.width, height = img.height;
+          if (width > height) {
+            if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
+          } else {
+            if (height > maxHeight) { width = Math.round((height * maxHeight) / height); height = maxHeight; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(fileOrBlob);
+    }
+
+    async function fetchAndCompressImage(url, maxWidth = 1200, maxHeight = 1200, quality = 0.92) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve) => compressImage(blob, maxWidth, maxHeight, quality, (compressedData) => resolve(compressedData)));
+      } catch (e) {
+        return url; 
+      }
+    }
+
+    function loadAllCategoryFiles() {
+      const filesToFetch = [
+        { key: 'upcoming', filename: 'upcoming.smdb' },
+        { key: 'music', filename: 'music.smdb' },
+        { key: 'videos', filename: 'videos.smdb' },
+        { key: 'books', filename: 'books.smdb' },
+        { key: 'movies', filename: 'movies.smdb' }
+      ];
+      filesToFetch.forEach(f => fetchCategoryFile(f.key, f.filename));
+    }
+
+    function fetchCategoryFile(catKey, filename) {
+      const scrollContainer = document.getElementById(`container-${catKey}-scroll`);
+      const sectionEl = document.getElementById(`section-${catKey}`);
+
+      fetch(filename + '?t=' + Date.now())
+        .then(response => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.text(); })
+        .then(text => {
+          if (!text || text.trim() === '') throw new Error('Empty file');
+          let data = JSON.parse(text);
+          renderCategorySideScroll(catKey, data);
+          sectionEl.style.display = 'block';
+        })
+        .catch(err => {
+          if (scrollContainer) scrollContainer.innerHTML = `<p style="text-align:center; color: var(--text-muted); font-size:13px; padding:10px;">No data found for ${catKey}.</p>`;
+        });
+    }
+
+    function openHomeQuickSearch() {
+      const box = document.getElementById('home-quick-search-box');
+      box.classList.toggle('d-none');
+      if (!box.classList.contains('d-none')) document.getElementById('home-search-input').focus();
+    }
+
+    function closeHomeQuickSearch() {
+      document.getElementById('home-quick-search-box').classList.add('d-none');
+      document.getElementById('home-search-results').classList.add('d-none');
+      document.getElementById('home-search-input').value = "";
+    }
+
+    function onHomeSearchInputTyped() {
+      clearTimeout(homeSearchDebounceTimer);
+      const query = document.getElementById('home-search-input').value.trim();
+      const resultsContainer = document.getElementById('home-search-results');
+      if (!query) { resultsContainer.innerHTML = ""; resultsContainer.classList.add('d-none'); return; }
+      homeSearchDebounceTimer = setTimeout(() => executeHomeSearchQuery(query), 300);
+    }
+
+    async function executeHomeSearchQuery(query) {
+      const resultsContainer = document.getElementById('home-search-results');
+      resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-muted); padding:10px;">Searching...</div>`;
+      resultsContainer.classList.remove('d-none');
+
+      try {
+        const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        if (!data || data.length === 0) { resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-muted); padding:10px;">No results found.</div>`; return; }
+
+        resultsContainer.innerHTML = "";
+        data.forEach((entry, idx) => {
+          const item = entry.show;
+          if (!item) return;
+          const fullTitle = (item.name || 'Untitled') + (item.premiered ? ` (${item.premiered.split('-')[0]})` : '');
+          const posterPath = (item.image && (item.image.medium || item.image.original)) ? (item.image.medium || item.image.original) : '';
+          let overview = item.summary ? item.summary.replace(/<[^>]*>?/gm, '') : 'No description available.';
+          const cacheId = 'home_search_' + Date.now() + '_' + idx;
+          contentCache[cacheId] = { title: fullTitle, poster: posterPath, overview: overview };
+
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'search-result-item';
+          rowDiv.innerHTML = `
+            <div class="search-result-info" onclick="openDescriptionModal('${escapeHtml(fullTitle).replace(/'/g, "\\'")}', '${posterPath}', '${escapeHtml(overview).replace(/'/g, "\\'")}')">
+              ${posterPath ? `<img class="search-result-thumb" src="${posterPath}" alt="">` : `<div style="width:35px;height:45px;background:#ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;">No Pic</div>`}
+              <div class="search-result-title">${escapeHtml(fullTitle)}</div>
+            </div>
+            <button class="btn btn-success btn-sm" style="margin:0; flex-shrink:0;" onclick="addSearchItemDirectly('${cacheId}')">+ Add</button>
+          `;
+          resultsContainer.appendChild(rowDiv);
+        });
+      } catch (err) {
+        resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--danger); padding:10px;">Error fetching search results.</div>`;
+      }
+    }
+
+    async function addSearchItemDirectly(cacheId) {
+      const item = contentCache[cacheId];
+      if (!item) return;
+      let base64Image = item.poster ? await fetchAndCompressImage(item.poster, 1200, 1200, 0.92) : "";
+      let targetList = JSON.parse(localStorage.getItem('smdb_saved_list') || '{"format":"SMDB-LinkList","version":7,"name":"My List","bio":"","profilePic":"","items":[]}');
+      if (!targetList.items) targetList.items = [];
+
+      targetList.items.push({
+        name: item.title, pic: base64Image, details: item.overview, review: "", linksList: [{ name: "", url: "" }], rating: "", ratingStyle: "stars", meterZone: "boring",
+        graphData: { fun: 50, useful: 50, beauty: 50, aged: 50 }
       });
+      localStorage.setItem('smdb_saved_list', JSON.stringify(targetList));
+      loadSavedListToHome();
+      closeHomeQuickSearch();
+      alert(`"${item.title}" successfully added to your saved list!`);
+    }
+
+    function onSearchInputTyped() {
+      clearTimeout(searchDebounceTimer);
+      const query = document.getElementById('tmdb-search-input').value.trim();
+      const resultsContainer = document.getElementById('tmdb-search-results');
+      if (!query) { resultsContainer.innerHTML = ""; resultsContainer.classList.add('d-none'); return; }
+      searchDebounceTimer = setTimeout(() => executeSearchQuery(query), 300);
+    }
+
+    async function executeSearchQuery(query) {
+      const resultsContainer = document.getElementById('tmdb-search-results');
+      resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-muted); padding:10px;">Searching...</div>`;
+      resultsContainer.classList.remove('d-none');
+
+      try {
+        const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        if (!data || data.length === 0) { resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-muted); padding:10px;">No results found.</div>`; return; }
+
+        resultsContainer.innerHTML = "";
+        data.forEach((entry, idx) => {
+          const item = entry.show;
+          if (!item) return;
+          const fullTitle = (item.name || 'Untitled') + (item.premiered ? ` (${item.premiered.split('-')[0]})` : '');
+          const posterPath = (item.image && (item.image.medium || item.image.original)) ? (item.image.medium || item.image.original) : '';
+          let overview = item.summary ? item.summary.replace(/<[^>]*>?/gm, '') : 'No description available.';
+          const cacheId = 'search_' + Date.now() + '_' + idx;
+          contentCache[cacheId] = { title: fullTitle, poster: posterPath, overview: overview };
+
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'search-result-item';
+          rowDiv.innerHTML = `
+            <div class="search-result-info" onclick="openDescriptionModal('${escapeHtml(fullTitle).replace(/'/g, "\\'")}', '${posterPath}', '${escapeHtml(overview).replace(/'/g, "\\'")}')">
+              ${posterPath ? `<img class="search-result-thumb" src="${posterPath}" alt="">` : `<div style="width:35px;height:45px;background:#ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;">No Pic</div>`}
+              <div class="search-result-title">${escapeHtml(fullTitle)}</div>
+            </div>
+            <button class="btn btn-success btn-sm" style="margin:0; flex-shrink:0;" onclick="addCacheItemToCreator('${cacheId}')">+ Add</button>
+          `;
+          resultsContainer.appendChild(rowDiv);
+        });
+      } catch (err) {
+        resultsContainer.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--danger); padding:10px;">Error fetching search results.</div>`;
+      }
+    }
+
+    function openDescriptionModal(title, posterUrl, overview) {
+      const modalBody = document.getElementById('search-modal-body');
+      modalBody.innerHTML = `
+        <h2 style="margin-bottom: 12px; font-size: 20px;">${escapeHtml(title)}</h2>
+        ${posterUrl ? `<img class="modal-content-img" src="${posterUrl}" alt="${escapeHtml(title)}">` : ''}
+        <div style="font-size: 14px; line-height: 1.6; color: var(--text); white-space: pre-wrap;">${escapeHtml(overview || 'No description available.')}</div>
+      `;
+      document.getElementById('search-item-modal').classList.add('active');
+    }
+
+    function closeSearchModal() { document.getElementById('search-item-modal').classList.remove('active'); }
+
+    async function addCacheItemToCreator(cacheId) {
+      const item = contentCache[cacheId];
+      if (!item) return;
+      let base64Image = item.poster ? await fetchAndCompressImage(item.poster, 1200, 1200, 0.92) : "";
+      if (document.getElementById('view-creator').classList.contains('d-none')) switchView('view-creator');
+
+      addLinkRow({
+        name: item.title, pic: base64Image, details: item.overview, review: "", linksList: [{ name: "", url: "" }], rating: "", ratingStyle: "stars", meterZone: "boring",
+        graphData: { fun: 50, useful: 50, beauty: 50, aged: 50 }
+      });
+      document.getElementById('tmdb-search-results').classList.add('d-none');
+      document.getElementById('tmdb-search-input').value = "";
+    }
+
+    function switchView(viewId) {
+      ['view-home', 'view-creator', 'view-portal'].forEach(id => document.getElementById(id).classList.add('d-none'));
       document.getElementById(viewId).classList.remove('d-none');
     }
 
@@ -507,31 +628,32 @@
       document.getElementById('creator-heading').innerText = "Create Database";
       document.getElementById('profile-name').value = "";
       document.getElementById('profile-bio').value = "";
+      document.getElementById('tmdb-search-input').value = "";
+      document.getElementById('tmdb-search-results').classList.add('d-none');
       currentListData.profilePic = "";
-      
-      const imgPrev = document.getElementById('creator-pic-preview');
-      imgPrev.src = "";
-      imgPrev.classList.add('d-none');
+      document.getElementById('creator-pic-preview').src = "";
+      document.getElementById('creator-pic-preview').classList.add('d-none');
       document.getElementById('creator-pic-placeholder').classList.remove('d-none');
-
       document.getElementById('links-container').innerHTML = "";
       addLinkRow();
       switchView('view-creator');
     }
 
+    function editSavedList() {
+      const savedDataJson = localStorage.getItem('smdb_saved_list');
+      if (savedDataJson) loadDataIntoCreator(JSON.parse(savedDataJson));
+    }
+
     function handleProfilePicUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        currentListData.profilePic = e.target.result;
+      processImageFile(file, 1000, 1000, 0.92, (compressedData) => {
+        currentListData.profilePic = compressedData;
         const imgPrev = document.getElementById('creator-pic-preview');
         imgPrev.src = currentListData.profilePic;
         imgPrev.classList.remove('d-none');
         document.getElementById('creator-pic-placeholder').classList.add('d-none');
-      };
-      reader.readAsDataURL(file);
+      });
     }
 
     function addLinkRow(itemData = {}) {
@@ -540,211 +662,376 @@
       
       const name = itemData.name || "";
       const pic = itemData.pic || "";
+      const details = itemData.details || "";
       const review = itemData.review || "";
-      const link = itemData.link || "";
+      
+      let linksList = itemData.linksList || [];
+      if (linksList.length === 0) {
+        if (itemData.link) {
+          linksList = [{ name: "", url: itemData.link }];
+        } else {
+          linksList = [{ name: "", url: "" }];
+        }
+      }
+
       const rating = itemData.rating || "";
+      const ratingStyle = itemData.ratingStyle || "stars";
+      const meterZone = itemData.meterZone || "boring";
+      const rawG = itemData.graphData || {};
+      const graphData = {
+        fun: rawG.fun !== undefined ? rawG.fun : 50,
+        useful: rawG.useful !== undefined ? rawG.useful : 50,
+        beauty: rawG.beauty !== undefined ? rawG.beauty : 50,
+        aged: rawG.aged !== undefined ? rawG.aged : 50
+      };
 
       const div = document.createElement('div');
       div.className = 'link-builder-row';
       div.id = rowId;
 
       div.innerHTML = `
-        <button class="btn btn-danger" style="position: absolute; right: 10px; top: 10px; padding: 4px 8px; font-size: 12px; margin:0;" onclick="document.getElementById('${rowId}').remove()">✕ Remove</button>
+        <button class="btn btn-danger" style="position: absolute; right: 10px; top: 10px; padding: 4px 8px; font-size: 12px; margin:0;" onclick="document.getElementById('${rowId}').remove()">Remove</button>
         
         <label><b>Content Name:</b></label>
         <input type="text" class="row-name" value="${escapeHtml(name)}" placeholder="e.g., Inception (2010)">
         
+        <div class="optional-field">
+          <label><b>Description:</b></label>
+          <textarea class="row-details" placeholder="Movie description...">${escapeHtml(details)}</textarea>
+        </div>
+
         <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'pic')">🖼️ Upload Pic</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'review')">✍️ Add Review</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'link')">🔗 Add Link</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleField('${rowId}', 'rating')">⭐ Add Rating</button>
+          <button type="button" id="${rowId}-btn-pic" class="btn btn-toggle btn-sm" onclick="toggleField('${rowId}', 'pic', this)" style="margin-bottom:0; flex: 1; justify-content: center;">Pic</button>
+          <button type="button" id="${rowId}-btn-review" class="btn btn-toggle btn-sm" onclick="toggleField('${rowId}', 'review', this)" style="margin-bottom:0; flex: 1; justify-content: center;">Review</button>
+          <button type="button" id="${rowId}-btn-link" class="btn btn-toggle btn-sm" onclick="toggleField('${rowId}', 'link', this)" style="margin-bottom:0; flex: 1; justify-content: center;">Link</button>
+          <button type="button" id="${rowId}-btn-rating" class="btn btn-toggle btn-sm" onclick="toggleField('${rowId}', 'rating', this)" style="margin-bottom:0; flex: 1; justify-content: center;">Rate</button>
         </div>
 
         <div id="${rowId}-field-pic" class="optional-field ${pic ? '' : 'd-none'}">
           <label><b>Content Picture:</b></label>
-          <input type="file" accept="image/*" onchange="handleContentPicUpload(event, '${rowId}')">
+          <input type="file" accept="image/*,.heic,.heif" onchange="handleContentPicUpload(event, '${rowId}')">
           <input type="hidden" class="row-pic" value="${pic}">
           <img id="${rowId}-pic-prev" class="thumbnail-preview-box ${pic ? '' : 'd-none'}" src="${pic}">
         </div>
 
         <div id="${rowId}-field-review" class="optional-field ${review ? '' : 'd-none'}">
-          <label><b>Review / Description:</b></label>
-          <textarea class="row-review" placeholder="Write your thoughts or review...">${escapeHtml(review)}</textarea>
+          <label><b>Review:</b></label>
+          <textarea class="row-review" placeholder="Write your personal thoughts...">${escapeHtml(review)}</textarea>
         </div>
 
-        <div id="${rowId}-field-link" class="optional-field ${link ? '' : 'd-none'}">
-          <label><b>Link / Video URL:</b></label>
-          <input type="text" class="row-link" value="${escapeHtml(link)}" placeholder="e.g., https://www.youtube.com/watch?v=...">
+        <div id="${rowId}-field-link" class="optional-field ${linksList.some(l => l.url) ? '' : 'd-none'}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="margin-bottom: 0;"><b>Links / URLs:</b></label>
+            <button type="button" class="btn btn-success btn-sm" style="margin:0; padding:2px 8px;" onclick="addSingleLinkInput('${rowId}')">+ Add</button>
+          </div>
+          <div id="${rowId}-links-list-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
-        <div id="${rowId}-field-rating" class="optional-field ${rating ? '' : 'd-none'}">
-          <label><b>Rating (1 to 10 Stars):</b></label>
+        <div id="${rowId}-field-rating" class="optional-field ${rating || ratingStyle !== 'stars' ? '' : 'd-none'}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <label style="margin-bottom: 0;"><b>Rating:</b></label>
+            <button type="button" class="btn btn-secondary btn-sm" style="margin:0; padding:2px 8px; font-size:11px;" onclick="cycleRatingStyle('${rowId}')">Style: <span id="${rowId}-style-label">${ratingStyle.toUpperCase()}</span></button>
+          </div>
           <input type="hidden" class="row-rating" value="${rating || '0'}">
-          <div class="star-rating-group" id="${rowId}-stars"></div>
-          <span style="font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block;" id="${rowId}-rating-text">${rating ? rating + ' / 10 Stars' : 'Click stars to rate'}</span>
+          <input type="hidden" class="row-rating-style" value="${ratingStyle}">
+          <input type="hidden" class="row-meter-zone" value="${meterZone}">
+          
+          <div id="${rowId}-stars-container" class="${ratingStyle === 'stars' ? '' : 'd-none'}">
+            <div class="star-rating-group" id="${rowId}-stars"></div>
+            <span style="font-size: 13px; color: var(--text-muted); margin-top: 4px; display: block;" id="${rowId}-rating-text">${rating ? rating + ' / 10 Stars' : 'Click stars to rate'}</span>
+          </div>
+
+          <div id="${rowId}-pct-container" class="${ratingStyle === 'percentage' ? '' : 'd-none'}" style="margin-top: 8px;">
+            <input type="range" min="0" max="100" class="row-pct-input" value="${rating ? rating * 10 : 50}" oninput="updatePctVal('${rowId}', this.value)">
+            <span style="font-size: 13px; color: var(--text-muted);">Percentage: <span id="${rowId}-pct-text">${rating ? rating * 10 : 50}%</span></span>
+          </div>
+
+          <div id="${rowId}-meter-container" class="${ratingStyle === 'meter' ? '' : 'd-none'}" style="margin-top: 8px;">
+            <label style="font-size: 12px; margin-bottom: 6px; display: block;">B-Meter (for BoxOffice Bombs & Blockbusters) :</label>
+            <div id="${rowId}-meter-btns" style="display: flex; gap: 6px; justify-content: space-between;">
+              <button type="button" class="btn btn-sm" style="flex:1; margin:0; font-size:11px; padding:6px 2px; background: #684f31; color: #fff;" onclick="setBuilderMeterZone('${rowId}', 'boring', this)">Boring</button>
+              <button type="button" class="btn btn-sm" style="flex:1; margin:0; font-size:11px; padding:6px 2px; background: #684f31; color: #fff;" onclick="setBuilderMeterZone('${rowId}', 'bad', this)">Bad</button>
+              <button type="button" class="btn btn-sm" style="flex:1; margin:0; font-size:11px; padding:6px 2px; background: #684f31; color: #fff;" onclick="setBuilderMeterZone('${rowId}', 'basic', this)">Basic</button>
+              <button type="button" class="btn btn-sm" style="flex:1; margin:0; font-size:11px; padding:6px 2px; background: #684f31; color: #fff;" onclick="setBuilderMeterZone('${rowId}', 'better', this)">Better</button>
+              <button type="button" class="btn btn-sm" style="flex:1; margin:0; font-size:11px; padding:6px 2px; background: #684f31; color: #fff;" onclick="setBuilderMeterZone('${rowId}', 'best', this)">Best</button>
+            </div>
+          </div>
+
+          <div id="${rowId}-graph-container" class="${ratingStyle === 'graph' ? '' : 'd-none'}" style="margin-top: 8px; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 6px;">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 6px; color: var(--text);">4 Categories (0 to 100):</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <label style="font-size: 11px; margin-bottom: 2px; display:flex; justify-content:space-between; color:#a63a3a; font-weight:bold;"><span>Fun:</span> <span id="${rowId}-lbl-fun">${graphData.fun}</span></label>
+                <input type="range" min="0" max="100" step="1" class="row-g1-val" value="${graphData.fun}" style="padding:0; margin-bottom:0;" oninput="document.getElementById('${rowId}-lbl-fun').innerText=this.value">
+              </div>
+              <div>
+                <label style="font-size: 11px; margin-bottom: 2px; display:flex; justify-content:space-between; color:#d99b00; font-weight:bold;"><span>Useful:</span> <span id="${rowId}-lbl-useful">${graphData.useful}</span></label>
+                <input type="range" min="0" max="100" step="1" class="row-g2-val" value="${graphData.useful}" style="padding:0; margin-bottom:0;" oninput="document.getElementById('${rowId}-lbl-useful').innerText=this.value">
+              </div>
+              <div>
+                <label style="font-size: 11px; margin-bottom: 2px; display:flex; justify-content:space-between; color:#3b7a57; font-weight:bold;"><span>Beauty:</span> <span id="${rowId}-lbl-beauty">${graphData.beauty}</span></label>
+                <input type="range" min="0" max="100" step="1" class="row-g3-val" value="${graphData.beauty}" style="padding:0; margin-bottom:0;" oninput="document.getElementById('${rowId}-lbl-beauty').innerText=this.value">
+              </div>
+              <div>
+                <label style="font-size: 11px; margin-bottom: 2px; display:flex; justify-content:space-between; color:#a67c52; font-weight:bold;"><span>Aged:</span> <span id="${rowId}-lbl-aged">${graphData.aged}</span></label>
+                <input type="range" min="0" max="100" step="1" class="row-g4-val" value="${graphData.aged}" style="padding:0; margin-bottom:0;" oninput="document.getElementById('${rowId}-lbl-aged').innerText=this.value">
+              </div>
+            </div>
+          </div>
         </div>
       `;
       container.appendChild(div);
+
+      linksList.forEach(l => appendLinkInputPair(rowId, l.name || "", l.url || ""));
 
       const starGroup = div.querySelector('.star-rating-group');
       for (let i = 1; i <= 10; i++) {
         const starSpan = document.createElement('span');
         starSpan.className = 'star' + ((rating && i <= parseInt(rating)) ? ' rated' : '');
         starSpan.innerHTML = '★';
-        starSpan.onclick = function() {
-          setBuilderRating(rowId, i);
-        };
+        starSpan.onclick = () => setBuilderRating(rowId, i);
         starGroup.appendChild(starSpan);
+      }
+
+      const defaultBtnMap = { 'boring': 0, 'bad': 1, 'basic': 2, 'better': 3, 'best': 4 };
+      const btns = div.querySelectorAll(`#${rowId}-meter-btns button`);
+      const targetBtnIdx = defaultBtnMap[meterZone] !== undefined ? defaultBtnMap[meterZone] : 0;
+      updateBuilderMeterButtonStyles(btns, targetBtnIdx, meterZone);
+
+      ['pic', 'review', 'link', 'rating'].forEach(field => {
+        const fieldEl = document.getElementById(`${rowId}-field-${field}`);
+        const btnEl = document.getElementById(`${rowId}-btn-${field}`);
+        if (fieldEl && btnEl && !fieldEl.classList.contains('d-none')) btnEl.classList.add('active-field');
+      });
+    }
+
+    function appendLinkInputPair(rowId, linkName = "", linkUrl = "") {
+      const listContainer = document.getElementById(`${rowId}-links-list-container`);
+      if (!listContainer) return;
+      if (listContainer.children.length >= 10) {
+        alert("Maximum limit of 10 links reached.");
+        return;
+      }
+
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'link-input-group';
+      itemDiv.style.cssText = 'display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.02); padding: 6px; border-radius: 6px; border: 1px solid var(--border);';
+      
+      const isSingle = listContainer.children.length === 0;
+
+      itemDiv.innerHTML = `
+        <input type="text" class="link-name-input ${isSingle ? 'd-none' : ''}" value="${escapeHtml(linkName)}" placeholder="Link Name (e.g. Trailer 1)" style="margin-bottom:0; flex: 1;">
+        <input type="text" class="link-url-input" value="${escapeHtml(linkUrl)}" placeholder="https://..." style="margin-bottom:0; flex: 2;">
+        <button type="button" class="btn btn-danger btn-sm" style="margin:0; padding:6px 10px;" onclick="removeLinkInputPair(this, '${rowId}')">✕</button>
+      `;
+      listContainer.appendChild(itemDiv);
+      updateLinkInputVisibility(rowId);
+    }
+
+    function addSingleLinkInput(rowId) {
+      appendLinkInputPair(rowId, "", "");
+    }
+
+    function removeLinkInputPair(btnEl, rowId) {
+      const group = btnEl.parentElement;
+      const listContainer = document.getElementById(`${rowId}-links-list-container`);
+      if (listContainer && listContainer.children.length <= 1) {
+        group.querySelector('.link-url-input').value = "";
+        group.querySelector('.link-name-input').value = "";
+      } else {
+        group.remove();
+      }
+      updateLinkInputVisibility(rowId);
+    }
+
+    function updateLinkInputVisibility(rowId) {
+      const listContainer = document.getElementById(`${rowId}-links-list-container`);
+      if (!listContainer) return;
+      const rows = listContainer.children;
+      const count = rows.length;
+
+      for (let i = 0; i < rows.length; i++) {
+        const nameInput = rows[i].querySelector('.link-name-input');
+        if (nameInput) {
+          if (count === 1) {
+            nameInput.classList.add('d-none');
+            nameInput.value = "";
+          } else {
+            nameInput.classList.remove('d-none');
+          }
+        }
       }
     }
 
-    function setBuilderRating(rowId, score) {
+    function setBuilderMeterZone(rowId, zone, btnEl) {
       const row = document.getElementById(rowId);
-      row.querySelector('.row-rating').value = score;
-      const stars = row.querySelectorAll('.star');
-      stars.forEach((star, idx) => {
-        if (idx < score) {
-          star.classList.add('rated');
+      row.querySelector('.row-meter-zone').value = zone;
+      const btns = row.querySelectorAll(`#${rowId}-meter-btns button`);
+      btns.forEach(b => {
+        b.style.background = '#684f31';
+        b.style.color = '#fff';
+        b.className = 'btn btn-sm';
+      });
+      const zoneColors = {
+        'boring': '#4a3525',
+        'bad': '#e64d4d',
+        'basic': '#d4ac0d',
+        'better': '#70db90',
+        'best': '#111'
+      };
+      btnEl.style.background = zoneColors[zone];
+      btnEl.style.color = (zone === 'best') ? '#00ffff' : '#fff';
+      if (zone === 'best') btnEl.className = 'btn btn-sm';
+    }
+
+    function updateBuilderMeterButtonStyles(btns, activeIdx, zone) {
+      const zoneColors = {
+        'boring': '#4a3525',
+        'bad': '#e64d4d',
+        'basic': '#d4ac0d',
+        'better': '#70db90',
+        'best': '#111'
+      };
+      btns.forEach((b, idx) => {
+        if (idx === activeIdx) {
+          b.style.background = zoneColors[zone];
+          b.style.color = (zone === 'best') ? '#00ffff' : '#fff';
+          if (zone === 'best') b.className = 'btn btn-sm';
         } else {
-          star.classList.remove('rated');
+          b.style.background = '#684f31';
+          b.style.color = '#fff';
         }
+      });
+    }
+
+    function cycleRatingStyle(rowId) {
+      const row = document.getElementById(rowId);
+      const styleInput = row.querySelector('.row-rating-style');
+      const styleLabel = document.getElementById(`${rowId}-style-label`);
+      
+      ['stars-container', 'pct-container', 'meter-container', 'graph-container'].forEach(c => {
+        document.getElementById(`${rowId}-${c}`).classList.add('d-none');
+      });
+
+      let nextStyle = {'stars':'percentage', 'percentage':'meter', 'meter':'graph', 'graph':'stars'}[styleInput.value] || 'stars';
+      styleInput.value = nextStyle;
+      styleLabel.innerText = nextStyle.toUpperCase();
+      document.getElementById(`${rowId}-${nextStyle === 'stars' ? 'stars' : nextStyle === 'percentage' ? 'pct' : nextStyle === 'meter' ? 'meter' : 'graph'}-container`).classList.remove('d-none');
+    }
+
+    function updatePctVal(rowId, val) {
+      document.getElementById(`${rowId}-pct-text`).innerText = val + '%';
+      document.getElementById(rowId).querySelector('.row-rating').value = Math.round(val / 10);
+    }
+
+    function setBuilderRating(rowId, score) {
+      document.getElementById(rowId).querySelector('.row-rating').value = score;
+      document.querySelectorAll(`#${rowId} .star`).forEach((star, idx) => {
+        if (idx < score) star.classList.add('rated'); else star.classList.remove('rated');
       });
       document.getElementById(`${rowId}-rating-text`).innerText = `${score} / 10 Stars`;
     }
 
-    function toggleField(rowId, fieldName) {
+    function toggleField(rowId, fieldName, btnEl) {
       const fieldDiv = document.getElementById(`${rowId}-field-${fieldName}`);
+      if (!fieldDiv) return;
       fieldDiv.classList.toggle('d-none');
+      if (btnEl) {
+        if (fieldDiv.classList.contains('d-none')) btnEl.classList.remove('active-field');
+        else btnEl.classList.add('active-field');
+      }
     }
 
     function handleContentPicUpload(event, rowId) {
       const file = event.target.files[0];
       if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const row = document.getElementById(rowId);
-        row.querySelector('.row-pic').value = e.target.result;
+      processImageFile(file, 1200, 1200, 0.92, (compressedData) => {
+        document.getElementById(rowId).querySelector('.row-pic').value = compressedData;
         const prevImg = document.getElementById(`${rowId}-pic-prev`);
-        prevImg.src = e.target.result;
+        prevImg.src = compressedData;
         prevImg.classList.remove('d-none');
-      };
-      reader.readAsDataURL(file);
+      });
     }
 
     function collectCurrentFormData() {
       const name = document.getElementById('profile-name').value.trim() || 'My Profile';
       const bio = document.getElementById('profile-bio').value.trim();
-      
-      const rowElements = document.querySelectorAll('.link-builder-row');
       const items = [];
 
-      rowElements.forEach(row => {
+      document.querySelectorAll('.link-builder-row').forEach(row => {
         const itemName = row.querySelector('.row-name').value.trim();
         if (!itemName) return;
 
         const itemPic = row.querySelector('.row-pic') ? row.querySelector('.row-pic').value : "";
-        const itemReviewEl = row.querySelector('.row-review');
-        const itemReview = itemReviewEl && !document.getElementById(row.id + '-field-review').classList.contains('d-none') ? itemReviewEl.value.trim() : "";
+        const itemDetails = row.querySelector('.row-details') ? row.querySelector('.row-details').value.trim() : "";
+        const itemReview = row.querySelector('.row-review') && !document.getElementById(row.id + '-field-review').classList.contains('d-none') ? row.querySelector('.row-review').value.trim() : "";
         
-        const itemLinkEl = row.querySelector('.row-link');
-        const itemLink = itemLinkEl && !document.getElementById(row.id + '-field-link').classList.contains('d-none') ? itemLinkEl.value.trim() : "";
-        
-        const itemRatingEl = row.querySelector('.row-rating');
-        const itemRating = itemRatingEl && !document.getElementById(row.id + '-field-rating').classList.contains('d-none') ? itemRatingEl.value : "";
-
-        items.push({
-          name: itemName,
-          pic: itemPic,
-          review: itemReview,
-          link: itemLink,
-          rating: itemRating && itemRating !== '0' ? itemRating : ""
+        const linksList = [];
+        row.querySelectorAll('.link-input-group').forEach(group => {
+          const lName = group.querySelector('.link-name-input').value.trim();
+          const lUrl = group.querySelector('.link-url-input').value.trim();
+          if (lUrl) {
+            linksList.push({ name: lName, url: lUrl });
+          }
         });
+
+        const itemRating = row.querySelector('.row-rating') && !document.getElementById(row.id + '-field-rating').classList.contains('d-none') ? row.querySelector('.row-rating').value : "";
+        const ratingStyle = row.querySelector('.row-rating-style') ? row.querySelector('.row-rating-style').value : "stars";
+        const meterZone = row.querySelector('.row-meter-zone') ? row.querySelector('.row-meter-zone').value : "boring";
+
+        let graphData = { fun: 50, useful: 50, beauty: 50, aged: 50 };
+        if (row.querySelector('.row-g1-val')) {
+          graphData = {
+            fun: parseFloat(row.querySelector('.row-g1-val').value) || 0,
+            useful: parseFloat(row.querySelector('.row-g2-val').value) || 0,
+            beauty: parseFloat(row.querySelector('.row-g3-val').value) || 0,
+            aged: parseFloat(row.querySelector('.row-g4-val').value) || 0
+          };
+        }
+
+        items.push({ name: itemName, pic: itemPic, details: itemDetails, review: itemReview, linksList, rating: itemRating && itemRating !== '0' ? itemRating : "", ratingStyle, meterZone, graphData });
       });
 
-      return {
-        format: "SMDB-LinkList",
-        version: 6,
-        name: name,
-        bio: bio,
-        profilePic: currentListData.profilePic,
-        items: items
-      };
+      return { format: "SMDB-LinkList", version: 16, name, bio, profilePic: currentListData.profilePic, items };
     }
 
     function exportSMDBFile() {
       const smdbData = collectCurrentFormData();
-      try {
-        const jsonString = JSON.stringify(smdbData, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${smdbData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.smdb`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        alert("Error generating file: " + err.message);
-      }
+      const blob = new Blob([JSON.stringify(smdbData)], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${smdbData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.smdb`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
     function saveSMDBBrowser() {
-      const smdbData = collectCurrentFormData();
-      try {
-        localStorage.setItem('smdb_saved_list', JSON.stringify(smdbData));
-        alert("List successfully saved to browser storage!");
-        loadSavedListToHome();
-        switchView('view-home');
-      } catch (err) {
-        alert("Error saving list to browser: " + err.message);
-      }
+      localStorage.setItem('smdb_saved_list', JSON.stringify(collectCurrentFormData()));
+      alert("List successfully saved to browser storage!");
+      loadSavedListToHome();
+      switchView('view-home');
     }
 
     function loadSavedListToHome() {
       const savedDataJson = localStorage.getItem('smdb_saved_list');
       const sectionSaved = document.getElementById('section-saved');
-      
-      if (!savedDataJson) {
-        sectionSaved.style.display = 'none';
-        return;
-      }
-
+      if (!savedDataJson) { sectionSaved.style.display = 'none'; return; }
       try {
-        const data = JSON.parse(savedDataJson);
-        renderSavedListContent(data);
+        renderSavedListContent(JSON.parse(savedDataJson));
         sectionSaved.style.display = 'block';
-      } catch (err) {
-        console.error("Failed to load saved list from localStorage", err);
-        sectionSaved.style.display = 'none';
-      }
-    }
-
-    function clearSavedList() {
-      if (confirm("Are you sure you want to remove the saved list?")) {
-        localStorage.removeItem('smdb_saved_list');
-        document.getElementById('section-saved').style.display = 'none';
-      }
+      } catch (err) { sectionSaved.style.display = 'none'; }
     }
 
     function changeSavedLayout(newType) {
       savedListLayout = newType;
       const savedDataJson = localStorage.getItem('smdb_saved_list');
-      if (savedDataJson) {
-        renderSavedListContent(JSON.parse(savedDataJson));
-      }
+      if (savedDataJson) renderSavedListContent(JSON.parse(savedDataJson));
     }
 
     function renderSavedListContent(data) {
       const container = document.getElementById('container-saved-content');
       container.innerHTML = "";
-
-      if (!data.items || data.items.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 10px;">Saved list is empty.</p>`;
-        return;
-      }
+      if (!data.items || data.items.length === 0) { container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 10px;">Saved list is empty.</p>`; return; }
 
       if (savedListLayout === 'side-scroll') {
         const scrollWrapper = document.createElement('div');
@@ -755,12 +1042,7 @@
           profileCard.className = 'side-scroll-card';
           profileCard.id = `side-card-saved-profile`;
           profileCard.onclick = () => toggleSavedDetails('profile');
-          
-          let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
-          profileCard.innerHTML = `
-            <div class="side-scroll-thumb-box">${pThumbContent}</div>
-            <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
-          `;
+          profileCard.innerHTML = `<div class="side-scroll-thumb-box">${data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`}</div><div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>`;
           scrollWrapper.appendChild(profileCard);
         }
 
@@ -769,13 +1051,7 @@
           card.className = 'side-scroll-card';
           card.id = `side-card-saved-${index}`;
           card.onclick = () => toggleSavedDetails(index);
-
-          let thumbContent = item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
-
-          card.innerHTML = `
-            <div class="side-scroll-thumb-box">${thumbContent}</div>
-            <div class="side-scroll-title">${escapeHtml(item.name)}</div>
-          `;
+          card.innerHTML = `<div class="side-scroll-thumb-box">${item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`}</div><div class="side-scroll-title">${escapeHtml(item.name)}</div>`;
           scrollWrapper.appendChild(card);
         });
         container.appendChild(scrollWrapper);
@@ -784,10 +1060,7 @@
           const profileDetailsBox = document.createElement('div');
           profileDetailsBox.className = 'side-scroll-details';
           profileDetailsBox.id = `side-details-saved-profile`;
-          profileDetailsBox.innerHTML = `
-            <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3>
-            <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
-          `;
+          profileDetailsBox.innerHTML = `<h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3><div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>`;
           container.appendChild(profileDetailsBox);
         }
 
@@ -795,178 +1068,354 @@
           const detailsBox = document.createElement('div');
           detailsBox.className = 'side-scroll-details';
           detailsBox.id = `side-details-saved-${index}`;
-
-          let ratingHtml = '';
-          if (item.rating) {
-            let rVal = parseInt(item.rating) || 0;
-            let starString = '';
-            for (let s = 1; s <= 10; s++) {
-              starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-            }
-            ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-          }
-
-          let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-          let actionHtml = '';
-          if (item.link && item.link.trim() !== '') {
-            const embedUrl = convertToEmbedUrl(item.link);
-            if (embedUrl) {
-              actionHtml = `
-                <button id="iframe-btn-saved-${index}" class="iframe-toggle-btn" onclick="toggleIframeSaved('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-                <div id="iframe-box-saved-${index}" class="iframe-container">
-                  <div class="video-wrapper"><iframe src="" frameborder="0" allowfullscreen></iframe></div>
-                  <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-                </div>
-              `;
-            } else {
-              actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-            }
-          }
-
-          detailsBox.innerHTML = `
-            <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
-            ${ratingHtml}
-            ${reviewHtml}
-            ${actionHtml}
-          `;
+          detailsBox.innerHTML = renderItemRatingViewer(item, 'saved-' + index);
           container.appendChild(detailsBox);
         });
-
       } else if (savedListLayout === 'grid') {
         const gridWrapper = document.createElement('div');
         gridWrapper.className = 'grid-container';
-
         data.items.forEach((item, index) => {
           const gridCard = document.createElement('div');
           gridCard.className = 'grid-card';
           gridCard.onclick = () => openGridModal(item, index);
-
-          let thumbContent = item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
-
-          gridCard.innerHTML = `
-            <div class="grid-thumb-box">${thumbContent}</div>
-            <div class="grid-title">${escapeHtml(item.name)}</div>
-          `;
+          gridCard.innerHTML = `<div class="grid-thumb-box">${item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`}</div><div class="grid-title">${escapeHtml(item.name)}</div>`;
           gridWrapper.appendChild(gridCard);
         });
         container.appendChild(gridWrapper);
-
       } else {
-        // Standard view
         data.items.forEach((item, index) => {
           const card = document.createElement('div');
           card.className = 'link-card';
 
-          let thumbHtml = item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : '';
-          let ratingHtml = '';
-          if (item.rating) {
-            let rVal = parseInt(item.rating) || 0;
-            let starString = '';
-            for (let s = 1; s <= 10; s++) {
-              starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-            }
-            ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-          }
-
-          let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-          let actionHtml = '';
-          if (item.link && item.link.trim() !== '') {
-            const embedUrl = convertToEmbedUrl(item.link);
-            if (embedUrl) {
-              actionHtml = `
-                <button id="iframe-btn-saved-std-${index}" class="iframe-toggle-btn" onclick="toggleIframeSavedStd('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-                <div id="iframe-box-saved-std-${index}" class="iframe-container">
-                  <div class="video-wrapper"><iframe src="" frameborder="0" allowfullscreen></iframe></div>
-                  <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-                </div>
-              `;
-            } else {
-              actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-            }
-          }
-
           card.innerHTML = `
             <div class="link-card-inner-flex">
-              ${thumbHtml}
+              ${item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : ''}
               <div class="link-card-content">
                 <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
-                ${ratingHtml}
-                ${reviewHtml}
               </div>
             </div>
-            ${actionHtml}
+            ${renderItemRatingViewer(item, 'saved-std-' + index)}
           `;
           container.appendChild(card);
         });
       }
     }
 
-    function toggleSavedDetails(targetKey) {
-      const detailsBoxes = document.querySelectorAll('#container-saved-content .side-scroll-details');
-      const sideCards = document.querySelectorAll('#container-saved-content .side-scroll-card');
-
-      detailsBoxes.forEach(box => box.classList.remove('active'));
-      sideCards.forEach(card => card.classList.remove('active-selected'));
-
-      const targetBox = document.getElementById(`side-details-saved-${targetKey}`);
-      const targetCard = document.getElementById(`side-card-saved-${targetKey}`);
-
-      if (targetBox && targetCard) {
-        targetBox.classList.toggle('active');
-        targetCard.classList.toggle('active-selected');
+    function renderItemRatingViewer(item, uniqueId) {
+      let ratingHtml = '';
+      const style = item.ratingStyle || 'stars';
+      
+      if (style === 'percentage') {
+        const pct = item.rating ? item.rating * 10 : 50;
+        ratingHtml = `<div class="content-rating">Rating: ${pct}% <div style="background:#e0e0e0; border-radius:4px; height:10px; width:100%; margin-top:4px; overflow:hidden;"><div style="background:#27ae60; height:100%; width:${pct}%; border-radius:4px;"></div></div></div>`;
+      } else if (style === 'meter') {
+        const zone = item.meterZone || 'boring';
+        const zoneAngles = { 'boring': -72, 'bad': -36, 'basic': 0, 'better': 36, 'best': 72 };
+        const angle = zoneAngles[zone] !== undefined ? zoneAngles[zone] : -72;
         
-        if (targetBox.classList.contains('active')) {
-          targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        let activeColor = '#4a3525';
+        if (zone === 'boring') activeColor = '#4a3525';
+        else if (zone === 'bad') activeColor = '#e64d4d';
+        else if (zone === 'basic') activeColor = '#d4ac0d';
+        else if (zone === 'better') activeColor = '#70db90';
+        else if (zone === 'best') activeColor = '#00ffff';
+
+        const btnColors = {
+          'boring': '#4a3525',
+          'bad': '#e64d4d',
+          'basic': '#d4ac0d',
+          'better': '#70db90',
+          'best': '#111'
+        };
+
+        ratingHtml = `
+          <div class="content-rating" style="margin-bottom: 15px; text-align: center;">
+            <div style="font-size: 12px; margin-bottom: 4px; color: var(--text);">B-Meter (bombs & bangers) </div>
+            
+            <div style="position: relative; width: 140px; height: 70px; overflow: hidden; margin: 0 auto 8px auto;">
+              <div style="position: absolute; top: 0; left: 0; width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(from 270deg, #4a3525 0deg 36deg, #e64d4d 36deg 72deg, #d4ac0d 72deg 108deg, #70db90 108deg 144deg, #00ffff 144deg 180deg, transparent 180deg 360deg);"></div>
+              <div style="position: absolute; top: 16px; left: 16px; width: 108px; height: 108px; background: var(--card-inner); border-radius: 50%;"></div>
+              
+              <div id="needle-wrap-${uniqueId}" class="vibrating-needle" style="position: absolute; bottom: 0; left: 50%; width: 0; height: 0; --target-angle: ${angle}deg; transform: translateX(-50%) rotate(${angle}deg);">
+                <div style="position: absolute; bottom: 0; left: -3px; width: 6px; height: 55px; background: #111; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border-radius: 2px;"></div>
+                <div style="position: absolute; bottom: -7px; left: -7px; width: 14px; height: 14px; background: #333; border-radius: 50%; border: 2px solid #fff;"></div>
+              </div>
+            </div>
+
+            <div id="portal-meter-btns-${uniqueId}" style="display: flex; gap: 3px; justify-content: center; margin-bottom: 6px;">
+              <button type="button" class="btn btn-sm" style="background:${zone==='boring'?btnColors.boring:'#684f31'}; color:${zone==='boring'?'#fff':'#fff'}; padding:3px 6px; font-size:10px; margin:0;" onclick="setPortalMeter('${uniqueId}', -72, 'boring', this)">Boring</button>
+              <button type="button" class="btn btn-sm" style="background:${zone==='bad'?btnColors.bad:'#684f31'}; color:${zone==='bad'?'#111':'#fff'}; padding:3px 6px; font-size:10px; margin:0;" onclick="setPortalMeter('${uniqueId}', -36, 'bad', this)">Bad</button>
+              <button type="button" class="btn btn-sm" style="background:${zone==='basic'?btnColors.basic:'#684f31'}; color:${zone==='basic'?'#111':'#fff'}; padding:3px 6px; font-size:10px; margin:0;" onclick="setPortalMeter('${uniqueId}', 0, 'basic', this)">Basic</button>
+              <button type="button" class="btn btn-sm" style="background:${zone==='better'?btnColors.better:'#684f31'}; color:${zone==='better'?'#111':'#fff'}; padding:3px 6px; font-size:10px; margin:0;" onclick="setPortalMeter('${uniqueId}', 36, 'better', this)">Better</button>
+              <button type="button" class="btn btn-sm" style="background:${zone==='best'?'#111':'#684f31'}; border:${zone==='best'?'1px solid #00ffff':'none'}; color:${zone==='best'?'#00ffff':'#fff'}; padding:3px 6px; font-size:10px; margin:0;" onclick="setPortalMeter('${uniqueId}', 72, 'best', this)">Best</button>
+            </div>
+
+            <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: ${activeColor};">
+              <span id="meter-label-${uniqueId}">${zone}</span>
+            </div>
+          </div>
+        `;
+      } else if (style === 'graph') {
+        const rawG = item.graphData || {};
+        const v1 = rawG.fun !== undefined ? rawG.fun : 50;
+        const v2 = rawG.useful !== undefined ? rawG.useful : 50;
+        const v3 = rawG.beauty !== undefined ? rawG.beauty : 50;
+        const v4 = rawG.aged !== undefined ? rawG.aged : 50;
+
+        ratingHtml = `
+          <div class="content-rating" style="margin-bottom: 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span><b>Rating Chart</b></span>
+              <button type="button" class="btn btn-secondary btn-sm" style="margin:0; padding:2px 8px; font-size:11px;" onclick="cycleGraphChartType('${uniqueId}')">Type: <span id="chart-type-lbl-${uniqueId}">Line</span></button>
+            </div>
+            <input type="hidden" id="chart-state-${uniqueId}" value="line">
+            <input type="hidden" id="chart-vals-${uniqueId}" value="${v1},${v2},${v3},${v4}">
+            <div id="chart-canvas-box-${uniqueId}" style="border:1px solid var(--border); border-radius:6px; padding:10px; height:160px; display:flex; align-items:flex-end; justify-content:space-around; position:relative; overflow:hidden;"></div>
+            <div style="display:flex; justify-content:space-around; font-size:11px; font-weight:bold; margin-top:6px;">
+              <span style="color:#a63a3a;">fun</span><span style="color:#d99b00;">useful</span><span style="color:#3b7a57;">beauty</span><span style="color:#a67c52;">aged</span>
+            </div>
+          </div>
+        `;
+        setTimeout(() => renderGraphChart(uniqueId, [v1, v2, v3, v4], 'line'), 50);
+      } else {
+        if (!item.rating || item.rating === '0') {
+          ratingHtml = `<div class="content-rating">Rating: N/A</div>`;
+        } else {
+          let rVal = parseInt(item.rating) || 0;
+          let starString = '';
+          for (let s = 1; s <= 10; s++) starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
+          ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
         }
       }
+
+      const safeName = escapeHtml(item.name).replace(/"/g, '&quot;');
+      const rawTitle = item.name || "Open";
+      const safeDetails = escapeHtml(item.details || '').replace(/"/g, '&quot;');
+      const safePic = (item.pic || '').replace(/"/g, '&quot;');
+
+      let links = item.linksList || [];
+      if (links.length === 0 && item.link) {
+        links = [{ name: "", url: item.link }];
+      }
+
+      let linksHtml = '';
+      if (links.length > 0) {
+        let firstLink = links[0];
+        let defaultEmbedUrl = convertToEmbedUrl(firstLink.url);
+
+        if (defaultEmbedUrl) {
+          // Embeddable video link logic (iframe toggle)
+          linksHtml += `
+            <button id="iframe-btn-${uniqueId}" class="iframe-toggle-btn" onclick="toggleMainIframe('${uniqueId}', '${defaultEmbedUrl}', '${escapeHtml(rawTitle)}')">${escapeHtml(rawTitle)}</button>
+            <div id="iframe-box-${uniqueId}" class="iframe-container">
+              <div class="video-wrapper"><iframe src="" frameborder="0" allowfullscreen></iframe></div>
+              <a id="direct-link-anchor-${uniqueId}" class="direct-link-btn" href="${escapeHtml(firstLink.url)}" target="_blank">Open Direct Link</a>
+            </div>
+          `;
+
+          if (links.length > 1) {
+            linksHtml += `<div class="multi-links-grid" id="multi-grid-${uniqueId}">`;
+            links.forEach((l, lIdx) => {
+              let btnLabel = l.name ? l.name.trim() : "Open";
+              let emb = convertToEmbedUrl(l.url);
+              let targetUrl = l.url || "";
+              let isFirst = (l === firstLink);
+
+              if (emb) {
+                linksHtml += `<button type="button" id="ml-btn-${uniqueId}-${lIdx}" class="multi-link-action-btn ${isFirst ? 'active-active-btn' : ''}" onclick="switchEmbeddedIframe('${uniqueId}', '${emb}', '${escapeHtml(targetUrl)}', this)">${escapeHtml(btnLabel)}</button>`;
+              } else {
+                linksHtml += `<a id="ml-btn-${uniqueId}-${lIdx}" class="multi-link-action-btn" href="${escapeHtml(targetUrl)}" target="_blank">${escapeHtml(btnLabel)}</a>`;
+              }
+            });
+            linksHtml += `</div>`;
+          }
+        } else {
+          // Direct file or external URL (Non-embeddable)
+          let singleBtnText = firstLink.name ? firstLink.name.trim() : rawTitle;
+          linksHtml += `<a class="iframe-toggle-btn" style="text-decoration:none;" href="${escapeHtml(firstLink.url)}" target="_blank">${escapeHtml(singleBtnText)}</a>`;
+
+          if (links.length > 1) {
+            linksHtml += `<div class="multi-links-grid active" style="display:flex; margin-top:8px;">`;
+            links.slice(1).forEach((l, lIdx) => {
+              let btnLabel = l.name ? l.name.trim() : "Open";
+              let targetUrl = l.url || "";
+              linksHtml += `<a class="multi-link-action-btn" href="${escapeHtml(targetUrl)}" target="_blank">${escapeHtml(btnLabel)}</a>`;
+            });
+            linksHtml += `</div>`;
+          }
+        }
+      }
+
+      return `
+        ${ratingHtml}
+        <button type="button" class="content-description-btn" data-name="${safeName}" data-pic="${safePic}" data-details="${safeDetails}" onclick="openDescriptionModalFromData(this)">Description</button>
+        ${item.review ? `<div class="content-review" style="margin-top:8px;"><b>Review:</b> ${escapeHtml(item.review)}</div>` : ''}
+        ${linksHtml}
+      `;
     }
 
-    function toggleIframeSaved(index, embedUrl, itemName) {
-      const containerId = 'iframe-box-saved-' + index;
-      const container = document.getElementById(containerId);
+    function toggleMainIframe(uniqueId, defaultEmbedUrl, rawTitle) {
+      // Close all other active iframes/cards globally
+      document.querySelectorAll('.iframe-container').forEach(box => {
+        if (box.id !== `iframe-box-${uniqueId}`) box.classList.remove('active');
+      });
+      document.querySelectorAll('.multi-links-grid').forEach(grid => {
+        if (grid.id !== `multi-grid-${uniqueId}`) grid.classList.remove('active');
+      });
+      document.querySelectorAll('.iframe-toggle-btn').forEach(b => {
+        if (b.id !== `iframe-btn-${uniqueId}`) {
+          b.classList.remove('active-active-btn');
+          let tName = b.getAttribute('data-raw-title') || b.innerText.replace(/^Close:\s*/, '');
+          b.innerText = tName;
+        }
+      });
+
+      const container = document.getElementById('iframe-box-' + uniqueId);
       const iframe = container.querySelector('iframe');
-      const btn = document.getElementById('iframe-btn-saved-' + index);
-      
+      const btn = document.getElementById('iframe-btn-' + uniqueId);
+      const multiGrid = document.getElementById('multi-grid-' + uniqueId);
+
+      btn.setAttribute('data-raw-title', rawTitle);
+
       if (container.classList.contains('active')) {
+        // CLOSE STATE
         container.classList.remove('active');
-        iframe.src = ""; 
-        btn.innerText = `▶ Watch / Open: ${itemName}`;
+        iframe.src = "";
+        btn.classList.remove('active-active-btn');
+        btn.innerText = rawTitle;
+        if (multiGrid) multiGrid.classList.remove('active');
       } else {
-        iframe.src = embedUrl;
+        // OPEN STATE
+        iframe.src = defaultEmbedUrl;
         container.classList.add('active');
-        btn.innerText = `✕ Close: ${itemName}`;
+        btn.classList.add('active-active-btn');
+        btn.innerText = `Close: ${rawTitle}`;
+        if (multiGrid) multiGrid.classList.add('active');
+
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
-    function toggleIframeSavedStd(index, embedUrl, itemName) {
-      const containerId = 'iframe-box-saved-std-' + index;
-      const container = document.getElementById(containerId);
+    function switchEmbeddedIframe(uniqueId, embedUrl, directUrl, btnEl) {
+      const container = document.getElementById('iframe-box-' + uniqueId);
       const iframe = container.querySelector('iframe');
-      const btn = document.getElementById('iframe-btn-saved-std-' + index);
-      
-      if (container.classList.contains('active')) {
-        container.classList.remove('active');
-        iframe.src = ""; 
-        btn.innerText = `▶ Watch / Open: ${itemName}`;
-      } else {
+      const directAnchor = document.getElementById('direct-link-anchor-' + uniqueId);
+
+      if (embedUrl) {
         iframe.src = embedUrl;
-        container.classList.add('active');
-        btn.innerText = `✕ Close: ${itemName}`;
       }
+      if (directAnchor) {
+        directAnchor.href = directUrl;
+      }
+
+      // Highlight active sub-button
+      const multiGrid = document.getElementById('multi-grid-' + uniqueId);
+      if (multiGrid) {
+        multiGrid.querySelectorAll('.multi-link-action-btn').forEach(b => b.classList.remove('active-active-btn'));
+      }
+      if (btnEl) btnEl.classList.add('active-active-btn');
+    }
+
+    function setPortalMeter(uniqueId, angle, labelText, btnEl) {
+      const needleWrap = document.getElementById(`needle-wrap-${uniqueId}`);
+      const labelEl = document.getElementById(`meter-label-${uniqueId}`);
+      if (needleWrap) {
+        needleWrap.style.setProperty('--target-angle', `${angle}deg`);
+        needleWrap.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+      }
+      if (labelEl) {
+        labelEl.innerText = labelText;
+      }
+
+      const parentBtns = document.getElementById(`portal-meter-btns-${uniqueId}`).querySelectorAll('button');
+      const btnColors = {
+        'boring': '#4a3525',
+        'bad': '#e64d4d',
+        'basic': '#d4ac0d',
+        'better': '#70db90',
+        'best': '#111'
+      };
+
+      parentBtns.forEach(b => {
+        b.style.background = '#684f31';
+        b.style.color = '#fff';
+        b.className = 'btn btn-sm';
+      });
+
+      btnEl.style.background = btnColors[labelText];
+      btnEl.style.color = (labelText === 'best') ? '#00ffff' : '#fff';
+      btnEl.className = 'btn btn-sm';
+    }
+
+    function cycleGraphChartType(uniqueId) {
+      const stateInput = document.getElementById(`chart-state-${uniqueId}`);
+      const typeLbl = document.getElementById(`chart-type-lbl-${uniqueId}`);
+      const valsInput = document.getElementById(`chart-vals-${uniqueId}`);
+      if (!stateInput || !typeLbl || !valsInput) return;
+
+      let next = {'line':'bar', 'bar':'pie', 'pie':'line'}[stateInput.value] || 'line';
+      stateInput.value = next;
+      typeLbl.innerText = next.charAt(0).toUpperCase() + next.slice(1);
+      renderGraphChart(uniqueId, valsInput.value.split(',').map(Number), next);
+    }
+
+    function renderGraphChart(uniqueId, vals, type) {
+      const box = document.getElementById(`chart-canvas-box-${uniqueId}`);
+      if (!box) return;
+      box.innerHTML = "";
+      const catColors = ['#a63a3a', '#d99b00', '#3b7a57', '#a67c52'];
+
+      if (type === 'bar') {
+        vals.forEach((v, i) => {
+          const barWrapper = document.createElement('div');
+          barWrapper.style.cssText = 'display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; width:22%;';
+          barWrapper.innerHTML = `<span style="font-size:10px; font-weight:bold; color:${catColors[i]}; margin-bottom:2px;">${v}</span><div style="height:${Math.max(Math.min((v/100)*100, 100), 8)}%; width:100%; background:${catColors[i]}; border-radius:4px 4px 0 0;"></div>`;
+          box.appendChild(barWrapper);
+        });
+      } else if (type === 'pie') {
+        const total = vals.reduce((a, b) => a + b, 0) || 1;
+        let a1 = (vals[0] / total) * 360, a2 = a1 + (vals[1] / total) * 360, a3 = a2 + (vals[2] / total) * 360;
+        box.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;"><div style="font-size:11px; font-weight:bold; margin-bottom:4px; text-align:center;"><span style="color:#a63a3a">Fun:${vals[0]}</span> | <span style="color:#d99b00">Useful:${vals[1]}</span><br><span style="color:#3b7a57">Beauty:${vals[2]}</span> | <span style="color:#a67c52">Aged:${vals[3]}</span></div><div style="width:80px; height:80px; border-radius:50%; background: conic-gradient(#a63a3a 0deg ${a1}deg, #d99b00 ${a1}deg ${a2}deg, #3b7a57 ${a2}deg ${a3}deg, #a67c52 ${a3}deg 360deg);"></div></div>`;
+      } else {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%'); svg.style.cssText = 'position:absolute; top:0; left:0;';
+        const w = box.clientWidth || 250, h = box.clientHeight || 160;
+        let pts = vals.map((v, i) => `${(i + 0.5) * (w / 4)},${h - (v / 100) * (h - 45) - 20}`).join(' ');
+
+        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        polyline.setAttribute('points', pts); polyline.setAttribute('fill', 'none'); polyline.setAttribute('stroke', 'var(--primary)'); polyline.setAttribute('stroke-width', '3');
+        svg.appendChild(polyline);
+        box.appendChild(svg);
+
+        vals.forEach((v, i) => {
+          let cx = (i + 0.5) * (w / 4), cy = h - (v / 100) * (h - 45) - 20;
+          
+          const labelSpan = document.createElement('span');
+          labelSpan.style.cssText = `position:absolute; left:${cx}px; top:${cy - 18}px; transform:translateX(-50%); font-size:10px; font-weight:bold; color:${catColors[i]};`;
+          labelSpan.innerText = v;
+          box.appendChild(labelSpan);
+
+          const dot = document.createElement('div');
+          dot.style.cssText = `position:absolute; left:${cx - 4.5}px; top:${cy - 4.5}px; width:9px; height:9px; border-radius:50%; background:${catColors[i]}; border:1px solid #fff;`;
+          box.appendChild(dot);
+        });
+      }
+    }
+
+    function toggleSavedDetails(targetKey) {
+      document.querySelectorAll('#container-saved-content .side-scroll-details').forEach(box => box.classList.remove('active'));
+      document.querySelectorAll('#container-saved-content .side-scroll-card').forEach(card => card.classList.remove('active-selected'));
+      const targetBox = document.getElementById(`side-details-saved-${targetKey}`);
+      const targetCard = document.getElementById(`side-card-saved-${targetKey}`);
+      if (targetBox && targetCard) { targetBox.classList.add('active'); targetCard.classList.add('active-selected'); targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
     }
 
     function uploadAndEditList(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          loadDataIntoCreator(data);
-        } catch (err) {
-          alert('Invalid .smdb file format!');
-        }
+        try { loadDataIntoCreator(JSON.parse(e.target.result)); } catch (err) { alert('Invalid .smdb file format!'); }
       };
       reader.readAsText(file);
       event.target.value = '';
@@ -976,48 +1425,29 @@
       document.getElementById('creator-heading').innerText = "Edit Link List";
       document.getElementById('profile-name').value = data.name || "";
       document.getElementById('profile-bio').value = data.bio || "";
-      
+      document.getElementById('tmdb-search-input').value = "";
+      document.getElementById('tmdb-search-results').classList.add('d-none');
       currentListData.profilePic = data.profilePic || "";
       const imgPrev = document.getElementById('creator-pic-preview');
-      if (currentListData.profilePic) {
-        imgPrev.src = currentListData.profilePic;
-        imgPrev.classList.remove('d-none');
-        document.getElementById('creator-pic-placeholder').classList.add('d-none');
-      } else {
-        imgPrev.src = "";
-        imgPrev.classList.add('d-none');
-        document.getElementById('creator-pic-placeholder').classList.remove('d-none');
-      }
-
+      if (currentListData.profilePic) { imgPrev.src = currentListData.profilePic; imgPrev.classList.remove('d-none'); document.getElementById('creator-pic-placeholder').classList.add('d-none'); }
+      
       const container = document.getElementById('links-container');
       container.innerHTML = "";
-
-      if (data.items && data.items.length > 0) {
-        data.items.forEach(item => {
-          addLinkRow(item);
-        });
-      } else {
-        addLinkRow();
-      }
-
+      if (data.items && data.items.length > 0) data.items.forEach(item => addLinkRow(item)); else addLinkRow();
       switchView('view-creator');
     }
 
     function uploadAndOpenList(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          const data = JSON.parse(e.target.result);
-          activeLoadedData = data;
+          activeLoadedData = JSON.parse(e.target.result);
           currentViewerLayout = "standard";
           document.getElementById('viewer-type-select').value = "standard";
-          renderViewerPortal(data);
-        } catch (err) {
-          alert('Invalid .smdb file format!');
-        }
+          renderViewerPortal(activeLoadedData);
+        } catch (err) { alert('Invalid .smdb file format!'); }
       };
       reader.readAsText(file);
       event.target.value = '';
@@ -1026,13 +1456,10 @@
     function renderCategorySideScroll(catKey, data) {
       const scrollContainer = document.getElementById(`container-${catKey}-scroll`);
       const detailsContainer = document.getElementById(`container-${catKey}-details`);
+      if (!scrollContainer || !detailsContainer) return;
 
-      scrollContainer.innerHTML = "";
-      detailsContainer.innerHTML = "";
-
-      if (!data.items || data.items.length === 0) {
-        return;
-      }
+      scrollContainer.innerHTML = ""; detailsContainer.innerHTML = "";
+      if (!data.items || data.items.length === 0) { scrollContainer.innerHTML = `<p style="text-align:center; color: var(--text-muted); font-size:13px; padding:10px;">No items in this category.</p>`; return; }
 
       const scrollWrapper = document.createElement('div');
       scrollWrapper.className = 'side-scroll-container';
@@ -1042,21 +1469,13 @@
         profileCard.className = 'side-scroll-card';
         profileCard.id = `side-card-${catKey}-profile`;
         profileCard.onclick = () => toggleCategorySideScrollDetails(catKey, 'profile');
-        
-        let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
-        profileCard.innerHTML = `
-          <div class="side-scroll-thumb-box">${pThumbContent}</div>
-          <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
-        `;
+        profileCard.innerHTML = `<div class="side-scroll-thumb-box">${data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`}</div><div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>`;
         scrollWrapper.appendChild(profileCard);
 
         const profileDetailsBox = document.createElement('div');
         profileDetailsBox.className = 'side-scroll-details';
         profileDetailsBox.id = `side-details-${catKey}-profile`;
-        profileDetailsBox.innerHTML = `
-          <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3>
-          <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
-        `;
+        profileDetailsBox.innerHTML = `<h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Profile")}</h3><div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>`;
         detailsContainer.appendChild(profileDetailsBox);
       }
 
@@ -1065,86 +1484,24 @@
         card.className = 'side-scroll-card';
         card.id = `side-card-${catKey}-${index}`;
         card.onclick = () => toggleCategorySideScrollDetails(catKey, index);
-
-        let thumbContent = '';
-        if (item.pic) {
-          thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
-        } else {
-          thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
-        }
-
-        card.innerHTML = `
-          <div class="side-scroll-thumb-box">
-            ${thumbContent}
-          </div>
-          <div class="side-scroll-title">${escapeHtml(item.name)}</div>
-        `;
+        card.innerHTML = `<div class="side-scroll-thumb-box">${item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`}</div><div class="side-scroll-title">${escapeHtml(item.name)}</div>`;
         scrollWrapper.appendChild(card);
 
         const detailsBox = document.createElement('div');
         detailsBox.className = 'side-scroll-details';
         detailsBox.id = `side-details-${catKey}-${index}`;
-
-        let ratingHtml = '';
-        if (item.rating) {
-          let rVal = parseInt(item.rating) || 0;
-          let starString = '';
-          for (let s = 1; s <= 10; s++) {
-            starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-          }
-          ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-        }
-
-        let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-        
-        let actionHtml = '';
-        if (item.link && item.link.trim() !== '') {
-          const embedUrl = convertToEmbedUrl(item.link);
-          if (embedUrl) {
-            actionHtml = `
-              <button id="iframe-btn-${catKey}-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${catKey}-${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-              <div id="iframe-box-${catKey}-${index}" class="iframe-container">
-                <div class="video-wrapper">
-                  <iframe src="" frameborder="0" allowfullscreen></iframe>
-                </div>
-                <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-              </div>
-            `;
-          } else {
-            actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-          }
-        }
-
-        detailsBox.innerHTML = `
-          <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
-          ${ratingHtml}
-          ${reviewHtml}
-          ${actionHtml}
-        `;
+        detailsBox.innerHTML = renderItemRatingViewer(item, `${catKey}-${index}`);
         detailsContainer.appendChild(detailsBox);
       });
-
       scrollContainer.appendChild(scrollWrapper);
     }
 
     function toggleCategorySideScrollDetails(catKey, targetIndex) {
-      const detailsContainer = document.getElementById(`container-${catKey}-details`);
-      const scrollContainer = document.getElementById(`container-${catKey}-scroll`);
-
-      const detailsBoxes = detailsContainer.querySelectorAll('.side-scroll-details');
-      const sideCards = scrollContainer.querySelectorAll('.side-scroll-card');
-
-      detailsBoxes.forEach(box => box.classList.remove('active'));
-      sideCards.forEach(card => card.classList.remove('active-selected'));
-
+      document.querySelectorAll(`#container-${catKey}-details .side-scroll-details`).forEach(box => box.classList.remove('active'));
+      document.querySelectorAll(`#container-${catKey}-scroll .side-scroll-card`).forEach(card => card.classList.remove('active-selected'));
       const targetBox = document.getElementById(`side-details-${catKey}-${targetIndex}`);
       const targetCard = document.getElementById(`side-card-${catKey}-${targetIndex}`);
-
-      if (targetBox && targetCard) {
-        targetBox.classList.add('active');
-        targetCard.classList.add('active-selected');
-        targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+      if (targetBox && targetCard) { targetBox.classList.add('active'); targetCard.classList.add('active-selected'); targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
     }
 
     function changeViewerLayout(newType) {
@@ -1156,16 +1513,8 @@
     function renderViewerPortal(data) {
       const headerArea = document.getElementById('viewer-header-area');
       headerArea.innerHTML = "";
-
       if (currentViewerLayout !== 'side-scroll') {
-        let profilePicHtml = data.profilePic ? `<img id="view-profile-img" class="view-profile-pic" src="${data.profilePic}" alt="Profile" onclick="openProfilePopup()" title="Click to view profile picture">` : '';
-        headerArea.innerHTML = `
-          <div id="viewer-header" style="text-align: center; margin-bottom: 25px;">
-            ${profilePicHtml}
-            <div id="view-name" class="view-name">${escapeHtml(data.name || "Untitled Profile")}</div>
-            <div id="view-bio" class="view-bio">${escapeHtml(data.bio || "")}</div>
-          </div>
-        `;
+        headerArea.innerHTML = `<div id="viewer-header" style="text-align: center; margin-bottom: 25px;">${data.profilePic ? `<img id="view-profile-img" class="view-profile-pic" src="${data.profilePic}" alt="Profile" onclick="openProfilePopup()">` : ''}<div class="view-name">${escapeHtml(data.name || "Untitled Profile")}</div><div class="view-bio">${escapeHtml(data.bio || "")}</div></div>`;
       }
 
       const container = document.getElementById('viewer-links-container');
@@ -1175,17 +1524,11 @@
         if (currentViewerLayout === 'side-scroll') {
           const scrollWrapper = document.createElement('div');
           scrollWrapper.className = 'side-scroll-container';
-
           const profileCard = document.createElement('div');
           profileCard.className = 'side-scroll-card';
           profileCard.id = 'side-card-profile';
           profileCard.onclick = () => toggleSideScrollDetails('profile');
-          
-          let pThumbContent = data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`;
-          profileCard.innerHTML = `
-            <div class="side-scroll-thumb-box">${pThumbContent}</div>
-            <div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>
-          `;
+          profileCard.innerHTML = `<div class="side-scroll-thumb-box">${data.profilePic ? `<img src="${data.profilePic}" alt="Profile">` : `<div style="font-size: 13px;">No Pic</div>`}</div><div class="side-scroll-title">${escapeHtml(data.name || "Profile")}</div>`;
           scrollWrapper.appendChild(profileCard);
 
           data.items.forEach((item, index) => {
@@ -1193,20 +1536,7 @@
             card.className = 'side-scroll-card';
             card.id = `side-card-${index}`;
             card.onclick = () => toggleSideScrollDetails(index);
-
-            let thumbContent = '';
-            if (item.pic) {
-              thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
-            } else {
-              thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
-            }
-
-            card.innerHTML = `
-              <div class="side-scroll-thumb-box">
-                ${thumbContent}
-              </div>
-              <div class="side-scroll-title">${escapeHtml(item.name)}</div>
-            `;
+            card.innerHTML = `<div class="side-scroll-thumb-box">${item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`}</div><div class="side-scroll-title">${escapeHtml(item.name)}</div>`;
             scrollWrapper.appendChild(card);
           });
           container.appendChild(scrollWrapper);
@@ -1214,130 +1544,40 @@
           const profileDetailsBox = document.createElement('div');
           profileDetailsBox.className = 'side-scroll-details';
           profileDetailsBox.id = 'side-details-profile';
-          profileDetailsBox.innerHTML = `
-            <h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Untitled Profile")}</h3>
-            <div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>
-          `;
+          profileDetailsBox.innerHTML = `<h3 style="margin-bottom: 5px;">${escapeHtml(data.name || "Untitled Profile")}</h3><div class="content-review">${escapeHtml(data.bio || "No bio available.")}</div>`;
           container.appendChild(profileDetailsBox);
 
           data.items.forEach((item, index) => {
             const detailsBox = document.createElement('div');
             detailsBox.className = 'side-scroll-details';
             detailsBox.id = `side-details-${index}`;
-
-            let ratingHtml = '';
-            if (item.rating) {
-              let rVal = parseInt(item.rating) || 0;
-              let starString = '';
-              for (let s = 1; s <= 10; s++) {
-                starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-              }
-              ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-            }
-
-            let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-            
-            let actionHtml = '';
-            if (item.link && item.link.trim() !== '') {
-              const embedUrl = convertToEmbedUrl(item.link);
-              if (embedUrl) {
-                actionHtml = `
-                  <button id="iframe-btn-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-                  <div id="iframe-box-${index}" class="iframe-container">
-                    <div class="video-wrapper">
-                      <iframe src="" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                    <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-                  </div>
-                `;
-              } else {
-                actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-              }
-            }
-
-            detailsBox.innerHTML = `
-              <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
-              ${ratingHtml}
-              ${reviewHtml}
-              ${actionHtml}
-            `;
+            detailsBox.innerHTML = renderItemRatingViewer(item, 'portal-' + index);
             container.appendChild(detailsBox);
           });
-
         } else if (currentViewerLayout === 'grid') {
           const gridWrapper = document.createElement('div');
           gridWrapper.className = 'grid-container';
-
           data.items.forEach((item, index) => {
             const gridCard = document.createElement('div');
             gridCard.className = 'grid-card';
             gridCard.onclick = () => openGridModal(item, index);
-
-            let thumbContent = '';
-            if (item.pic) {
-              thumbContent = `<img src="${item.pic}" alt="${escapeHtml(item.name)}">`;
-            } else {
-              thumbContent = `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`;
-            }
-
-            gridCard.innerHTML = `
-              <div class="grid-thumb-box">
-                ${thumbContent}
-              </div>
-              <div class="grid-title">${escapeHtml(item.name)}</div>
-            `;
+            gridCard.innerHTML = `<div class="grid-thumb-box">${item.pic ? `<img src="${item.pic}" alt="${escapeHtml(item.name)}">` : `<div style="font-size: 13px; line-height: 1.3; padding: 5px;">${escapeHtml(item.name)}</div>`}</div><div class="grid-title">${escapeHtml(item.name)}</div>`;
             gridWrapper.appendChild(gridCard);
           });
-
           container.appendChild(gridWrapper);
-
         } else {
           data.items.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'link-card';
 
-            let thumbHtml = item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : '';
-            
-            let ratingHtml = '';
-            if (item.rating) {
-              let rVal = parseInt(item.rating) || 0;
-              let starString = '';
-              for (let s = 1; s <= 10; s++) {
-                starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-              }
-              ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-            }
-
-            let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-            
-            let actionHtml = '';
-            if (item.link && item.link.trim() !== '') {
-              const embedUrl = convertToEmbedUrl(item.link);
-              if (embedUrl) {
-                actionHtml = `
-                  <button id="iframe-btn-${index}" class="iframe-toggle-btn" onclick="toggleIframe('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-                  <div id="iframe-box-${index}" class="iframe-container">
-                    <div class="video-wrapper">
-                      <iframe src="" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                    <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-                  </div>
-                `;
-              } else {
-                actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-              }
-            }
-
             card.innerHTML = `
               <div class="link-card-inner-flex">
-                ${thumbHtml}
+                ${item.pic ? `<img class="link-card-thumb" src="${item.pic}" alt="Thumbnail">` : ''}
                 <div class="link-card-content">
                   <h3 style="margin-bottom: 5px;">${escapeHtml(item.name)}</h3>
-                  ${ratingHtml}
-                  ${reviewHtml}
                 </div>
               </div>
-              ${actionHtml}
+              ${renderItemRatingViewer(item, 'portal-std-' + index)}
             `;
             container.appendChild(card);
           });
@@ -1345,155 +1585,62 @@
       } else {
         container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No content available in this list.</p>`;
       }
-
       switchView('view-portal');
     }
 
     function toggleSideScrollDetails(targetKey) {
-      const detailsBoxes = document.querySelectorAll('#viewer-links-container .side-scroll-details');
-      const sideCards = document.querySelectorAll('#viewer-links-container .side-scroll-card');
-
-      detailsBoxes.forEach(box => box.classList.remove('active'));
-      sideCards.forEach(card => card.classList.remove('active-selected'));
-
+      document.querySelectorAll('#viewer-links-container .side-scroll-details').forEach(box => box.classList.remove('active'));
+      document.querySelectorAll('#viewer-links-container .side-scroll-card').forEach(card => card.classList.remove('active-selected'));
       const targetBox = document.getElementById(`side-details-${targetKey}`);
       const targetCard = document.getElementById(`side-card-${targetKey}`);
-
       if (targetBox && targetCard) {
         targetBox.classList.toggle('active');
         targetCard.classList.toggle('active-selected');
-        
-        if (targetBox.classList.contains('active')) {
-          targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
     function openGridModal(item, index) {
-      const modalBody = document.getElementById('grid-modal-body');
-      
-      let picHtml = item.pic ? `<img class="modal-content-img" src="${item.pic}" alt="${escapeHtml(item.name)}">` : '';
-
-      let ratingHtml = '';
-      if (item.rating) {
-        let rVal = parseInt(item.rating) || 0;
-        let starString = '';
-        for (let s = 1; s <= 10; s++) {
-          starString += `<span class="${s <= rVal ? 'rated' : ''}" style="color: ${s <= rVal ? '#ffbc00' : '#ccc'};">★</span>`;
-        }
-        ratingHtml = `<div class="content-rating">Rating: ${starString} <span style="font-size:12px; margin-left:4px; color:var(--text);">(${item.rating}/10)</span></div>`;
-      }
-
-      let reviewHtml = item.review ? `<div class="content-review">${escapeHtml(item.review)}</div>` : '';
-
-      let actionHtml = '';
-      if (item.link && item.link.trim() !== '') {
-        const embedUrl = convertToEmbedUrl(item.link);
-        if (embedUrl) {
-          actionHtml = `
-            <button id="iframe-btn-modal-${index}" class="iframe-toggle-btn" onclick="toggleIframeModal('${index}', '${embedUrl}', '${escapeHtml(item.name)}')">▶ Watch / Open: ${escapeHtml(item.name)}</button>
-            <div id="iframe-box-modal-${index}" class="iframe-container">
-              <div class="video-wrapper">
-                <iframe src="" frameborder="0" allowfullscreen></iframe>
-              </div>
-              <a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank">🔗 Open Direct Link</a>
-            </div>
-          `;
-        } else {
-          actionHtml = `<a class="direct-link-btn" href="${escapeHtml(item.link)}" target="_blank" style="margin-top: 15px;">🔗 Open Link: ${escapeHtml(item.name)}</a>`;
-        }
-      }
-
-      modalBody.innerHTML = `
+      document.getElementById('grid-modal-body').innerHTML = `
         <h2 style="margin-bottom: 12px; font-size: 20px;">${escapeHtml(item.name)}</h2>
-        ${picHtml}
-        ${ratingHtml}
-        ${reviewHtml}
-        ${actionHtml}
+        ${item.pic ? `<img class="modal-content-img" src="${item.pic}" alt="${escapeHtml(item.name)}">` : ''}
+        ${renderItemRatingViewer(item, 'grid-modal-' + index)}
       `;
-
       document.getElementById('grid-item-modal').classList.add('active');
     }
 
-    function closeGridModal() {
-      document.getElementById('grid-item-modal').classList.remove('active');
-    }
-
-    function toggleIframeModal(index, embedUrl, itemName) {
-      const containerId = 'iframe-box-modal-' + index;
-      const container = document.getElementById(containerId);
-      const iframe = container.querySelector('iframe');
-      const btn = document.getElementById('iframe-btn-modal-' + index);
-      
-      if (container.classList.contains('active')) {
-        container.classList.remove('active');
-        iframe.src = ""; 
-        btn.innerText = `▶ Watch / Open: ${itemName}`;
-      } else {
-        iframe.src = embedUrl;
-        container.classList.add('active');
-        btn.innerText = `✕ Close: ${itemName}`;
-      }
-    }
+    function closeGridModal() { document.getElementById('grid-item-modal').classList.remove('active'); }
 
     function escapeHtml(text) {
       if (!text) return '';
       return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    function toggleIframe(index, embedUrl, itemName) {
-      const containerId = 'iframe-box-' + index;
-      const container = document.getElementById(containerId);
-      const iframe = container.querySelector('iframe');
-      const btn = document.getElementById('iframe-btn-' + index);
-      
-      if (container.classList.contains('active')) {
-        container.classList.remove('active');
-        iframe.src = ""; 
-        btn.innerText = `▶ Watch / Open: ${itemName}`;
-      } else {
-        iframe.src = embedUrl;
-        container.classList.add('active');
-        btn.innerText = `✕ Close: ${itemName}`;
-      }
-    }
-
     function openProfilePopup() {
-      const modal = document.getElementById('profile-modal');
       const img = document.getElementById('view-profile-img');
       if (img && img.src && !img.classList.contains('d-none')) {
-        modal.classList.add('active');
+        document.getElementById('profile-modal').classList.add('active');
         document.getElementById('modal-profile-img').src = img.src;
       }
     }
 
-    function closeProfilePopup() {
-      document.getElementById('profile-modal').classList.remove('active');
-    }
+    function closeProfilePopup() { document.getElementById('profile-modal').classList.remove('active'); }
 
     function convertToEmbedUrl(url) {
       if (!url) return null;
-      
-      // YouTube Embed Support
       let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-      if (match && match[1]) {
-        return `https://www.youtube.com/embed/${match[1]}`;
-      }
-
-      // Vimeo Embed Support
+      if (match && match[1]) return `https://www.youtube.com/embed/${match[1]}`;
       match = url.match(/(?:vimeo\.com\/)([0-9]+)/);
-      if (match && match[1]) {
-        return `https://player.vimeo.com/video/${match[1]}`;
-      }
-
-      // OK.ru Embed Support (e.g., https://ok.ru/video/2112068520475)
+      if (match && match[1]) return `https://player.vimeo.com/video/${match[1]}`;
       match = url.match(/(?:ok\.ru\/video\/)([0-9]+)/);
-      if (match && match[1]) {
-        return `https://ok.ru/videoembed/${match[1]}`;
-      }
-
+      if (match && match[1]) return `https://ok.ru/videoembed/${match[1]}`;
       return null;
     }
+
+    function openDescriptionModalFromData(btn) {
+      openDescriptionModal(btn.getAttribute('data-name'), btn.getAttribute('data-pic'), btn.getAttribute('data-details'));
+    }
   </script>
+
 </body>
 </html>

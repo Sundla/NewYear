@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Flipper</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.min.js"></script>
+    <!-- Page-Flip Library -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.13.216/pdf.worker.min.js';
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #12121c 0%, #09090f 100%);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #book-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px;
+            width: 100%;
+            height: 100%;
+            transform-origin: center center;
+            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            touch-action: none;
+        }
+        .book-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .page-image {
+            width: 100%;
+            height: 100% !important;
+            object-fit: contain;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body class="h-screen text-gray-100 flex flex-col justify-between overflow-hidden">
+
+    <!-- Top Bar -->
+    <header id="top-bar" class="w-full py-2 px-4 bg-gray-900/80 backdrop-blur border-b border-gray-800 flex justify-between items-center shadow-md z-20 shrink-0">
+        <div class="flex items-center space-x-3">
+            <label for="pdf-upload" class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition shadow-md flex items-center space-x-2 text-xs">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Load PDF</span>
+            </label>
+            <input id="pdf-upload" type="file" accept="application/pdf" class="hidden">
+            
+            <!-- Books Button -->
+            <button id="books-btn" class="bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium px-3 py-1.5 rounded-lg transition shadow-md flex items-center space-x-2 text-xs border border-gray-700">
+                <i class="fa-solid fa-book"></i>
+                <span>Books</span>
+            </button>
+        </div>
+        
+        <!-- Zoom Controls -->
+        <div class="flex items-center space-x-2 bg-gray-800/80 border border-gray-700 px-2 py-1 rounded-lg">
+            <button id="zoom-out-btn" class="text-gray-300 hover:text-white w-6 h-6 flex items-center justify-center rounded transition hover:bg-gray-700 text-xs" title="Zoom Out">
+                <i class="fa-solid fa-minus"></i>
+            </button>
+            <span id="zoom-level-indicator" class="text-xs text-gray-300 font-medium min-w-[40px] text-center">100%</span>
+            <button id="zoom-in-btn" class="text-gray-300 hover:text-white w-6 h-6 flex items-center justify-center rounded transition hover:bg-gray-700 text-xs" title="Zoom In">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+
+        <div id="render-status" class="text-xs text-indigo-400 font-medium"></div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow flex flex-col items-center justify-center px-2 py-3 relative overflow-hidden w-full h-full">
+        
+        <!-- Book Display Area -->
+        <div id="book-wrapper" class="flex flex-col items-center justify-between w-full h-[calc(100vh-60px)] relative overflow-hidden py-2">
+            
+            <!-- Default Placeholder State before a PDF is loaded -->
+            <div id="placeholder-message" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gray-900/30 backdrop-blur-sm z-10">
+                <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <h2 class="text-base font-semibold mb-1">No PDF Loaded</h2>
+                <p class="text-xs text-gray-400">"PDF Book View"</p>
+            </div>
+
+            <div id="book-container" class="book-shadow rounded-lg overflow-hidden my-auto opacity-0 transition-opacity duration-300">
+                <div id="book"></div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div id="nav-controls" class="flex items-center space-x-3 bg-gray-900/90 border border-gray-800 px-4 py-2 rounded-xl shadow-xl backdrop-blur z-30 shrink-0 mt-2 opacity-50 pointer-events-none">
+                <button id="prev-btn" class="bg-gray-800 hover:bg-gray-700 text-white w-8 h-8 rounded-lg transition flex items-center justify-center text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <span id="page-info" class="text-xs font-medium text-gray-300 min-w-[70px] text-center">0 / 0</span>
+                <button id="next-btn" class="bg-gray-800 hover:bg-gray-700 text-white w-8 h-8 rounded-lg transition flex items-center justify-center text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Books Modal -->
+    <div id="books-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between py-3 px-4 border-b border-gray-800">
+                <h3 class="text-sm font-semibold text-gray-200">Select a Book</h3>
+                <button id="close-books-modal" class="text-gray-400 hover:text-white w-7 h-7 flex items-center justify-center rounded-lg transition hover:bg-gray-800 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 flex flex-col space-y-2">
+                <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book1.pdf">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">1</span>
+                    <span>Fire Punch</span>
+                </button>
+                <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book2.pdf">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">2</span>
+                    <span>Vagabond</span>
+                </button>
+                <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book3.pdf">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">3</span>
+                    <span>Stanley</span>
+                </button>
+                <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book4.pdf">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">4</span>
+                    <span>Berserk</span>
+                </button>
+                <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book5.pdf">
+                    <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">5</span>
+                    <span>Superman</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let pageFlip = null;
+        let pdfDoc = null;
+        let totalPages = 0;
+        let pageImages = [];
+        let loadCounter = 0; // Tracks unique loading sessions to avoid race conditions
+
+        // Zoom and Pan state variables
+        let currentZoom = 1;
+        const minZoom = 1;
+        const maxZoom = 4;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let initialPinchDistance = null;
+
+        const pdfUpload = document.getElementById('pdf-upload');
+        const placeholderMessage = document.getElementById('placeholder-message');
+        const bookContainer = document.getElementById('book-container');
+        const navControls = document.getElementById('nav-controls');
+        const renderStatus = document.getElementById('render-status');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageInfo = document.getElementById('page-info');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomLevelIndicator = document.getElementById('zoom-level-indicator');
+        const bookWrapper = document.getElementById('book-wrapper');
+        
+        // Modal elements
+        const booksBtn = document.getElementById('books-btn');
+        const booksModal = document.getElementById('books-modal');
+        const closeBooksModal = document.getElementById('close-books-modal');
+        const presetBookBtns = document.querySelectorAll('.preset-book-btn');
+
+        booksBtn.addEventListener('click', () => {
+            booksModal.classList.remove('hidden');
+        });
+
+        closeBooksModal.addEventListener('click', () => {
+            booksModal.classList.add('hidden');
+        });
+
+        booksModal.addEventListener('click', (e) => {
+            if (e.target === booksModal) {
+                booksModal.classList.add('hidden');
+            }
+        });
+
+        presetBookBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const filename = btn.getAttribute('data-file');
+                booksModal.classList.add('hidden');
+                const bookNum = filename.replace('book', '').replace('.pdf', '');
+                window.history.pushState({}, '', `?book=${bookNum}`);
+                await loadBookFromUrl(filename);
+            });
+        });
+
+        function updateTransform() {
+            bookContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+            zoomLevelIndicator.innerText = `${Math.round(currentZoom * 100)}%`;
+            
+            if (pageFlip) {
+                if (currentZoom > 1) {
+                    bookContainer.style.pointerEvents = 'none';
+                } else {
+                    bookContainer.style.pointerEvents = 'auto';
+                }
+            }
+        }
+
+        function setZoom(newZoom) {
+            currentZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+            if (currentZoom === 1) {
+                panX = 0;
+                panY = 0;
+            }
+            updateTransform();
+        }
+
+        zoomInBtn.addEventListener('click', () => {
+            setZoom(currentZoom + 0.3);
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            setZoom(currentZoom - 0.3);
+        });
+
+        // Mouse Drag Pan handling
+        bookWrapper.addEventListener('mousedown', (e) => {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.clientX - panX;
+                startY = e.clientY - panY;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging || currentZoom === 1) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Touch Pinch and Pan handling
+        bookWrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            } else if (e.touches.length === 1 && currentZoom > 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - panX;
+                startY = e.touches[0].clientY - panY;
+            }
+        }, { passive: true });
+
+        bookWrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialPinchDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const factor = currentDistance / initialPinchDistance;
+                setZoom(currentZoom * factor);
+                initialPinchDistance = currentDistance;
+            } else if (e.touches.length === 1 && isDragging && currentZoom > 1) {
+                panX = e.touches[0].clientX - startX;
+                panY = e.touches[0].clientY - startY;
+                updateTransform();
+            }
+        }, { passive: true });
+
+        bookWrapper.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
+        });
+
+        function calculateBookDimensions() {
+            const mainWidth = window.innerWidth * 0.95;
+            const mainHeight = (window.innerHeight - 120);
+
+            let targetHeight = Math.min(mainHeight, 750);
+            let targetWidth = targetHeight * 0.75;
+
+            if (mainWidth < targetWidth * 2) {
+                targetWidth = mainWidth / 2;
+                targetHeight = targetWidth * 1.33;
+            }
+
+            return {
+                width: Math.floor(targetWidth),
+                height: Math.floor(targetHeight)
+            };
+        }
+
+        async function handleFile(file) {
+            if (!file || file.type !== 'application/pdf') {
+                alert('Please select a valid PDF file.');
+                return;
+            }
+
+            const currentSession = ++loadCounter;
+            resetReaderState();
+            setZoom(1);
+            renderStatus.innerText = 'Loading...';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                if (currentSession !== loadCounter) return;
+                await loadPdfFromArrayBuffer(arrayBuffer, currentSession);
+            } catch (error) {
+                console.error(error);
+                if (currentSession === loadCounter) {
+                    alert('Error loading PDF document.');
+                    renderStatus.innerText = '';
+                }
+            }
+        }
+
+        async function loadBookFromUrl(url) {
+            const currentSession = ++loadCounter;
+            resetReaderState();
+            setZoom(1);
+            renderStatus.innerText = 'Loading...';
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const arrayBuffer = await response.arrayBuffer();
+                if (currentSession !== loadCounter) return;
+                await loadPdfFromArrayBuffer(arrayBuffer, currentSession);
+            } catch (error) {
+                console.error(error);
+                if (currentSession === loadCounter) {
+                    alert(`Error loading ${url}. Make sure the file exists.`);
+                    renderStatus.innerText = '';
+                }
+            }
+        }
+
+        function resetReaderState() {
+            if (pageFlip) {
+                try {
+                    pageFlip.destroy();
+                } catch(e) {}
+                pageFlip = null;
+            }
+            pdfDoc = null;
+            totalPages = 0;
+            pageImages = [];
+            
+            const bookContainerElement = document.getElementById('book-container');
+            if (bookContainerElement) {
+                bookContainerElement.innerHTML = '<div id="book"></div>';
+            }
+            
+            bookContainer.classList.add('opacity-0');
+            placeholderMessage.classList.remove('hidden');
+            navControls.classList.add('opacity-50', 'pointer-events-none');
+            renderStatus.innerText = '';
+        }
+
+        async function loadPdfFromArrayBuffer(arrayBuffer, sessionID) {
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            pdfDoc = await loadingTask.promise;
+            
+            if (sessionID !== loadCounter) return;
+
+            totalPages = pdfDoc.numPages;
+            pageImages = new Array(totalPages).fill(null);
+
+            const bookContainerElement = document.getElementById('book-container');
+            bookContainerElement.innerHTML = '<div id="book"></div>';
+            const bookElement = document.getElementById('book');
+
+            for (let i = 0; i < totalPages; i++) {
+                const img = document.createElement('img');
+                img.className = 'page-image shadow-inner';
+                img.alt = `Page ${i + 1}`;
+                img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="100%" height="100%" fill="%23f9fafb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="16">Loading...</text></svg>';
+                bookElement.appendChild(img);
+            }
+
+            const dims = calculateBookDimensions();
+
+            pageFlip = new St.PageFlip(bookElement, {
+                width: dims.width,
+                height: dims.height,
+                size: "stretch",
+                minWidth: 200,
+                maxWidth: 1200,
+                minHeight: 300,
+                maxHeight: 1200,
+                maxShadowOpacity: 0.5,
+                showCover: true,
+                mobileScrollSupport: false,
+                flippingTime: 800
+            });
+
+            pageFlip.loadFromHTML(bookElement.querySelectorAll('.page-image'));
+            pageFlip.turnToPage(0);
+
+            pageFlip.on('flip', (e) => {
+                if (sessionID !== loadCounter) return;
+                setZoom(1);
+                updatePagination(e.data);
+                ensurePageLoaded(e.data, sessionID);
+            });
+
+            updatePagination(0);
+
+            placeholderMessage.classList.add('hidden');
+            bookContainer.classList.remove('opacity-0');
+            navControls.classList.remove('opacity-50', 'pointer-events-none');
+
+            await renderPage(1, sessionID);
+            if (totalPages > 1) await renderPage(2, sessionID);
+
+            backgroundRenderAll(sessionID);
+        }
+
+        pdfUpload.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+                e.target.value = ''; // Reset file input so same file can be chosen again if needed
+            }
+        });
+
+        async function renderPage(pageNum, sessionID) {
+            if (sessionID !== loadCounter || !pdfDoc) return;
+            if (pageImages[pageNum - 1]) return pageImages[pageNum - 1];
+
+            try {
+                const page = await pdfDoc.getPage(pageNum);
+                if (sessionID !== loadCounter) return;
+
+                const viewport = page.getViewport({ scale: 2.5 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                if (sessionID !== loadCounter) return;
+
+                const imageUrl = canvas.toDataURL('image/jpeg', 0.92);
+                pageImages[pageNum - 1] = imageUrl;
+
+                const imgElements = document.querySelectorAll('.page-image');
+                if (imgElements[pageNum - 1]) {
+                    imgElements[pageNum - 1].src = imageUrl;
+                }
+
+                return imageUrl;
+            } catch (err) {
+                console.error(`Error rendering page ${pageNum}:`, err);
+            }
+        }
+
+        async function ensurePageLoaded(currentIndex, sessionID) {
+            const pagesToLoad = [currentIndex + 1, currentIndex, currentIndex + 2].filter(p => p > 0 && p <= totalPages);
+            for (let p of pagesToLoad) {
+                if (sessionID !== loadCounter) return;
+                if (!pageImages[p - 1]) {
+                    await renderPage(p, sessionID);
+                }
+            }
+        }
+
+        async function backgroundRenderAll(sessionID) {
+            const batchSize = 3;
+            for (let i = 1; i <= totalPages; i += batchSize) {
+                if (sessionID !== loadCounter || !pdfDoc) break;
+                const batch = [];
+                for (let j = i; j < Math.min(i + batchSize, totalPages + 1); j++) {
+                    if (!pageImages[j - 1]) {
+                        batch.push(renderPage(j, sessionID));
+                    }
+                }
+                await Promise.all(batch);
+                if (sessionID !== loadCounter) break;
+                renderStatus.innerText = `${Math.min(i + batchSize - 1, totalPages)}/${totalPages}`;
+            }
+
+            if (sessionID === loadCounter && pdfDoc) {
+                renderStatus.innerText = `Done (${totalPages}/${totalPages})`;
+                setTimeout(() => {
+                    if (sessionID === loadCounter && renderStatus.innerText.includes('Done')) {
+                        renderStatus.innerText = '';
+                    }
+                }, 3000);
+            }
+        }
+
+        function updatePagination(currentIndex) {
+            if (!pageFlip) return;
+            pageInfo.innerText = `${currentIndex + 1} / ${totalPages}`;
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= totalPages - 1;
+        }
+
+        prevBtn.addEventListener('click', () => { 
+            if (pageFlip) {
+                setZoom(1);
+                pageFlip.flipPrev(); 
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => { 
+            if (pageFlip) {
+                setZoom(1);
+                pageFlip.flipNext(); 
+            }
+        });
+
+        // Check URL parameters on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookParam = urlParams.get('book');
+            if (bookParam) {
+                if (/^\d+$/.test(bookParam)) {
+                    loadBookFromUrl(`book${bookParam}.pdf`);
+                } else {
+                    loadBookFromUrl(bookParam.endsWith('.pdf') ? bookParam : `${bookParam}.pdf`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
