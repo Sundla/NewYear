@@ -54,6 +54,10 @@
     .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .option-row input[type="text"] { margin-bottom: 0; flex: 1; }
 
+    /* Copy Paste Container */
+    .copy-paste-container { background: #e8f0fe; border: 1px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .copy-paste-container textarea { font-family: monospace; min-height: 180px; }
+
     /* Image Preview & Controls */
     .img-upload-container { margin-bottom: 12px; }
     .img-preview-box { max-width: 100%; max-height: 250px; margin-top: 8px; border-radius: 4px; border: 1px solid var(--border); display: block; object-fit: contain; }
@@ -155,15 +159,36 @@
     <label><b>Test Title:</b></label>
     <input type="text" id="test-title" placeholder="e.g., General Knowledge Practice Test">
     
-    <label><b>Time Limit (Minutes):</b></label>
-    <input type="number" id="test-time" value="10" min="1" style="width: 150px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <div>
+        <label style="display: block; margin-bottom: 4px;"><b>Time Limit (Minutes):</b></label>
+        <input type="number" id="test-time" value="10" min="1" style="width: 150px; margin-bottom: 0;">
+      </div>
+      <!-- Mode toggle button placed right next to time limit input -->
+      <button class="btn" id="mode-toggle-btn" onclick="toggleEditorMode()" style="margin-bottom: 0; align-self: flex-end;">Copy Paste</button>
+    </div>
 
     <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
 
-    <h3>Questions</h3>
-    <div id="questions-container"></div>
+    <!-- MANUAL MODE WRAPPER -->
+    <div id="manual-mode-section">
+      <h3>Questions</h3>
+      <div id="questions-container"></div>
+      <button class="btn btn-secondary" onclick="addQuestionBuilder()">+ Add Question</button>
+    </div>
 
-    <button class="btn btn-secondary" onclick="addQuestionBuilder()">+ Add Question</button>
+    <!-- COPY PASTE MODE WRAPPER -->
+    <div id="copy-paste-section" class="copy-paste-container d-none">
+      <label><b>Write or Copy Paste:</b></label>
+      <p style="font-size: 13px; color: #5f6368; margin-bottom: 8px;">
+        add question options & answer inside tags (case-insensitive, e.g., <code>&lt;Q&gt;...&lt;/Q&gt;</code>, <code>&lt;op&gt;...&lt;/op&gt;</code>, <code>&lt;A&gt;...&lt;/A&gt;</code>):
+      </p>
+      <textarea id="copy-paste-textarea" placeholder="<Q> What is 2 + 2?
+  <op> 3 </op>
+  <op> 4 </op>
+  <A> 4 </A>
+</Q>"></textarea>
+    </div>
     
     <div style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
       <button class="btn btn-success" onclick="saveTestToBrowser()">💾 Save</button>
@@ -225,6 +250,7 @@
     let remainingSeconds = 0;
     let lastTestResults = { score: 0, total: 0, percentage: 0 };
     let qCounter = 0;
+    let isCopyPasteMode = false;
 
     // Swipe Gesture Variables
     let touchStartX = 0;
@@ -287,7 +313,7 @@
     function saveTestObjectToStorage(testData) {
       const tests = getStoredTests();
       const title = testData.title ? testData.title.trim() : 'Untitled Test';
-      tests[title] = testData; // Overwrites if title already exists
+      tests[title] = testData;
       localStorage.setItem('browser_saved_tests', JSON.stringify(tests));
     }
 
@@ -322,6 +348,10 @@
     }
 
     function saveTestToBrowser() {
+      // Sync state if currently in copy-paste mode before saving
+      if (isCopyPasteMode) {
+        if (!parseTextareaToManualQuestions()) return;
+      }
       const testData = compileTestDataFromEditor();
       if (!testData) return;
 
@@ -330,7 +360,6 @@
       switchView('view-home');
     }
 
-    // Shuffle/Jumble Questions Array
     function shuffleArray(array) {
       const arr = [...array];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -340,7 +369,6 @@
       return arr;
     }
 
-    // Open local test files directly
     function openTestFile(filename) {
       fetch(filename)
         .then(res => {
@@ -357,16 +385,134 @@
     }
 
     /* ==========================================================================
-       1. TEST CREATOR & EDITOR LOGIC
+       1. TEST CREATOR & EDITOR LOGIC (WITH MODE TOGGLE & SYNCHRONIZATION)
        ========================================================================== */
     function openCreatorNew() {
       document.getElementById('creator-heading').innerText = "Build Mock Test";
       document.getElementById('test-title').value = "";
       document.getElementById('test-time').value = "10";
       document.getElementById('questions-container').innerHTML = "";
+      document.getElementById('copy-paste-textarea').value = "";
+      
+      isCopyPasteMode = false;
+      updateEditorModeUI();
       qCounter = 0;
       addQuestionBuilder();
       switchView('view-creator');
+    }
+
+    function toggleEditorMode() {
+      if (!isCopyPasteMode) {
+        // Switching from Manual -> Copy Paste Mode: Compile current questions into text area tags
+        const tempTestData = compileTestDataFromEditor();
+        if (!tempTestData) return; // Validation failed, do not switch
+
+        let tagText = "";
+        tempTestData.questions.forEach(q => {
+          tagText += `<Q> ${q.text}\n`;
+          q.options.forEach((opt, idx) => {
+            tagText += `  <op> ${opt} </op>\n`;
+            if (idx === q.correctIdx) {
+              tagText += `  <A> ${opt} </A>\n`;
+            }
+          });
+          tagText += `</Q>\n\n`;
+        });
+        document.getElementById('copy-paste-textarea').value = tagText.trim();
+        isCopyPasteMode = true;
+      } else {
+        // Switching from Copy Paste -> Manual Mode: Parse textarea content into manual builder cards
+        if (!parseTextareaToManualQuestions()) return; // Parsing failed, stay in copy-paste mode
+        isCopyPasteMode = false;
+      }
+      updateEditorModeUI();
+    }
+
+    function updateEditorModeUI() {
+      const manualSec = document.getElementById('manual-mode-section');
+      const copyPasteSec = document.getElementById('copy-paste-section');
+      const toggleBtn = document.getElementById('mode-toggle-btn');
+
+      if (isCopyPasteMode) {
+        manualSec.classList.add('d-none');
+        copyPasteSec.classList.remove('d-none');
+        toggleBtn.innerText = "Manual Adder";
+      } else {
+        manualSec.classList.remove('d-none');
+        copyPasteSec.classList.add('d-none');
+        toggleBtn.innerText = "Write/Paste";
+      }
+    }
+
+    function parseTextareaToManualQuestions() {
+      const rawText = document.getElementById('copy-paste-textarea').value;
+      if (!rawText.trim()) {
+        alert('Copy paste area is empty.');
+        return false;
+      }
+
+      const qRegex = /<\s*q\s*>([\s\S]*?)<\s*\/\s*q\s*>/gi;
+      let match;
+      let parsedQuestions = [];
+
+      while ((match = qRegex.exec(rawText)) !== null) {
+        const block = match[1];
+
+        const opRegex = /<\s*op\s*>([\s\S]*?)<\s*\/\s*op\s*>/gi;
+        const options = [];
+        let opMatch;
+        while ((opMatch = opRegex.exec(block)) !== null) {
+          const optVal = opMatch[1].trim();
+          if (optVal) options.push(optVal);
+        }
+
+        const ansRegex = /<\s*a\s*>([\s\S]*?)<\s*\/\s*a\s*>/gi;
+        let ansMatch = ansRegex.exec(block);
+        let correctText = ansMatch ? ansMatch[1].trim() : '';
+
+        // If an answer tag exists and is not yet part of the options list, push it as an option
+        if (correctText) {
+          const exists = options.some(o => o.toLowerCase() === correctText.toLowerCase());
+          if (!exists) {
+            options.push(correctText);
+          }
+        }
+
+        // Extract question text by removing all option and answer tags from the block
+        let qText = block
+          .replace(/<\s*op\s*>[\s\S]*?<\s*\/\s*op\s*>/gi, '')
+          .replace(/<\s*a\s*>[\s\S]*?<\s*\/\s*a\s*>/gi, '')
+          .trim();
+
+        // If no question text remains, default to "?"
+        if (!qText) {
+          qText = "?";
+        }
+
+        if (options.length >= 2) {
+          let correctIdx = 0;
+          if (correctText) {
+            const foundIdx = options.findIndex(o => o.toLowerCase() === correctText.toLowerCase());
+            if (foundIdx !== -1) correctIdx = foundIdx;
+          }
+          parsedQuestions.push({ text: qText, options, correctIdx, image: "" });
+        }
+      }
+
+      if (parsedQuestions.length === 0) {
+        alert('Could not parse any questions. Check your tag syntax (<Q> ... </Q>, <op> ... </op>, <A> ... </A>).');
+        return false;
+      }
+
+      // Rebuild manual question container
+      const container = document.getElementById('questions-container');
+      container.innerHTML = "";
+      qCounter = 0;
+      parsedQuestions.forEach(q => {
+        appendQuestionToEditor(q.text, q.options, q.correctIdx, q.image);
+      });
+
+      return true;
     }
 
     function uploadAndEditTest(event) {
@@ -395,49 +541,16 @@
       document.getElementById('test-title').value = testData.title || "";
       document.getElementById('test-time').value = testData.timeMinutes || 10;
       
+      isCopyPasteMode = false;
+      updateEditorModeUI();
+      
       const container = document.getElementById('questions-container');
       container.innerHTML = "";
       qCounter = 0;
 
       if (testData.questions && testData.questions.length > 0) {
         testData.questions.forEach(q => {
-          qCounter++;
-          const qDiv = document.createElement('div');
-          qDiv.className = 'question-builder';
-          qDiv.id = `q-build-${qCounter}`;
-          qDiv.dataset.imageData = q.image || "";
-          
-          let optionsHtml = '';
-          q.options.forEach((optText, idx) => {
-            optionsHtml += `
-              <div class="option-row">
-                <input type="radio" name="correct-${qCounter}" value="${idx}" ${q.correctIdx === idx ? 'checked' : ''}>
-                <input type="text" class="opt-text" value="${optText}">
-                ${idx >= 2 ? `<button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>` : ''}
-              </div>
-            `;
-          });
-
-          const imgDisplay = q.image ? `<img src="${q.image}" class="img-preview-box" id="img-preview-${qCounter}">` : `<img id="img-preview-${qCounter}" class="img-preview-box d-none">`;
-          const removeImgBtnDisplay = q.image ? '' : 'd-none';
-
-          qDiv.innerHTML = `
-            <button class="btn btn-danger btn-sm" style="position: absolute; right: 10px; top: 10px;" onclick="removeQuestion(${qCounter})">Remove</button>
-            <label><b>Question ${qCounter}:</b></label>
-            <textarea class="q-text" placeholder="Enter your question here...">${q.text || ''}</textarea>
-            
-            <div class="img-upload-container">
-              <label><b>Question Photo (optional):</b></label><br>
-              <input type="file" accept="image/png, image/jpeg, image/jpg, image/heif, image/heic, image/webp, image/gif" onchange="handleImageUpload(event, ${qCounter})" style="margin-top: 5px;">
-              ${imgDisplay}
-              <button class="btn btn-danger btn-sm img-remove-btn ${removeImgBtnDisplay}" id="img-remove-btn-${qCounter}" onclick="removeQuestionImage(${qCounter})">🗑️ Remove Image</button>
-            </div>
-
-            <label><b>Options:</b></label>
-            <div class="options-list">${optionsHtml}</div>
-            <button class="btn btn-secondary btn-sm" style="margin-top: 5px;" onclick="addOptionRow(${qCounter})">+ Add Option</button>
-          `;
-          container.appendChild(qDiv);
+          appendQuestionToEditor(q.text || '', q.options || [], q.correctIdx || 0, q.image || '');
         });
       } else {
         addQuestionBuilder();
@@ -446,37 +559,51 @@
       switchView('view-creator');
     }
 
-    function addQuestionBuilder() {
+    function appendQuestionToEditor(text, options, correctIdx, image) {
       qCounter++;
       const container = document.getElementById('questions-container');
       const qDiv = document.createElement('div');
       qDiv.className = 'question-builder';
       qDiv.id = `q-build-${qCounter}`;
-      qDiv.dataset.imageData = "";
+      qDiv.dataset.imageData = image || "";
       
+      let optionsHtml = '';
+      options.forEach((optText, idx) => {
+        optionsHtml += `
+          <div class="option-row">
+            <input type="radio" name="correct-${qCounter}" value="${idx}" ${correctIdx === idx ? 'checked' : ''}>
+            <input type="text" class="opt-text" value="${optText}">
+            ${idx >= 2 ? `<button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>` : ''}
+          </div>
+        `;
+      });
+
+      const imgDisplay = image ? `<img src="${image}" class="img-preview-box" id="img-preview-${qCounter}">` : `<img id="img-preview-${qCounter}" class="img-preview-box d-none">`;
+      const removeImgBtnDisplay = image ? '' : 'd-none';
+
       qDiv.innerHTML = `
         <button class="btn btn-danger btn-sm" style="position: absolute; right: 10px; top: 10px;" onclick="removeQuestion(${qCounter})">Remove</button>
         <label><b>Question ${qCounter}:</b></label>
-        <textarea class="q-text" placeholder="Enter your question here..."></textarea>
+        <textarea class="q-text" placeholder="Enter your question here...">${text}</textarea>
         
         <div class="img-upload-container">
           <label><b>Question Photo (optional):</b></label><br>
           <input type="file" accept="image/png, image/jpeg, image/jpg, image/heif, image/heic, image/webp, image/gif" onchange="handleImageUpload(event, ${qCounter})" style="margin-top: 5px;">
-          <img id="img-preview-${qCounter}" class="img-preview-box d-none">
-          <button class="btn btn-danger btn-sm img-remove-btn d-none" id="img-remove-btn-${qCounter}" onclick="removeQuestionImage(${qCounter})">🗑️ Remove Image</button>
+          ${imgDisplay}
+          <button class="btn btn-danger btn-sm img-remove-btn ${removeImgBtnDisplay}" id="img-remove-btn-${qCounter}" onclick="removeQuestionImage(${qCounter})">🗑️ Remove Image</button>
         </div>
 
-        <label><b>Options :</b></label>
-        <div class="options-list">
-          ${renderOptionRow(qCounter, 1)}
-          ${renderOptionRow(qCounter, 2)}
-        </div>
+        <label><b>Options:</b></label>
+        <div class="options-list">${optionsHtml}</div>
         <button class="btn btn-secondary btn-sm" style="margin-top: 5px;" onclick="addOptionRow(${qCounter})">+ Add Option</button>
       `;
       container.appendChild(qDiv);
     }
 
-    // Handle Image Upload with heic2any fallback for HEIC/HEIF compatibility
+    function addQuestionBuilder() {
+      appendQuestionToEditor("", ["", ""], 0, "");
+    }
+
     async function handleImageUpload(event, qId) {
       const file = event.target.files[0];
       if (!file) return;
@@ -602,6 +729,9 @@
 
     /* Binary Exporter */
     function exportBinaryTest() {
+      if (isCopyPasteMode) {
+        if (!parseTextareaToManualQuestions()) return;
+      }
       const testData = compileTestDataFromEditor();
       if (!testData) return;
       
