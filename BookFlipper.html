@@ -47,6 +47,23 @@
             object-fit: contain;
             background-color: #ffffff;
         }
+        /* Neon Red Loading Bar Animation */
+        @keyframes neonPulse {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 0, 60, 0.5), 0 0 10px rgba(255, 0, 60, 0.5), inset 0 0 5px rgba(255, 0, 60, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(255, 0, 60, 0.9), 0 0 30px rgba(255, 0, 60, 0.8), inset 0 0 10px rgba(255, 0, 60, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 0, 60, 0.5), 0 0 10px rgba(255, 0, 60, 0.5), inset 0 0 5px rgba(255, 0, 60, 0.5);
+            }
+        }
+        .neon-red-bar {
+            background-color: #ff003c;
+            box-shadow: 0 0 12px #ff003c, 0 0 24px #ff003c;
+            animation: neonPulse 1.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="text-gray-100 flex flex-col justify-between overflow-hidden" style="height: 100vh; height: 100dvh;">
@@ -87,6 +104,17 @@
         <!-- Book Display Area -->
         <div id="book-wrapper" class="flex flex-col items-center justify-between w-full h-full relative overflow-hidden py-2">
             
+            <!-- Neon Red Loading Indicator (Middle Overlay) -->
+            <div id="loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/60 backdrop-blur-sm z-30 transition-opacity duration-300 hidden">
+                <div class="flex flex-col items-center space-y-3 w-64">
+                    <span id="loading-text" class="text-xs font-semibold tracking-wider text-rose-400 uppercase">Loading PDF...</span>
+                    <!-- Neon Red Bar Container -->
+                    <div class="w-full h-2 bg-gray-900 rounded-full overflow-hidden border border-rose-500/30 p-[1px]">
+                        <div id="neon-bar" class="h-full rounded-full neon-red-bar w-full"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Default Placeholder State before a PDF is loaded -->
             <div id="placeholder-message" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gray-900/30 backdrop-blur-sm z-10">
                 <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
@@ -130,19 +158,19 @@
                 </button>
                 <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book2.pdf">
                     <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">2</span>
-                    <span>Vagabond</span>
+                    <span>Oyasumi Punpun</span>
                 </button>
                 <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book3.pdf">
                     <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">3</span>
-                    <span>Stanley</span>
+                    <span>Mushishi</span>
                 </button>
                 <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book4.pdf">
                     <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">4</span>
-                    <span>Berserk</span>
+                    <span>2001: a space odyssey</span>
                 </button>
                 <button class="preset-book-btn text-left px-4 py-2.5 rounded-xl bg-gray-800/60 hover:bg-indigo-600 hover:text-white text-gray-300 transition text-xs font-medium border border-gray-700/50 flex items-center space-x-3" data-file="book5.pdf">
                     <span class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">5</span>
-                    <span>Superman</span>
+                    <span>Dr Strangelove</span>
                 </button>
             </div>
         </div>
@@ -179,12 +207,23 @@
         const zoomOutBtn = document.getElementById('zoom-out-btn');
         const zoomLevelIndicator = document.getElementById('zoom-level-indicator');
         const bookWrapper = document.getElementById('book-wrapper');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
         
         // Modal elements
         const booksBtn = document.getElementById('books-btn');
         const booksModal = document.getElementById('books-modal');
         const closeBooksModal = document.getElementById('close-books-modal');
         const presetBookBtns = document.querySelectorAll('.preset-book-btn');
+
+        function showLoading(text = 'Loading PDF...') {
+            loadingText.innerText = text;
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
 
         booksBtn.addEventListener('click', () => {
             booksModal.classList.remove('hidden');
@@ -326,7 +365,7 @@
             const currentSession = ++loadCounter;
             resetReaderState();
             setZoom(1);
-            renderStatus.innerText = 'Loading...';
+            showLoading('Reading PDF File...');
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
@@ -335,8 +374,8 @@
             } catch (error) {
                 console.error(error);
                 if (currentSession === loadCounter) {
+                    hideLoading();
                     alert('Error loading PDF document.');
-                    renderStatus.innerText = '';
                 }
             }
         }
@@ -345,7 +384,7 @@
             const currentSession = ++loadCounter;
             resetReaderState();
             setZoom(1);
-            renderStatus.innerText = 'Loading...';
+            showLoading('Downloading PDF...');
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -355,8 +394,8 @@
             } catch (error) {
                 console.error(error);
                 if (currentSession === loadCounter) {
+                    hideLoading();
                     alert(`Error loading ${url}. Make sure the file exists.`);
-                    renderStatus.innerText = '';
                 }
             }
         }
@@ -384,6 +423,7 @@
         }
 
         async function loadPdfFromArrayBuffer(arrayBuffer, sessionID) {
+            showLoading('Parsing PDF Structure...');
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
             pdfDoc = await loadingTask.promise;
             
@@ -432,12 +472,16 @@
 
             updatePagination(0);
 
-            placeholderMessage.classList.add('hidden');
-            bookContainer.classList.remove('opacity-0');
-            navControls.classList.remove('opacity-50', 'pointer-events-none');
-
+            showLoading('Rendering Initial Pages...');
             await renderPage(1, sessionID);
             if (totalPages > 1) await renderPage(2, sessionID);
+
+            if (sessionID === loadCounter) {
+                hideLoading();
+                placeholderMessage.classList.add('hidden');
+                bookContainer.classList.remove('opacity-0');
+                navControls.classList.remove('opacity-50', 'pointer-events-none');
+            }
 
             backgroundRenderAll(sessionID);
         }
